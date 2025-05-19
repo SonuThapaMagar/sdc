@@ -4,8 +4,11 @@ import com.furEverHome.dto.SignupRequest;
 import com.furEverHome.entity.User;
 import com.furEverHome.repository.UserRepository;
 
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -13,10 +16,12 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public AuthController(UserRepository userRepository) {
+    public AuthController(UserRepository userRepository,PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
        
     }
 
@@ -34,15 +39,21 @@ public class AuthController {
                     .body(new ErrorResponse("Email already exists"));
         }
 
+        String rawPassword = request.getPassword();
+        String hashedPassword=passwordEncoder.encode(rawPassword);
+        System.out.println("Raw Password: " + rawPassword);
+        System.out.println("Hashed Password: " + hashedPassword);
+        
         // Create new user with hashed password
         User user = new User(
                 request.getFullName(),
                 request.getAddress(),
                 request.getPhone(),
                 request.getEmail(),
-                request.getPassword()
+                hashedPassword
         );
         System.out.println("Generated User ID before save: " + user.getId());
+        
         // Save user to database
         try {
             userRepository.save(user);
