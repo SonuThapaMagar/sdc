@@ -10,17 +10,17 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/**").permitAll() // Allow all /api endpoints for now
-                .anyRequest().authenticated()
-            )
-            .formLogin(form -> form.disable())
-            .httpBasic(httpBasic -> httpBasic.disable())
-            .csrf(csrf -> csrf.disable()); // Temporarily disable CSRF globally
+	@Bean
+	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+		http.authorizeHttpRequests(auth -> {
+			System.out.println("Configuring request matchers...");
+			auth.requestMatchers("/api/**").permitAll() // Allow all /api endpoints for now
+					.anyRequest().authenticated();
+		}).formLogin(form -> form.disable()).httpBasic(httpBasic -> httpBasic.disable()).csrf(csrf -> csrf.disable()); // Temporarily
+																														// disable
+																														// CSRF
+																														// globally
 
-        return http.build();
-    }
+		return http.build();
+	}
 }
