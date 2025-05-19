@@ -42,12 +42,12 @@ public class AuthController {
                 request.getEmail(),
                 request.getPassword()
         );
-
+        System.out.println("Generated User ID before save: " + user.getId());
         // Save user to database
         try {
             userRepository.save(user);
-            System.out.println("User saved: " + user.getEmail());
-        } catch (Exception e) {
+            System.out.println("User saved: " + user.getEmail() + ", ID: " + user.getId());
+            } catch (Exception e) {
             return ResponseEntity.status(500)
                     .body(new ErrorResponse("Failed to save user: " + e.getMessage()));
         }
