@@ -10,7 +10,7 @@ import jakarta.persistence.Id;
 @Entity
 public class User {
 	@Id
-	private UUID id=UUID.randomUUID();
+	private UUID id;
 	
 	private String fullName;
     private String address;
@@ -19,7 +19,9 @@ public class User {
     private String password;
     
     //constructor
-    public User() {}
+    public User() {
+        this.id = UUID.randomUUID(); // Set UUID in default constructor
+    }
     
     public User(String fullName, String address, String phone, String email, String password) {
     	this.id = UUID.randomUUID();
