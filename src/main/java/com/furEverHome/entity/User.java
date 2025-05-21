@@ -26,15 +26,19 @@ public class User {
 
     @Column(name = "password", nullable = false)
     private String password;
+    
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
     public User() {}
 
-    public User(String fullName, String address, String phone, String email, String password) {
+    public User(String fullName, String address, String phone, String email, String password, Role role) {
         this.fullName = fullName;
         this.address = address;
         this.phone = phone;
         this.email = email;
         this.password = password;
+        this.role = role;
     }
 
     // Getters and Setters
@@ -50,4 +54,11 @@ public class User {
     public void setEmail(String email) { this.email = email; }
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
+    public Role getRole() { return role; }
+    public void setRole(Role role) { this.role = role; }
+    
+    @Override
+    public String toString() {
+        return "User{id=" + id + ", email=" + email + ", role=" + role + "}";
+    }
 }

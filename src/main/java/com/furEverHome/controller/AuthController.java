@@ -44,7 +44,7 @@ public class AuthController {
         String hashedPassword = passwordEncoder.encode(rawPassword);
         System.out.println("Hashed Password: " + hashedPassword);
 
-        User user = new User(request.getFullName(), request.getAddress(), request.getPhone(), request.getEmail(), hashedPassword);
+        User user = new User();
         System.out.println("Generated User ID before save: " + user.getId());
 
         try {
