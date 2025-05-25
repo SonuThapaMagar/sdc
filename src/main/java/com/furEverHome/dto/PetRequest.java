@@ -1,26 +1,15 @@
 package com.furEverHome.dto;
 
-import java.util.UUID;
-
 public class PetRequest {
-
-	private UUID id;
 	private String name;
 	private String breed;
 	private int age;
-	private String gender;
+	private String gender; 
 	private String description;
 	private String location;
 	private String status;
 
-	public UUID getId() {
-		return id;
-	}
-
-	public void setId(UUID id) {
-		this.id = id;
-	}
-
+	// Getters and Setters
 	public String getName() {
 		return name;
 	}
