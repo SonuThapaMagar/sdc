@@ -10,15 +10,18 @@ public class PetResponse {
 	private int age;
 	private String gender;
 	private String description;
+	private String location;
 	private String status;
 
-	public PetResponse(UUID id, String name, String breed, int age, String gender, String description, String status) {
+	public PetResponse(UUID id, String name, String breed, int age, String gender, String description, String location,
+			String status) {
 		this.id = id;
 		this.name = name;
 		this.breed = breed;
 		this.age = age;
 		this.gender = gender;
 		this.description = description;
+		this.location = location;
 		this.status = status;
 	}
 
@@ -68,6 +71,14 @@ public class PetResponse {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public String getLocation() {
+		return location;
+	}
+
+	public void setLocation(String location) {
+		this.location = location;
 	}
 
 	public String getStatus() {

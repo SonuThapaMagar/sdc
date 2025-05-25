@@ -33,6 +33,9 @@ public class Pet {
 	@Column(name = "description")
 	private String description;
 
+	@Column(name = "location", nullable = false)
+	private String location;
+
 	@Column(name = "status", nullable = false)
 	private String status;
 
@@ -42,11 +45,13 @@ public class Pet {
 	public Pet() {
 	}
 
-	public Pet(String name, String breed, int age, String description, String gender, String status, UUID centerId) {
+	public Pet(String name, String breed, int age, String description, String location, String gender, String status,
+			UUID centerId) {
 		this.name = name;
 		this.breed = breed;
 		this.age = age;
 		this.description = description;
+		this.location = location;
 		this.gender = gender;
 		this.status = status;
 		this.centerId = centerId;
@@ -98,6 +103,14 @@ public class Pet {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public String getLocation() {
+		return location;
+	}
+
+	public void setLocation(String location) {
+		this.location = location;
 	}
 
 	public String getStatus() {
