@@ -5,10 +5,12 @@ import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.furEverHome.entity.User;
+import com.furEverHome.entity.PetCenter;
 
-public interface UserRepository extends JpaRepository<User, UUID> {
-	Optional<User> findByEmail(String email);
+public interface PetCenterRepository extends JpaRepository<PetCenter, UUID> {
+	
+	Optional<PetCenter> findByEmail(String email);
 
 	boolean existsByEmail(String email);
+
 }

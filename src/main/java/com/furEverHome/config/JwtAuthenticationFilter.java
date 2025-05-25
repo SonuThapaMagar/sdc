@@ -28,9 +28,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 		String path = request.getRequestURI();
 		System.out.println("Processing request for path: " + path);
-		
+
 		// Skip authentication for public endpoints under /api/**
-		if (path.startsWith("/api/") && !path.matches("/api/admin/.*|/api/superadmin/.*")) {
+		if (path.startsWith("/api/auth/") || path.startsWith("/api/admin/auth/") || path.startsWith("/api/test")) {
 			System.out.println("Skipping authentication for public endpoint: " + path);
 			filterChain.doFilter(request, response);
 			return;
@@ -48,9 +48,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 				System.out.println("Token validated for email: " + email + ", role: " + role);
 
 				// Simulate authentication (UserDetailsService can be added later)
-				UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        email, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role.name())));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+				UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(email,
+						null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role.name())));
+				SecurityContextHolder.getContext().setAuthentication(authentication);
 			} else {
 				System.out.println("Invalid token: " + token);
 				response.setStatus(HttpServletResponse.SC_FORBIDDEN);
