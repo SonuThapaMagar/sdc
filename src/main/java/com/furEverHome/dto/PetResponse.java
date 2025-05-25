@@ -12,9 +12,10 @@ public class PetResponse {
 	private String description;
 	private String location;
 	private String status;
+	private UUID centerId;
 
 	public PetResponse(UUID id, String name, String breed, int age, String gender, String description, String location,
-			String status) {
+			String status, UUID centerId) {
 		this.id = id;
 		this.name = name;
 		this.breed = breed;
@@ -23,8 +24,10 @@ public class PetResponse {
 		this.description = description;
 		this.location = location;
 		this.status = status;
+		this.centerId = centerId; // Include in constructor
 	}
 
+	// Getters and Setters
 	public UUID getId() {
 		return id;
 	}
@@ -87,5 +90,13 @@ public class PetResponse {
 
 	public void setStatus(String status) {
 		this.status = status;
+	}
+
+	public UUID getCenterId() {
+		return centerId;
+	}
+
+	public void setCenterId(UUID centerId) {
+		this.centerId = centerId;
 	}
 }
