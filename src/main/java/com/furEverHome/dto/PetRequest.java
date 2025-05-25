@@ -10,6 +10,7 @@ public class PetRequest {
 	private int age;
 	private String gender;
 	private String description;
+	private String location;
 	private String status;
 
 	public UUID getId() {
@@ -58,6 +59,14 @@ public class PetRequest {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public String getLocation() {
+		return location;
+	}
+
+	public void setLocation(String location) {
+		this.location = location;
 	}
 
 	public String getStatus() {
