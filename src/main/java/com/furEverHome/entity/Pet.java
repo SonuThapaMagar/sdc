@@ -1,0 +1,119 @@
+package com.furEverHome.entity;
+
+import java.util.UUID;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "pets")
+public class Pet {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "id", updatable = false, nullable = false)
+	private UUID id;
+
+	@Column(name = "name", nullable = false)
+	private String name;
+
+	@Column(name = "breed", nullable = false)
+	private String breed;
+
+	@Column(name = "age", nullable = false)
+	private int age;
+
+	@Column(name = "gender", nullable = false)
+	private String gender;
+
+	@Column(name = "description")
+	private String description;
+
+	@Column(name = "status", nullable = false)
+	private String status;
+
+	@Column(name = "center_id", nullable = false)
+	private UUID centerId;
+
+	public Pet() {
+	}
+
+	public Pet(String name, String breed, int age, String description, String gender, String status, UUID centerId) {
+		this.name = name;
+		this.breed = breed;
+		this.age = age;
+		this.description = description;
+		this.gender = gender;
+		this.status = status;
+		this.centerId = centerId;
+	}
+
+	public UUID getId() {
+		return id;
+	}
+
+	public void setId(UUID id) {
+		this.id = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getBreed() {
+		return breed;
+	}
+
+	public void setBreed(String breed) {
+		this.breed = breed;
+	}
+
+	public int getAge() {
+		return age;
+	}
+
+	public void setAge(int age) {
+		this.age = age;
+	}
+
+	public String getGender() {
+		return gender;
+	}
+
+	public void setGender(String gender) {
+		this.gender = gender;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public UUID getCenterId() {
+		return centerId;
+	}
+
+	public void setCenterId(UUID centerId) {
+		this.centerId = centerId;
+	}
+
+}

@@ -2,6 +2,8 @@ package com.furEverHome.controller;
 
 import com.furEverHome.dto.ForgotPasswordRequest;
 import com.furEverHome.dto.LoginRequest;
+import com.furEverHome.dto.OtpVerificationRequest;
+import com.furEverHome.dto.ResetPasswordRequest;
 import com.furEverHome.dto.SignupRequest;
 import com.furEverHome.entity.Role;
 import com.furEverHome.entity.User;
@@ -17,7 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/auth/")
 public class AuthController {
 
 	private final UserRepository userRepository;
@@ -87,10 +89,10 @@ public class AuthController {
 			return ResponseEntity.status(401).body(new ErrorResponse("Invalid email or password"));
 		}
 
-		//generate JWT Token
+		// generate JWT Token
 		String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
-		System.out.println("Login successful for email: " + user.getEmail());
-		return ResponseEntity.ok(new LoginResponse("Login successful!", user.getId(),token));
+		System.out.println("Login successful for email: " + user.getEmail() + ", Token: " + token);
+		return ResponseEntity.ok(new LoginResponse("Login successful!", user.getId(), token));
 	}
 
 	@PostMapping("/forgotPassword")
@@ -106,9 +108,10 @@ public class AuthController {
 	}
 
 	@PostMapping("/verifyOtp")
-	public ResponseEntity<?> resetPassword(@RequestBody ForgotPasswordRequest request) {
+	public ResponseEntity<?> resetPassword(@RequestBody OtpVerificationRequest request) {
+
 		User user = userRepository.findByEmail(request.getEmail()).orElse(null);
-		if (user == null || !otpservice.validateOtp(user, request.getOtp())) {
+		if (user == null || !otpservice.validateOtp(user, request.getOtpCode())) {
 			return ResponseEntity.badRequest().body(new ErrorResponse("Invalid or expired OTP"));
 		}
 		otpservice.clearOtp(user);
@@ -116,10 +119,10 @@ public class AuthController {
 	}
 
 	@PostMapping("/resetPassword")
-	public ResponseEntity<?> resetPassword(@RequestBody ForgotPasswordRequest request,
+	public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest request,
 			@RequestParam String newPassword) {
 		User user = userRepository.findByEmail(request.getEmail()).orElse(null);
-		if (user == null) {
+		if (user == null || user.getOtp() != null) {
 			return ResponseEntity.badRequest().body(new ErrorResponse("User not found"));
 		}
 		user.setPassword(passwordEncoder.encode(newPassword));

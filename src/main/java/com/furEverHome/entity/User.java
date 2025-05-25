@@ -36,6 +36,7 @@ public class User {
 	private LocalDateTime otpExpiry;
 
 	@Enumerated(EnumType.STRING)
+	@Column(name = "role", nullable = false)
 	private Role role;
 
 	public User() {
