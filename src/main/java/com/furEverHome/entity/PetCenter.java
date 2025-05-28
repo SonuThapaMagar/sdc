@@ -14,7 +14,7 @@ import jakarta.persistence.Table;
 public class PetCenter {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
+	@GeneratedValue(strategy = GenerationType.UUID)
 	@Column(name = "id", updatable = false, nullable = false)
 	private UUID id;
 

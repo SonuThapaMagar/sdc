@@ -35,11 +35,11 @@ public class PetCenterAuthController {
 	public ResponseEntity<?> signup(@RequestBody PetCenterSignupRequest request) {
 
 		if (request.getEmail() == null || request.getEmail().isEmpty()) {
-			return ResponseEntity.badRequest().body(new AuthController.ErrorResponse("Email is required"));
+			return ResponseEntity.status(400).body(new AuthController.ErrorResponse("Email is required"));
 		}
 
 		if (petCenterRepository.existsByEmail(request.getEmail())) {
-			return ResponseEntity.badRequest().body(new AuthController.ErrorResponse("Email already exists"));
+			return ResponseEntity.status(409).body(new AuthController.ErrorResponse("Email already exists"));
 		}
 
 		String hashedPassword = passwordEncoder.encode(request.getPassword());
@@ -47,15 +47,14 @@ public class PetCenterAuthController {
 				request.getDescription(), request.getEmail(), hashedPassword);
 		petCenterRepository.save(petCenter);
 
-		return ResponseEntity.ok(new AuthController.SuccessResponse("Pet Center signup successful", petCenter.getId()));
+		return ResponseEntity.status(201)
+				.body(new AuthController.SuccessResponse("Pet Center signup successful", petCenter.getId()));
 	}
 
 	@PostMapping("/login")
 	public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-
 		if (request.getEmail() == null || request.getPassword() == null) {
-			return ResponseEntity.badRequest()
-					.body(new AuthController.ErrorResponse("Email and password are required"));
+			return ResponseEntity.status(400).body(new AuthController.ErrorResponse("Email and password are required"));
 		}
 
 		PetCenter petCenter = petCenterRepository.findByEmail(request.getEmail()).orElse(null);
@@ -63,7 +62,7 @@ public class PetCenterAuthController {
 			return ResponseEntity.status(401).body(new AuthController.ErrorResponse("Invalid email or password"));
 		}
 
-		String token = jwtUtil.generateToken(petCenter.getEmail(), Role.ADMIN); // Role.ADMIN for Pet Centers
+		String token = jwtUtil.generateToken(petCenter.getEmail(), Role.ADMIN);
 		return ResponseEntity
 				.ok(new AuthController.LoginResponse("Pet Center login successful", petCenter.getId(), token));
 	}

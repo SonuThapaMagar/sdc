@@ -19,7 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/auth/")
+@RequestMapping("/api/auth")
 public class AuthController {
 
 	private final UserRepository userRepository;
@@ -62,16 +62,12 @@ public class AuthController {
 		user.setPhone(request.getPhone());
 		user.setEmail(request.getEmail());
 		user.setPassword(hashedPassword);
-		user.setRole(request.getFullName().equals("admin") ? Role.ADMIN : Role.USER);
-		System.out.println("Generated User ID before save: " + user.getId());
+		user.setRole(Role.USER);
 
 		try {
 			userRepository.save(user);
-			System.out.println("User saved: " + user.getEmail() + ", ID: " + user.getId());
-			return ResponseEntity.ok(new SuccessResponse("Signup successful!", user.getId()));
+			return ResponseEntity.status(201).body(new SuccessResponse("User signup successful", user.getId()));
 		} catch (Exception e) {
-			System.err.println("Error saving user: " + e.getMessage());
-			e.printStackTrace();
 			return ResponseEntity.status(500).body(new ErrorResponse("Failed to save user: " + e.getMessage()));
 		}
 	}
@@ -79,25 +75,20 @@ public class AuthController {
 	@PostMapping("/login")
 	public ResponseEntity<?> login(@RequestBody LoginRequest request) {
 		if (request.getEmail() == null || request.getPassword() == null) {
-			return ResponseEntity.badRequest().body(new ErrorResponse("Email and password are required"));
+			return ResponseEntity.status(400).body(new ErrorResponse("Email and password are required"));
 		}
 
 		User user = userRepository.findByEmail(request.getEmail()).orElse(null);
-
 		if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-			System.out.println("Login failed for email: " + request.getEmail());
 			return ResponseEntity.status(401).body(new ErrorResponse("Invalid email or password"));
 		}
 
-		// generate JWT Token
 		String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
-		System.out.println("Login successful for email: " + user.getEmail() + ", Token: " + token);
-		return ResponseEntity.ok(new LoginResponse("Login successful!", user.getId(), token));
+		return ResponseEntity.ok(new LoginResponse("User login successful", user.getId(), token));
 	}
 
 	@PostMapping("/forgotPassword")
 	public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequest request) {
-
 		User user = userRepository.findByEmail(request.getEmail()).orElse(null);
 		if (user == null) {
 			return ResponseEntity.badRequest().body(new ErrorResponse("Email not found"));
@@ -137,38 +128,30 @@ public class AuthController {
 
 	static class SuccessResponse {
 		private String message;
-		private UUID userId;
+		private UUID id;
 
-		public SuccessResponse(String message, UUID userId) {
+		public SuccessResponse(String message, UUID id) {
 			this.message = message;
-			this.userId = userId;
+			this.id = id;
 		}
 
 		public String getMessage() {
 			return message;
 		}
 
-		public void setMessage(String message) {
-			this.message = message;
-		}
-
-		public UUID getUserId() {
-			return userId;
-		}
-
-		public void setUserId(UUID userId) {
-			this.userId = userId;
+		public UUID getId() {
+			return id;
 		}
 	}
 
 	static class LoginResponse {
 		private String message;
-		private UUID userId;
+		private UUID id;
 		private String token;
 
-		public LoginResponse(String message, UUID userId, String token) {
+		public LoginResponse(String message, UUID id, String token) {
 			this.message = message;
-			this.userId = userId;
+			this.id = id;
 			this.token = token;
 		}
 
@@ -176,24 +159,12 @@ public class AuthController {
 			return message;
 		}
 
-		public void setMessage(String message) {
-			this.message = message;
-		}
-
-		public UUID getUserId() {
-			return userId;
-		}
-
-		public void setUserId(UUID userId) {
-			this.userId = userId;
+		public UUID getId() {
+			return id;
 		}
 
 		public String getToken() {
 			return token;
-		}
-
-		public void setToken(String token) {
-			this.token = token;
 		}
 	}
 
