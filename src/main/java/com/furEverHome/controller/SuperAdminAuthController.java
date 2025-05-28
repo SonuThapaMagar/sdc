@@ -11,14 +11,18 @@ import com.furEverHome.dto.SuperAdminLoginRequest;
 import com.furEverHome.service.SuperAdminAuthService;
 
 @RestController
-@RequestMapping("/api/auth/superadmin")
+@RequestMapping("/api/superadmin/auth")
 public class SuperAdminAuthController {
 	@Autowired
 	private SuperAdminAuthService authService;
 
 	@PostMapping("/login")
 	public ResponseEntity<?> login(@RequestBody SuperAdminLoginRequest request) {
-		return ResponseEntity.ok(authService.authenticate(request));
+		try {
+			return ResponseEntity.ok(authService.authenticate(request));
+		} catch (Exception e) {
+			return ResponseEntity.status(401).body(new AuthController.ErrorResponse("Invalid username or password"));
+		}
 	}
 
 }

@@ -16,51 +16,52 @@ import java.util.Collections;
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-	private final JwtUtil jwtUtil;
+    private final JwtUtil jwtUtil;
 
-	public JwtAuthenticationFilter(JwtUtil jwtUtil) {
-		this.jwtUtil = jwtUtil;
-	}
+    public JwtAuthenticationFilter(JwtUtil jwtUtil) {
+        this.jwtUtil = jwtUtil;
+    }
 
-	@Override
-	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-			throws ServletException, IOException {
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
 
-		String path = request.getRequestURI();
-		System.out.println("Processing request for path: " + path);
+        String path = request.getRequestURI();
+        System.out.println("Processing request for path: " + path);
 
-		// Skip authentication for public endpoints under /api/**
-		if (path.startsWith("/api/auth/") || path.startsWith("/api/admin/auth/") || path.startsWith("/api/test")) {
-			System.out.println("Skipping authentication for public endpoint: " + path);
-			filterChain.doFilter(request, response);
-			return;
-		}
+        // Skip authentication for public endpoints
+        if (path.startsWith("/api/auth") || path.startsWith("/api/admin/auth") || path.startsWith("/api/superadmin/auth") || path.equals("/api/test")) {
+            System.out.println("Skipping authentication for public endpoint: " + path);
+            filterChain.doFilter(request, response);
+            return;
+        }
 
-		String header = request.getHeader("Authorization");
-		if (header != null && header.startsWith("Bearer ")) {
-			String token = header.substring(7);
-			System.out.println("Found Authorization header with token: " + token);
+        String header = request.getHeader("Authorization");
+        if (header == null || !header.startsWith("Bearer ")) {
+            System.out.println("No Authorization header or invalid format for path: " + path);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("{\"message\": \"Authorization header missing or invalid\"}");
+            return;
+        }
 
-			if (jwtUtil.validateToken(token)) {
+        String token = header.substring(7);
+        System.out.println("Found Authorization header with token: " + token);
 
-				String email = jwtUtil.getEmailFromToken(token);
-				Role role = jwtUtil.getRoleFromToken(token);
-				System.out.println("Token validated for email: " + email + ", role: " + role);
+        if (!jwtUtil.validateToken(token)) {
+            System.out.println("Invalid token: " + token);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("{\"message\": \"Invalid or expired token\"}");
+            return;
+        }
 
-				// Simulate authentication (UserDetailsService can be added later)
-				UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(email,
-						null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role.name())));
-				SecurityContextHolder.getContext().setAuthentication(authentication);
-			} else {
-				System.out.println("Invalid token: " + token);
-				response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-				return;
-			}
-		} else {
-			System.out.println("No Authorization header or invalid format for path: " + path);
-			response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-			return;
-		}
-		filterChain.doFilter(request, response);
-	}
+        String email = jwtUtil.getEmailFromToken(token);
+        Role role = jwtUtil.getRoleFromToken(token);
+        System.out.println("Token validated for email: " + email + ", role: " + role);
+
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(email,
+                null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role.name())));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        filterChain.doFilter(request, response);
+    }
 }
