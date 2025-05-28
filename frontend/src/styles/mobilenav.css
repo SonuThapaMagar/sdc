@@ -1,0 +1,148 @@
+.mobile-nav-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.mobile-nav-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 280px;
+  height: 100vh;
+  background-color: white;
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  animation: slideIn 0.3s ease-out;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.mobile-nav-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2rem 1.5rem 1.5rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.mobile-nav-profile {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 2px;
+}
+
+.mobile-nav-profile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+.mobile-nav-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  border: none;
+  background-color: #f3f4f6;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mobile-nav-close:hover {
+  background-color: #e5e7eb;
+  color: #374151;
+}
+
+.mobile-nav-menu {
+  flex: 1;
+  padding: 1rem 0;
+  overflow-y: auto;
+}
+
+.mobile-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  text-decoration: none;
+  color: #6b7280;
+  transition: all 0.2s;
+  border-left: 3px solid transparent;
+}
+
+.mobile-nav-item:hover {
+  background-color: #f9fafb;
+  color: #374151;
+}
+
+.mobile-nav-item.active {
+  background-color: #f3f4f6;
+  color: #8b5cf6;
+  border-left-color: #8b5cf6;
+}
+
+.mobile-nav-icon {
+  flex-shrink: 0;
+}
+
+.mobile-nav-label {
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .mobile-nav-sidebar {
+    width: 260px;
+  }
+
+  .mobile-nav-header {
+    padding: 1.5rem 1rem 1rem;
+  }
+
+  .mobile-nav-profile {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+
+  .mobile-nav-item {
+    padding: 0.875rem 1rem;
+  }
+
+  .mobile-nav-label {
+    font-size: 0.875rem;
+  }
+}
