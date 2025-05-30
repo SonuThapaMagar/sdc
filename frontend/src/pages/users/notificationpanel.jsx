@@ -1,5 +1,4 @@
-"use client"
-
+import React from "react";
 import { useState } from "react"
 import { Bell, X, Check } from "lucide-react"
 import "../../styles/notification.css"

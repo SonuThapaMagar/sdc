@@ -1,5 +1,4 @@
-"use client"
-
+import React from "react";
 import { useState } from "react"
 import { ChevronLeft, ChevronDown } from "lucide-react"
 import "../../styles/filtermodal.css"

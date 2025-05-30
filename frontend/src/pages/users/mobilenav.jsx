@@ -1,3 +1,4 @@
+import React from "react";
 import { X, Home, Users, Settings, MessageCircle, ImageIcon } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import "../../styles/mobilenav.css"
