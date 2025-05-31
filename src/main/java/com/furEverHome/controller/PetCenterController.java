@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.furEverHome.dto.PetRequest;
@@ -73,6 +74,7 @@ public class PetCenterController {
 	public ResponseEntity<?> viewPets(@RequestHeader("Authorization") String token) {
 		// Extract email from the token
 		String email = jwtUtil.getEmailFromToken(token.substring(7));
+		
 		PetCenter petCenter = petCenterRepository.findByEmail(email).orElse(null);
 
 		// Validate that the user is a Pet Center Admin
