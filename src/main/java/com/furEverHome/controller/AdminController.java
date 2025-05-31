@@ -13,10 +13,13 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.furEverHome.dto.AdminProfileResponse;
+import com.furEverHome.dto.AdminProfileUpdateRequest;
 import com.furEverHome.dto.AdoptionRequestResponse;
 import com.furEverHome.dto.AdoptionRequestStatusUpdate;
 import com.furEverHome.entity.Role;
 import com.furEverHome.service.AdoptionRequestService;
+import com.furEverHome.service.PetCenterService;
 import com.furEverHome.util.JwtUtil;
 
 @RestController
@@ -25,11 +28,14 @@ public class AdminController {
 
 	private final JwtUtil jwtUtil;
 	private final AdoptionRequestService adoptionRequestService;
+	private final PetCenterService petCenterService;
 
 	@Autowired
-	public AdminController(JwtUtil jwtUtil, AdoptionRequestService adoptionRequestService) {
+	public AdminController(JwtUtil jwtUtil, AdoptionRequestService adoptionRequestService,
+			PetCenterService petCenterService) {
 		this.jwtUtil = jwtUtil;
 		this.adoptionRequestService = adoptionRequestService;
+		this.petCenterService = petCenterService;
 	}
 
 	@GetMapping("/adoption-requests")
@@ -79,11 +85,32 @@ public class AdminController {
 		}
 	}
 
+	@PutMapping("/profile")
+	public ResponseEntity<?> updateAdminProfile(@RequestHeader("Authorization") String token,
+			@RequestBody AdminProfileUpdateRequest updateRequest) {
+		String tokenValue = token.substring(7); // Remove "Bearer " prefix
+		if (!jwtUtil.getRoleFromToken(tokenValue).equals(Role.ADMIN)) {
+			return ResponseEntity.status(403)
+					.body(new AuthController.ErrorResponse("User must have ADMIN role to update profile"));
+		}
+
+		try {
+			String email = jwtUtil.getEmailFromToken(tokenValue);
+			AdminProfileResponse updatedProfile = petCenterService.updatePetCenterProfile(email, updateRequest);
+			return ResponseEntity.ok(new SuccessResponse("Admin profile updated successfully", updatedProfile));
+		} catch (IllegalArgumentException | IllegalStateException e) {
+			return ResponseEntity.badRequest().body(new AuthController.ErrorResponse(e.getMessage()));
+		} catch (Exception e) {
+			return ResponseEntity.status(500)
+					.body(new AuthController.ErrorResponse("Failed to update admin profile: " + e.getMessage()));
+		}
+	}
+
 	static class SuccessResponse {
 		private String message;
-		private AdoptionRequestResponse data;
+		private Object data; // Use Object to handle different response types
 
-		public SuccessResponse(String message, AdoptionRequestResponse data) {
+		public SuccessResponse(String message, Object data) {
 			this.message = message;
 			this.data = data;
 		}
@@ -92,7 +119,7 @@ public class AdminController {
 			return message;
 		}
 
-		public AdoptionRequestResponse getData() {
+		public Object getData() {
 			return data;
 		}
 	}
