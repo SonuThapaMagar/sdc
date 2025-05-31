@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,10 +17,13 @@ import org.springframework.web.bind.annotation.RestController;
 import com.furEverHome.dto.AdoptionRequestResponse;
 import com.furEverHome.dto.AdoptionRequestSubmission;
 import com.furEverHome.dto.PetResponse;
+import com.furEverHome.dto.ProfileResponse;
+import com.furEverHome.dto.ProfileUpdateRequest;
 import com.furEverHome.entity.Pet;
 import com.furEverHome.entity.Role;
 import com.furEverHome.repository.PetRepository;
 import com.furEverHome.service.AdoptionRequestService;
+import com.furEverHome.service.UserService;
 import com.furEverHome.util.JwtUtil;
 
 @RestController
@@ -29,12 +33,15 @@ public class UserController {
 	private final PetRepository petRepository;
 	private final JwtUtil jwtUtil;
 	private final AdoptionRequestService adoptionRequestService;
+	private final UserService userService;
 
 	@Autowired
-	public UserController(PetRepository petRepository, JwtUtil jwtUtil, AdoptionRequestService adoptionRequestService) {
+	public UserController(PetRepository petRepository, JwtUtil jwtUtil, AdoptionRequestService adoptionRequestService,
+			UserService userService) {
 		this.petRepository = petRepository;
 		this.jwtUtil = jwtUtil;
 		this.adoptionRequestService = adoptionRequestService;
+		this.userService = userService;
 	}
 
 	@GetMapping("/pets")
@@ -98,11 +105,33 @@ public class UserController {
 		}
 	}
 
+	@PutMapping("/profile")
+	public ResponseEntity<?> updateProfile(@RequestHeader("Authorization") String token,
+			@RequestBody ProfileUpdateRequest updateRequest) {
+
+		String tokenValue = token.substring(7); // Remove "Bearer " prefix
+		if (!jwtUtil.getRoleFromToken(tokenValue).equals(Role.USER)) {
+			return ResponseEntity.status(403)
+					.body(new AuthController.ErrorResponse("User must have USER role to update profile"));
+		}
+
+		try {
+			String email = jwtUtil.getEmailFromToken(tokenValue);
+			ProfileResponse updatedProfile = userService.updateUserProfile(email, updateRequest, Role.USER);
+			return ResponseEntity.ok(new SuccessResponse("Profile updated successfully", updatedProfile));
+		} catch (IllegalArgumentException | IllegalStateException e) {
+			return ResponseEntity.badRequest().body(new AuthController.ErrorResponse(e.getMessage()));
+		} catch (Exception e) {
+			return ResponseEntity.status(500)
+					.body(new AuthController.ErrorResponse("Failed to update profile: " + e.getMessage()));
+		}
+	}
+
 	static class SuccessResponse {
 		private String message;
-		private AdoptionRequestResponse data;
+		private Object data;
 
-		public SuccessResponse(String message, AdoptionRequestResponse data) {
+		public SuccessResponse(String message, Object data) {
 			this.message = message;
 			this.data = data;
 		}
@@ -111,7 +140,7 @@ public class UserController {
 			return message;
 		}
 
-		public AdoptionRequestResponse getData() {
+		public Object getData() {
 			return data;
 		}
 	}
