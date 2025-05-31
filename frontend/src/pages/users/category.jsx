@@ -1,291 +1,52 @@
-"use client"
-
+import React from "react";
+// React & Animation
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+
+// Icons
 import { Search, Bell, Heart, Filter, ChevronLeft, MapPin, ArrowLeft, ArrowRight, Menu } from "lucide-react"
-import "../../styles/category.css"
+
+// Components
 import FilterModal from "./filtermodal"
-import "../../styles/filtermodal.css"
-import coco from "../../images/coco.png"
-import chloe from "../../images/chole.png"
-import max from "../../images/max.png"
-import rockey from "../../images/rockey.png"
-import bella from "../../images/bella.png"
-import leo from "../../images/leo.png"
-import luna from "../../images/luna.png"
-import milo from "../../images/milo.png"
-import profile from "../../images/profile.png"
 import NotificationsPanel from "./notificationpanel"
-import "../../styles/notification.css"
 import SearchModal from "./searchmodal"
-import "../../styles/petdetails.css"
 import MobileNav from "./mobilenav"
-import whiskers from "../../images/whiskers.png"
-import shadow from "../../images/shadow.png"
-import tiger from "../../images/tiger.png"
-import smokey from "../../images/smokey.png"
-import princess from "../../images/princess.png"
-import patches from "../../images/patches.png"
-import mittens from "../../images/mittens.png"
-import felix from "../../images/felix.png"
+import ProfileModal from "./ProfileModal"
+
+// Data & Assets
+import { petsData } from "../../data/petsData"
+import { profileImage } from "../../data/petImages"
+
+// Styles
+import "../../index.css"
+import "../../styles/filtermodal.css"
+import "../../styles/category.css"
+import "../../styles/petdetails.css"
+import "../../styles/notification.css"
+
+
 
 export default function PetCategories() {
+  // State management
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
+  const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [activeFilters, setActiveFilters] = useState({})
   const [activeCategory, setActiveCategory] = useState("Dogs")
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(true)
   const [selectedPetId, setSelectedPetId] = useState(null)
   const [favorites, setFavorites] = useState(new Set())
   const [searchQuery, setSearchQuery] = useState("")
+  const [userProfile, setUserProfile] = useState({
+    fullName: "Stylish Boi",
+    email: "stylishboi@gmail.com",
+    profileImage: profileImage,
+    memberSince: "January 2024",
+    accountStatus: "Active",
+  })
 
-  // Mock pets data with both dogs and cats
-  const petsData = [
-    // Dogs
-    {
-      id: 1,
-      name: "Coco",
-      type: "Dogs",
-      gender: "female",
-      breed: "Border collie",
-      color: "Brown & White",
-      weight: "18 Kg",
-      age: "Young",
-      location: "Frankfurt (5 km away)",
-      health: ["Fully vaccinated", "Spayed"],
-      characteristics: ["Good with kids", "Playful and energetic", "Requires mental stimulation", "Well-trained"],
-      imageUrl: coco,
-      isFavorite: false,
-    },
-    {
-      id: 2,
-      name: "Milo",
-      type: "Dogs",
-      gender: "male",
-      breed: "Samoyed",
-      color: "White",
-      weight: "20 Kg",
-      age: "Adult",
-      location: "Berlin (25 km away)",
-      health: ["Fully vaccinated", "Neutered"],
-      characteristics: ["Good with kids", "Playful and athletic", "Requires daily outdoor activity", "Well-mannered"],
-      imageUrl: milo,
-      isFavorite: true,
-    },
-    {
-      id: 3,
-      name: "Chloe",
-      type: "Dogs",
-      gender: "female",
-      breed: "Mix breed",
-      color: "Golden",
-      weight: "15 Kg",
-      age: "Adult",
-      location: "Munich (15 km away)",
-      health: ["Fully vaccinated", "Spayed"],
-      characteristics: ["Good with other pets", "Calm and gentle", "Enjoys short walks", "House trained"],
-      imageUrl: chloe,
-      isFavorite: false,
-    },
-    {
-      id: 4,
-      name: "Leo",
-      type: "Dogs",
-      gender: "male",
-      breed: "Pomeranian",
-      color: "Orange",
-      weight: "4 Kg",
-      age: "Puppy",
-      location: "Hamburg (10 km away)",
-      health: ["Partially vaccinated", "Not neutered"],
-      characteristics: ["Energetic", "Needs training", "Good with adults", "Apartment friendly"],
-      imageUrl: leo,
-      isFavorite: false,
-    },
-    {
-      id: 5,
-      name: "Max",
-      type: "Dogs",
-      gender: "male",
-      breed: "Golden Retriever",
-      color: "Golden",
-      weight: "25 Kg",
-      age: "Adult",
-      location: "Cologne (20 km away)",
-      health: ["Fully vaccinated", "Neutered"],
-      characteristics: ["Great with kids", "Friendly and social", "Loves water activities", "Well-trained"],
-      imageUrl: max,
-      isFavorite: false,
-    },
-    {
-      id: 6,
-      name: "Luna",
-      type: "Dogs",
-      gender: "female",
-      breed: "Husky",
-      color: "Grey & White",
-      weight: "22 Kg",
-      age: "Young",
-      location: "Dresden (30 km away)",
-      health: ["Fully vaccinated", "Spayed"],
-      characteristics: ["High energy", "Needs experienced owner", "Requires large space", "Pack-oriented"],
-      imageUrl: luna,
-      isFavorite: true,
-    },
-    {
-      id: 7,
-      name: "Rocky",
-      type: "Dogs",
-      gender: "male",
-      breed: "German Shepherd",
-      color: "Black & Tan",
-      weight: "30 Kg",
-      age: "Adult",
-      location: "Stuttgart (15 km away)",
-      health: ["Fully vaccinated", "Neutered"],
-      characteristics: ["Protective", "Intelligent", "Easily trainable", "Loyal companion"],
-      imageUrl: rockey,
-      isFavorite: false,
-    },
-    {
-      id: 8,
-      name: "Bella",
-      type: "Dogs",
-      gender: "female",
-      breed: "Labrador",
-      color: "Yellow",
-      weight: "24 Kg",
-      age: "Puppy",
-      location: "Düsseldorf (8 km away)",
-      health: ["Partially vaccinated", "Not spayed"],
-      characteristics: ["Friendly with everyone", "Food motivated", "Easy to train", "Loves to play fetch"],
-      imageUrl: bella,
-      isFavorite: false,
-    },
-    // Cats
-    {
-      id: 9,
-      name: "Whiskers",
-      type: "Cats",
-      gender: "male",
-      breed: "Persian",
-      color: "White",
-      weight: "5 Kg",
-      age: "Adult",
-      location: "Frankfurt (3 km away)",
-      health: ["Fully vaccinated", "Neutered"],
-      characteristics: ["Calm and gentle", "Loves to be petted", "Indoor cat", "Good with quiet households"],
-      imageUrl: whiskers,
-      isFavorite: false,
-    },
-    {
-      id: 10,
-      name: "Shadow",
-      type: "Cats",
-      gender: "female",
-      breed: "Maine Coon",
-      color: "Black",
-      weight: "6 Kg",
-      age: "Young",
-      location: "Berlin (12 km away)",
-      health: ["Fully vaccinated", "Spayed"],
-      characteristics: ["Playful and active", "Good with other cats", "Loves climbing", "Very social"],
-      imageUrl: shadow,
-      isFavorite: true,
-    },
-    {
-      id: 11,
-      name: "Mittens",
-      type: "Cats",
-      gender: "female",
-      breed: "British Shorthair",
-      color: "Grey",
-      weight: "4 Kg",
-      age: "Kitten",
-      location: "Munich (8 km away)",
-      health: ["Partially vaccinated", "Not spayed"],
-      characteristics: ["Curious and playful", "Needs socialization", "Loves toys", "Very affectionate"],
-      imageUrl: mittens,
-      isFavorite: false,
-    },
-    {
-      id: 12,
-      name: "Tiger",
-      type: "Cats",
-      gender: "male",
-      breed: "Tabby",
-      color: "Orange & White",
-      weight: "5.5 Kg",
-      age: "Adult",
-      location: "Hamburg (15 km away)",
-      health: ["Fully vaccinated", "Neutered"],
-      characteristics: ["Independent", "Good hunter", "Outdoor access preferred", "Friendly with humans"],
-      imageUrl: tiger,
-      isFavorite: false,
-    },
-    {
-      id: 13,
-      name: "Princess",
-      type: "Cats",
-      gender: "female",
-      breed: "Siamese",
-      color: "Cream & Brown",
-      weight: "4.5 Kg",
-      age: "Young",
-      location: "Cologne (18 km away)",
-      health: ["Fully vaccinated", "Spayed"],
-      characteristics: ["Very vocal", "Intelligent", "Needs attention", "Loyal to owner"],
-      imageUrl: princess,
-      isFavorite: true,
-    },
-    {
-      id: 14,
-      name: "Smokey",
-      type: "Cats",
-      gender: "male",
-      breed: "Russian Blue",
-      color: "Blue-Grey",
-      weight: "5 Kg",
-      age: "Adult",
-      location: "Dresden (22 km away)",
-      health: ["Fully vaccinated", "Neutered"],
-      characteristics: ["Quiet and reserved", "Very clean", "Good with single owners", "Low maintenance"],
-      imageUrl: smokey,
-      isFavorite: false,
-    },
-    {
-      id: 15,
-      name: "Patches",
-      type: "Cats",
-      gender: "female",
-      breed: "Calico",
-      color: "Multi-colored",
-      weight: "4.8 Kg",
-      age: "Senior",
-      location: "Stuttgart (10 km away)",
-      health: ["Fully vaccinated", "Spayed"],
-      characteristics: ["Gentle and calm", "Good with children", "Prefers quiet environments", "Very loving"],
-      imageUrl: patches,
-      isFavorite: false,
-    },
-    {
-      id: 16,
-      name: "Felix",
-      type: "Cats",
-      gender: "male",
-      breed: "Ragdoll",
-      color: "Cream & Grey",
-      weight: "7 Kg",
-      age: "Adult",
-      location: "Düsseldorf (6 km away)",
-      health: ["Fully vaccinated", "Neutered"],
-      characteristics: ["Very relaxed", "Loves being held", "Good with families", "Docile temperament"],
-      imageUrl: felix,
-      isFavorite: false,
-    },
-  ]
   // Apply filters and search to pets
   const getFilteredPets = () => {
     let filtered = petsData.filter((pet) => pet.type === activeCategory)
@@ -355,6 +116,7 @@ export default function PetCategories() {
 
   const filteredPets = getFilteredPets()
 
+  // Event handlers
   const handleApplyFilters = (filters) => {
     setActiveFilters(filters)
     console.log("Applied filters:", filters)
@@ -377,7 +139,7 @@ export default function PetCategories() {
   }
 
   const toggleFavorite = (petId, event) => {
-    event.stopPropagation() // Prevent opening pet detail when clicking heart
+    event.stopPropagation()
     setFavorites((prev) => {
       const newFavorites = new Set(prev)
       if (newFavorites.has(petId)) {
@@ -395,12 +157,15 @@ export default function PetCategories() {
   }
 
   const handleResultClick = (pet) => {
-    // Close search modal first
     setIsSearchOpen(false)
-    // Small delay to ensure search modal closes before opening pet detail
     setTimeout(() => {
       setSelectedPetId(pet.id)
     }, 100)
+  }
+
+  const handleUpdateProfile = (updatedProfile) => {
+    setUserProfile(updatedProfile)
+    console.log("Profile updated:", updatedProfile)
   }
 
   return (
@@ -434,7 +199,7 @@ export default function PetCategories() {
               whileHover={{ scale: 1.05 }}
               transition={{ type: "spring", stiffness: 400, damping: 10 }}
             >
-            <img src="../images/logo.png" width="40" height="40" alt="Logo" />
+             <img src="../images/logo.png" width="40" height="40" alt="Logo" />
 
             </motion.div>
 
@@ -483,9 +248,14 @@ export default function PetCategories() {
               </motion.button>
             </div>
 
-            <motion.div className="profile-section" whileHover={{ scale: 1.02 }}>
+            <motion.div
+              className="profile-section"
+              whileHover={{ scale: 1.02 }}
+              onClick={() => setIsProfileOpen(true)}
+              style={{ cursor: "pointer" }}
+            >
               <div className="profile-image">
-                <img src={profile || "/placeholder.svg"} alt="Profile" />
+                <img src={userProfile.profileImage || "/placeholder.svg"} alt="Profile" />
               </div>
               <div className="profile-info">
                 <div className="location-text">
@@ -494,7 +264,7 @@ export default function PetCategories() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </div>
-                <div className="location-value">Stylish Boi</div>
+                <div className="location-value">{userProfile.fullName}</div>
               </div>
             </motion.div>
           </div>
@@ -699,7 +469,7 @@ export default function PetCategories() {
       {/* Mobile Navigation */}
       <AnimatePresence>
         {isMobileNavOpen && (
-          <MobileNav isOpen={isMobileNavOpen} onClose={() => setIsMobileNavOpen(false)} profileImage={profile} />
+          <MobileNav isOpen={isMobileNavOpen} onClose={() => setIsMobileNavOpen(false)} profileImage={profileImage} />
         )}
       </AnimatePresence>
 
@@ -724,7 +494,7 @@ export default function PetCategories() {
             onClearSearch={handleClearSearch}
             currentQuery={searchQuery}
             pets={petsData}
-            onPetClick={handleResultClick} // Add this prop
+            onPetClick={handleResultClick}
           />
         )}
       </AnimatePresence>
@@ -737,6 +507,17 @@ export default function PetCategories() {
               setIsNotificationsOpen(false)
               setHasUnreadNotifications(false)
             }}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isProfileOpen && (
+          <ProfileModal
+            isOpen={isProfileOpen}
+            onClose={() => setIsProfileOpen(false)}
+            userProfile={userProfile}
+            onUpdateProfile={handleUpdateProfile}
           />
         )}
       </AnimatePresence>
@@ -838,18 +619,12 @@ function PetCard({ name, gender, info, imageUrl, isFavorite, onToggleFavorite })
 function PetDetail({ petId, onClose, pets = [], favorites, onToggleFavorite }) {
   const [currentPet, setCurrentPet] = useState(null)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
-
-  // We'll use the actual pet images for the gallery
   const [petImages, setPetImages] = useState([])
 
   useState(() => {
-    // Find the pet in our data
     const foundPet = pets.find((pet) => pet.id === petId)
     if (foundPet) {
       setCurrentPet(foundPet)
-
-      // For demo purposes, we'll use the same image multiple times
-      // In a real app, you would have multiple images per pet
       setPetImages([foundPet.imageUrl, foundPet.imageUrl, foundPet.imageUrl])
     }
   }, [petId, pets])

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { ChevronLeft, Heart, MapPin, ArrowLeft, ArrowRight } from "lucide-react"
-import "./PetDetail.css"
+import "../../styles/petdetails.css"
 
 const PetDetail = ({ petId, onClose, pets = [] }) => {
   const [currentPet, setCurrentPet] = useState(null)
