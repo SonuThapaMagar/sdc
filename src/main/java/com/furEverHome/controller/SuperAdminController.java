@@ -105,6 +105,22 @@ public class SuperAdminController {
 					.body(new AuthController.ErrorResponse("Failed to update pet center: " + e.getMessage()));
 		}
 	}
+	
+	@DeleteMapping("/pet-centers/{id}")
+    public ResponseEntity<?> deletePetCenter(@RequestHeader("Authorization") String token,
+            @PathVariable UUID id) {
+        if (!jwtUtil.getRoleFromToken(token.substring(7)).equals(Role.SUPERADMIN)) {
+            return ResponseEntity.status(403).body(new AuthController.ErrorResponse("User must have SUPERADMIN role"));
+        }
+        try {
+            petCenterService.deletePetCenter(id);
+            return ResponseEntity.ok(new SuccessResponse("Pet Center deleted successfully", null));
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return ResponseEntity.badRequest().body(new AuthController.ErrorResponse(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(new AuthController.ErrorResponse("Failed to delete pet center: " + e.getMessage()));
+        }
+    }
 
 	static class SuccessResponse {
 		private String message;
