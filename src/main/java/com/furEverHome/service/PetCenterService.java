@@ -2,6 +2,7 @@ package com.furEverHome.service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +60,36 @@ public class PetCenterService {
 
 	public List<AdminProfileResponse> getAllPetCenters() {
 		return petCenterRepository.findAll().stream().map(this::mapToAdminProfileResponse).collect(Collectors.toList());
+	}
+
+	@Transactional
+	public AdminProfileResponse updatePetCenter(UUID petCenterId, AdminProfileUpdateRequest updateRequest) {
+		PetCenter petCenter = petCenterRepository.findById(petCenterId)
+				.orElseThrow(() -> new IllegalArgumentException("Pet Center not found with ID: " + petCenterId));
+
+		if (updateRequest.getEmail() != null && !updateRequest.getEmail().equals(petCenter.getEmail())) {
+			Optional<PetCenter> existingPetCenterWithEmail = petCenterRepository.findByEmail(updateRequest.getEmail());
+			if (existingPetCenterWithEmail.isPresent()) {
+				throw new IllegalArgumentException("Email is already in use: " + updateRequest.getEmail());
+			}
+			petCenter.setEmail(updateRequest.getEmail());
+		}
+
+		if (updateRequest.getName() != null) {
+			petCenter.setName(updateRequest.getName());
+		}
+		if (updateRequest.getAddress() != null) {
+			petCenter.setAddress(updateRequest.getAddress());
+		}
+		if (updateRequest.getContact() != null) {
+			petCenter.setContact(updateRequest.getContact());
+		}
+		if (updateRequest.getDescription() != null) {
+			petCenter.setDescription(updateRequest.getDescription());
+		}
+
+		petCenter = petCenterRepository.save(petCenter);
+		return mapToAdminProfileResponse(petCenter);
 	}
 
 	private AdminProfileResponse mapToAdminProfileResponse(PetCenter petCenter) {
