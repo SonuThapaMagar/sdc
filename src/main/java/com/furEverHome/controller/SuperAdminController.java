@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -58,6 +59,22 @@ public class SuperAdminController {
 			return ResponseEntity.status(500)
 					.body(new AuthController.ErrorResponse("Failed to update user: " + e.getMessage()));
 		}
+	}
+
+	@DeleteMapping("/users/{id}")
+	public ResponseEntity<?> deleteUser(@RequestHeader("Authorization") String token,@PathVariable UUID id ){
+		if (!jwtUtil.getRoleFromToken(token.substring(7)).equals(Role.SUPERADMIN)) {
+            return ResponseEntity.status(403).body(new AuthController.ErrorResponse("User must have SUPERADMIN role"));
+        }
+		
+		try {
+            userService.deleteUser(id);
+            return ResponseEntity.ok(new SuccessResponse("User deleted successfully", null));
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return ResponseEntity.badRequest().body(new AuthController.ErrorResponse(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(new AuthController.ErrorResponse("Failed to delete user: " + e.getMessage()));
+        }
 	}
 
 	static class SuccessResponse {
