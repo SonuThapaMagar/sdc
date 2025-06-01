@@ -17,8 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.furEverHome.dto.AdoptionRequestResponse;
 import com.furEverHome.dto.AdoptionRequestSubmission;
 import com.furEverHome.dto.PetResponse;
-import com.furEverHome.dto.ProfileResponse;
-import com.furEverHome.dto.ProfileUpdateRequest;
+import com.furEverHome.dto.UserResponse;
+import com.furEverHome.dto.UserUpdateRequest;
 import com.furEverHome.entity.Pet;
 import com.furEverHome.entity.Role;
 import com.furEverHome.repository.PetRepository;
@@ -107,7 +107,7 @@ public class UserController {
 
 	@PutMapping("/profile")
 	public ResponseEntity<?> updateProfile(@RequestHeader("Authorization") String token,
-			@RequestBody ProfileUpdateRequest updateRequest) {
+			@RequestBody UserUpdateRequest updateRequest) {
 
 		String tokenValue = token.substring(7); // Remove "Bearer " prefix
 		if (!jwtUtil.getRoleFromToken(tokenValue).equals(Role.USER)) {
@@ -117,7 +117,7 @@ public class UserController {
 
 		try {
 			String email = jwtUtil.getEmailFromToken(tokenValue);
-			ProfileResponse updatedProfile = userService.updateUserProfile(email, updateRequest, Role.USER);
+			UserResponse updatedProfile = userService.updateUserProfile(email, updateRequest, Role.USER);
 			return ResponseEntity.ok(new SuccessResponse("Profile updated successfully", updatedProfile));
 		} catch (IllegalArgumentException | IllegalStateException e) {
 			return ResponseEntity.badRequest().body(new AuthController.ErrorResponse(e.getMessage()));

@@ -1,6 +1,8 @@
 package com.furEverHome.service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -53,6 +55,10 @@ public class PetCenterService {
 
 		// Map to response DTO
 		return mapToAdminProfileResponse(petCenter);
+	}
+
+	public List<AdminProfileResponse> getAllPetCenters() {
+		return petCenterRepository.findAll().stream().map(this::mapToAdminProfileResponse).collect(Collectors.toList());
 	}
 
 	private AdminProfileResponse mapToAdminProfileResponse(PetCenter petCenter) {

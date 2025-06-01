@@ -1,28 +1,17 @@
 package com.furEverHome.dto;
 
-import java.util.UUID;
-
-public class ProfileResponse {
-	private UUID id;
+public class UserUpdateRequest {
 	private String fullName;
 	private String email;
 	private String phone;
 	private String address;
 
 	// Getters and Setters
-	public UUID getId() {
-		return id;
-	}
-
-	public void setId(UUID id) {
-		this.id = id;
-	}
-
-	public String getfullName() {
+	public String getFullName() {
 		return fullName;
 	}
 
-	public void setfullName(String fullName) {
+	public void setFullName(String fullName) {
 		this.fullName = fullName;
 	}
 
