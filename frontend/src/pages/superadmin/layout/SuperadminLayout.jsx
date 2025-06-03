@@ -40,7 +40,7 @@ const SuperadminLayout = ({ children }) => {
     const [activeMenu, setActiveMenu] = useState('dashboard');
 
     return (
-        <div className="min-h-screen bg-[#f8fafc]">
+        <div className="h-screen bg-[#f2f2f2] overflow-hidden">
             {/* Mobile Header */}
             <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -92,7 +92,7 @@ const SuperadminLayout = ({ children }) => {
             </div>
 
             {/* Desktop Layout */}
-            <div className="hidden lg:flex min-h-screen">
+            <div className="hidden lg:flex h-screen">
                 {/* Sidebar */}
                 <aside className={cn(
                     "fixed left-0 top-0 z-30 h-screen bg-[#f8fafc] border-r border-gray-100 transition-all duration-300",
@@ -130,7 +130,7 @@ const SuperadminLayout = ({ children }) => {
 
                 {/* Main Content */}
                 <main className={cn(
-                    "flex-1 transition-all duration-300",
+                    "flex-1 transition-all duration-300 h-screen overflow-y-auto",
                     collapsed ? "ml-[80px]" : "ml-[280px]"
                 )}>
                     <div className="p-6">

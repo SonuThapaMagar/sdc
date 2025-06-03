@@ -7,10 +7,10 @@ import { Label } from "@/components/ui/label";
 
 const SuperadminSettings = () => (
   <SuperadminLayout>
-    <div className="min-h-screen px-4 md:px-6 lg:px-12 bg-gray-50">
-      <div className="max-w-5xl mx-auto my-16 md:my-24">
-        <Card className="border-none shadow-lg">
-          <CardHeader>
+    <div className="h-[calc(100vh-80px)] px-4 md:px-6 lg:px-12 bg-gray-100">
+      <div className="max-w-5xl mx-auto my-8">
+        <Card className="border-none shadow-lg bg-[#fff]">
+          <CardHeader >
             <CardTitle className="text-3xl font-bold text-gray-800">Settings</CardTitle>
           </CardHeader>
           <CardContent>
@@ -41,7 +41,7 @@ const SuperadminSettings = () => (
                       />
                     </div>
                     <button
-                      className="bg-[#4747A1] hover:bg-[#3a3a8a] text-white font-medium px-9 py-2.5 rounded-md transition-colors w-full md:w-1/4"
+                      className="bg-[#4747A1] hover:bg-[#3a3a8a] text-white font-medium px-9 py-2.5 rounded-md transition-colors w-full md:w-1/2"
                     >
                       Change Password
                     </button>
