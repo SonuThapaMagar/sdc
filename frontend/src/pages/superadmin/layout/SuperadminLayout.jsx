@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
     MenuFoldOutlined,
     MenuUnfoldOutlined,
     UserOutlined,
     TeamOutlined,
-    SettingOutlined,
     PieChartOutlined,
     LogoutOutlined,
+    ShopOutlined,
+    AppstoreOutlined,
 } from '@ant-design/icons';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -16,31 +18,58 @@ const menuItems = [
         key: 'dashboard',
         icon: <PieChartOutlined />,
         label: 'Dashboard',
+        path: '/superadmin/dashboard'
     },
     {
         key: 'users',
         icon: <TeamOutlined />,
         label: 'User Management',
+        path: '/superadmin/users'
     },
     {
-        key: 'settings',
-        icon: <SettingOutlined />,
-        label: 'Settings',
+        key: 'petcenter',
+        icon: <ShopOutlined />,
+        label: 'Pet Center Management',
+        path: '/superadmin/pet-centers'
+    },
+    {
+        key: 'pets',
+        icon: <AppstoreOutlined />,
+        label: 'Pet Management',
+        path: '/superadmin/pets'
     },
     {
         key: 'logout',
         icon: <LogoutOutlined />,
         label: 'Logout',
+        path: '/logout'
     },
 ];
 
 const SuperadminLayout = ({ children }) => {
+    const navigate = useNavigate();
+    const location = useLocation();
     const [collapsed, setCollapsed] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const [activeMenu, setActiveMenu] = useState('dashboard');
+    const [activeMenu, setActiveMenu] = useState(() => {
+        const currentPath = location.pathname;
+        const menuItem = menuItems.find(item => item.path === currentPath);
+        return menuItem ? menuItem.key : 'dashboard';
+    });
+
+    const handleMenuClick = (item) => {
+        setActiveMenu(item.key);
+        if (item.key === 'logout') {
+            // Handle logout logic here
+            localStorage.removeItem('superadminToken');
+            navigate('/superadmin/login');
+        } else {
+            navigate(item.path);
+        }
+    };
 
     return (
-        <div className="min-h-screen bg-[#f8fafc]">
+        <div className="h-screen bg-[#f2f2f2] overflow-hidden">
             {/* Mobile Header */}
             <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -75,7 +104,7 @@ const SuperadminLayout = ({ children }) => {
                         {menuItems.map((item) => (
                             <button
                                 key={item.key}
-                                onClick={() => setActiveMenu(item.key)}
+                                onClick={() => handleMenuClick(item)}
                                 className={cn(
                                     "w-full flex items-center gap-3 px-4 py-3 text-gray-600 rounded-lg transition-colors",
                                     activeMenu === item.key 
@@ -92,7 +121,7 @@ const SuperadminLayout = ({ children }) => {
             </div>
 
             {/* Desktop Layout */}
-            <div className="hidden lg:flex min-h-screen">
+            <div className="hidden lg:flex h-screen">
                 {/* Sidebar */}
                 <aside className={cn(
                     "fixed left-0 top-0 z-30 h-screen bg-[#f8fafc] border-r border-gray-100 transition-all duration-300",
@@ -111,7 +140,7 @@ const SuperadminLayout = ({ children }) => {
                             {menuItems.map((item) => (
                                 <button
                                     key={item.key}
-                                    onClick={() => setActiveMenu(item.key)}
+                                    onClick={() => handleMenuClick(item)}
                                     className={cn(
                                         "w-full flex items-center gap-3 px-4 py-3 text-gray-600 rounded-lg transition-colors",
                                         activeMenu === item.key 
@@ -130,7 +159,7 @@ const SuperadminLayout = ({ children }) => {
 
                 {/* Main Content */}
                 <main className={cn(
-                    "flex-1 transition-all duration-300",
+                    "flex-1 transition-all duration-300 h-screen overflow-y-auto",
                     collapsed ? "ml-[80px]" : "ml-[280px]"
                 )}>
                     <div className="p-6">

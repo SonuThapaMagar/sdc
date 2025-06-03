@@ -1,16 +1,10 @@
-// src/App.jsx
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-import UserRoutes from './routes/UserRoutes';
-import SuperAdminRoutes from './routes/SuperAdminRoutes';
+import { useRoutes } from 'react-router-dom';
+import superadminRoutes from './routes/superadminRoutes';
+import userRoutes from './routes/userRoutes';
 
 function App() {
-  return (
-    <Routes>
-      <Route path="/*" element={<UserRoutes />} />
-      <Route path="/superadmin/*" element={<SuperAdminRoutes />} />
-    </Routes>
-  );
+  const routes = useRoutes([...userRoutes, ...superadminRoutes]);
+  return routes;
 }
 
 export default App;
