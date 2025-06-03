@@ -1,7 +1,7 @@
-import { Card, Avatar } from 'antd';
 import { UserOutlined, AppstoreOutlined, SolutionOutlined } from '@ant-design/icons';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 import SuperadminLayout from '../layout/SuperadminLayout';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const barData = [
     { month: "Jan", users: 120 },
@@ -20,130 +20,90 @@ const pieData = [
 export default function SuperadminDashboard() {
     return (
         <SuperadminLayout>
-            <div className="p-6 lg:p-8">
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 lg:gap-10 mb-10">
-                    {/* Total Users */}
-                    <Card
-                        className="shadow-lg transform transition-transform hover:scale-105"
-                        style={{
-                            background: '#96B2FB',
-                            borderRadius: 20,
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            minHeight: 200,
-                            fontFamily: 'Poppins, sans-serif',
-                        }}
-                        bodyStyle={{ 
-                            width: '100%', 
-                            padding: '32px 24px', 
-                            display: 'flex', 
-                            flexDirection: 'column', 
-                            alignItems: 'center', 
-                            justifyContent: 'center' 
-                        }}
-                    >
-                        <Avatar size={64} icon={<UserOutlined />} style={{ backgroundColor: '#757FF6', marginBottom: 16 }} />
-                        <div className="text-xl font-medium mb-2" style={{ color: '#757FF6', fontFamily: 'Poppins, sans-serif' }}>Total Users</div>
-                        <div className="text-4xl font-bold" style={{ color: '#222', fontFamily: 'Poppins, sans-serif' }}>789</div>
+            <div className="p-6 bg-gray-100">
+                <h1 className="text-2xl font-bold text-gray-800 mb-8">Dashboard Overview</h1>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {/* Total Users Card */}
+                    <Card className="bg-gradient-to-br from-white to-[#f8faff] border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
+                        <CardContent className="p-8 mt-4">
+                            <div className="flex items-center gap-6 ">
+                                <div className="w-16 h-16 rounded-2xl bg-[#e6e8fa] flex items-center justify-center">
+                                    <UserOutlined className="text-[#757FF6] text-2xl" />
+                                </div>
+                                <div>
+                                    <CardTitle className="text-lg font-medium text-gray-600 mb-2">Total Users</CardTitle>
+                                    <p className="text-3xl font-bold text-gray-800">1,234</p>
+                                    <p className="text-sm text-gray-500 mt-1">+12% from last month</p>
+                                </div>
+                            </div>
+                        </CardContent>
                     </Card>
-                    {/* Total Animals */}
-                    <Card
-                        className="shadow-lg transform transition-transform hover:scale-105"
-                        style={{
-                            background: '#ffe7e7',
-                            borderRadius: 20,
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            minHeight: 200,
-                            fontFamily: 'Poppins, sans-serif',
-                        }}
-                        bodyStyle={{ 
-                            width: '100%', 
-                            padding: '32px 24px', 
-                            display: 'flex', 
-                            flexDirection: 'column', 
-                            alignItems: 'center', 
-                            justifyContent: 'center' 
-                        }}
-                    >
-                        <Avatar size={64} icon={<AppstoreOutlined />} style={{ backgroundColor: '#ff7f7f', marginBottom: 16 }} />
-                        <div className="text-xl font-medium mb-2" style={{ color: '#ff7f7f', fontFamily: 'Poppins, sans-serif' }}>Total Animals</div>
-                        <div className="text-4xl font-bold" style={{ color: '#222', fontFamily: 'Poppins, sans-serif' }}>120</div>
+
+                    {/* Total Pets Card */}
+                    <Card className="bg-gradient-to-br from-white to-[#fff5f5] border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
+                        <CardContent className="p-8 mt-4">
+                            <div className="flex items-center gap-6">
+                                <div className="w-16 h-16 rounded-2xl bg-[#ffe7e7] flex items-center justify-center">
+                                    <AppstoreOutlined className="text-[#ff7f7f] text-2xl" />
+                                </div>
+                                <div>
+                                    <CardTitle className="text-lg font-medium text-gray-600 mb-2">Total Pets</CardTitle>
+                                    <p className="text-3xl font-bold text-gray-800">567</p>
+                                    <p className="text-sm text-gray-500 mt-1">+8% from last month</p>
+                                </div>
+                            </div>
+                        </CardContent>
                     </Card>
-                    {/* Total Adoption */}
-                    <Card
-                        className="shadow-lg transform transition-transform hover:scale-105"
-                        style={{
-                            background: '#e7fbe7',
-                            borderRadius: 20,
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            minHeight: 200,
-                            fontFamily: 'Poppins, sans-serif',
-                        }}
-                        bodyStyle={{ 
-                            width: '100%', 
-                            padding: '32px 24px', 
-                            display: 'flex', 
-                            flexDirection: 'column', 
-                            alignItems: 'center', 
-                            justifyContent: 'center' 
-                        }}
-                    >
-                        <Avatar size={64} icon={<SolutionOutlined />} style={{ backgroundColor: '#4bb543', marginBottom: 16 }} />
-                        <div className="text-xl font-medium mb-2" style={{ color: '#4bb543', fontFamily: 'Poppins, sans-serif' }}>Total Adoption</div>
-                        <div className="text-4xl font-bold" style={{ color: '#222', fontFamily: 'Poppins, sans-serif' }}>4</div>
+
+                    {/* Total Adoptions Card */}
+                    <Card className="bg-gradient-to-br from-white to-[#f5fff5] border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
+                        <CardContent className="p-8 mt-4">
+                            <div className="flex items-center gap-6">
+                                <div className="w-16 h-16 rounded-2xl bg-[#e7fbe7] flex items-center justify-center">
+                                    <SolutionOutlined className="text-[#4bb543] text-2xl" />
+                                </div>
+                                <div>
+                                    <CardTitle className="text-lg font-medium text-gray-600 mb-2">Total Adoptions</CardTitle>
+                                    <p className="text-3xl font-bold text-gray-800">89</p>
+                                    <p className="text-sm text-gray-500 mt-1">+15% from last month</p>
+                                </div>
+                            </div>
+                        </CardContent>
                     </Card>
                 </div>
-                {/* Graphs Section */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-8 lg:gap-10">
-                    {/* Bar Chart Card (3/4 width) */}
-                    <div className="md:col-span-3 rounded-3xl shadow-lg bg-[#f5f7ff] p-8 flex flex-col justify-between min-h-[500px]" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                        <div className="text-2xl font-semibold mb-6 text-[#757FF6]">Monthly Platform Growth & Activity</div>
-                        <div style={{ width: '100%', height: 350 }}>
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={barData}>
-                                    <XAxis dataKey="month" />
-                                    <YAxis />
-                                    <Tooltip />
-                                    <Bar dataKey="users" fill="#757FF6" />
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </div>
-                        <div className="flex justify-end mt-6">
-                            <span className="text-sm text-gray-500">New users per month (static)</span>
-                        </div>
-                    </div>
-                    {/* Pie Chart Card (1/4 width) */}
-                    <div className="md:col-span-1 rounded-3xl shadow-lg bg-[#f7f5ff] p-8 flex flex-col items-center justify-between min-h-[500px]" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                        <div className="text-2xl font-semibold mb-6 text-[#757FF6] text-center">Current Pet Adoption Status</div>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <PieChart>
-                                <Pie
-                                    data={pieData}
-                                    dataKey="value"
-                                    nameKey="name"
-                                    cx="50%"
-                                    cy="50%"
-                                    outerRadius={100}
-                                    innerRadius={60}
-                                    label
-                                >
-                                    {pieData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={entry.color} />
-                                    ))}
-                                </Pie>
-                                <Legend />
-                            </PieChart>
-                        </ResponsiveContainer>
-                        <div className="text-sm text-gray-500 text-center mt-6">75% Adopted, 25% Available</div>
-                    </div>
+
+                {/* Recent Activity Section */}
+                <div className="mt-10">
+                    <Card className="bg-white border border-gray-100 shadow-sm">
+                        <CardHeader className="pb-4">
+                            <CardTitle className="text-xl font-semibold text-gray-800">Recent Activity</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-6 p-6 bg-[#f8fafc] rounded-xl border border-gray-100 hover:bg-[#f0f4ff] transition-colors">
+                                    <div className="w-12 h-12 rounded-xl bg-[#e6e8fa] flex items-center justify-center">
+                                        <UserOutlined className="text-[#757FF6] text-xl" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="font-medium text-gray-800 text-lg">New user registration</p>
+                                        <p className="text-sm text-gray-500">John Doe joined the platform</p>
+                                    </div>
+                                    <span className="text-sm text-gray-500 whitespace-nowrap">2 hours ago</span>
+                                </div>
+                                <div className="flex items-center gap-6 p-6 bg-[#f8fafc] rounded-xl border border-gray-100 hover:bg-[#fff5f5] transition-colors">
+                                    <div className="w-12 h-12 rounded-xl bg-[#ffe7e7] flex items-center justify-center">
+                                        <AppstoreOutlined className="text-[#ff7f7f] text-xl" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="font-medium text-gray-800 text-lg">New pet added</p>
+                                        <p className="text-sm text-gray-500">Luna the cat is now available</p>
+                                    </div>
+                                    <span className="text-sm text-gray-500 whitespace-nowrap">5 hours ago</span>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
                 </div>
             </div>
         </SuperadminLayout>
