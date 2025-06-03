@@ -1,16 +1,65 @@
-import { Routes, Route } from 'react-router-dom';
+import React from 'react';
+import { Navigate } from 'react-router-dom';
+import SuperadminLayout from '../pages/superadmin/layout/SuperadminLayout';
 import SuperadminDashboard from '../pages/superadmin/pages/SuperadminDashboard';
-import SuperadminSettings from '../pages/superadmin/pages/SuperadminSettings';
-import SuperadminLogin from '@/pages/auth/superadminLogin';
+import UserManagement from '../pages/superadmin/pages/UserManagement';
+import PetCenterMgmt from '../pages/superadmin/pages/PetCenterMgmt';
+import PetMgmt from '../pages/superadmin/pages/PetMgmt';
 
-function SuperAdminRoutes() {
-  return (
-    <Routes>
-      <Route path="/login" element={<SuperadminLogin />} />
-      <Route path="/dashboard" element={<SuperadminDashboard />} />
-      <Route path="/settings" element={<SuperadminSettings />} />
-    </Routes>
-  );
-}
+// Protected Route component
+const ProtectedRoute = ({ children }) => {
+    const isAuthenticated = localStorage.getItem('superadminToken');
+    if (!isAuthenticated) {
+        return <Navigate to="/superadmin/login" replace />;
+    }
+    return children;
+};
 
-export default SuperAdminRoutes;
+const superadminRoutes = [
+    {
+        path: '/superadmin',
+        element: <Navigate to="/superadmin/dashboard" replace />,
+    },
+    {
+        path: '/superadmin/dashboard',
+        element: (
+            <ProtectedRoute>
+                <SuperadminLayout>
+                    <SuperadminDashboard />
+                </SuperadminLayout>
+            </ProtectedRoute>
+        ),
+    },
+    {
+        path: '/superadmin/users',
+        element: (
+            <ProtectedRoute>
+                <SuperadminLayout>
+                    <UserManagement />
+                </SuperadminLayout>
+            </ProtectedRoute>
+        ),
+    },
+    {
+        path: '/superadmin/pet-centers',
+        element: (
+            <ProtectedRoute>
+                <SuperadminLayout>
+                    <PetCenterMgmt />
+                </SuperadminLayout>
+            </ProtectedRoute>
+        ),
+    },
+    {
+        path: '/superadmin/pets',
+        element: (
+            <ProtectedRoute>
+                <SuperadminLayout>
+                    <PetMgmt />
+                </SuperadminLayout>
+            </ProtectedRoute>
+        ),
+    },
+];
+
+export default superadminRoutes;
