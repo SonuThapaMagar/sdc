@@ -2,7 +2,7 @@ import { Link } from "react-router-dom"
 import "../styles/navbar.css"
 import logo from  "../images/logo.png"
 
-function Navbar() {
+export function Navbar() {
   return (
     <nav className="navbar">
       <div className="logo">
@@ -34,4 +34,3 @@ function Navbar() {
   )
 }
 
-export default Navbar
