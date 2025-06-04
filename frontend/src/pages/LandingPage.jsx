@@ -17,36 +17,36 @@ import {
   X,
   ArrowRight,
   CheckCircle,
-} from "lucide-react"
-import { petsData } from "../data/petsData"
-import "../styles/landing.css"
-import logo from "../images/logo.png"
-import dc from "../images/dc.png"
-import group from "../images/group.png"
+} from "lucide-react";
+import { petsData } from "../data/petsData";
+import "../styles/landing.css";
+import logo from "../images/logo.png";
+import dc from "../images/dc.png";
+import group from "../images/group.png";
 
 export default function LandingPage() {
-  const navigate = useNavigate() // React Router navigation hook
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [isFavorite, setIsFavorite] = useState({})
-  const [searchQuery, setSearchQuery] = useState("")
-  const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const navigate = useNavigate(); // React Router navigation hook
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isFavorite, setIsFavorite] = useState({});
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const toggleFavorite = (petId) => {
     setIsFavorite((prev) => {
-      const newState = { ...prev }
+      const newState = { ...prev };
       if (newState[petId]) {
-        delete newState[petId] // Remove from favorites
+        delete newState[petId]; // Remove from favorites
       } else {
-        newState[petId] = true // Add to favorites
+        newState[petId] = true; // Add to favorites
       }
-      return newState
-    })
-  }
+      return newState;
+    });
+  };
 
   // Navigation function using React Router
   const onNavigateToCategories = () => {
-    navigate("/category")
-  }
+    navigate("/category");
+  };
 
   // Get the specific pets we want to display - replaced Milo and Chloe with cats
   const displayPets = [
@@ -54,38 +54,42 @@ export default function LandingPage() {
     petsData.find((pet) => pet.name === "Whiskers"), // Cat
     petsData.find((pet) => pet.name === "Shadow"), // Cat
     petsData.find((pet) => pet.name === "Leo"),
-  ].filter(Boolean)
+  ].filter(Boolean);
 
   // Search functionality
   const filteredPets = petsData.filter(
     (pet) =>
       pet.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       pet.breed.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      pet.type.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+      pet.type.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const features = [
     {
       icon: Shield,
       title: "Verified Shelters",
-      description: "All our partner shelters are verified and trusted organizations committed to animal welfare.",
+      description:
+        "All our partner shelters are verified and trusted organizations committed to animal welfare.",
     },
     {
       icon: Heart,
       title: "Health Guaranteed",
-      description: "Every pet comes with complete health records and veterinary checkups.",
+      description:
+        "Every pet comes with complete health records and veterinary checkups.",
     },
     {
       icon: Users,
       title: "24/7 Support",
-      description: "Our dedicated team is here to help you throughout your adoption journey.",
+      description:
+        "Our dedicated team is here to help you throughout your adoption journey.",
     },
     {
       icon: Award,
       title: "Success Stories",
-      description: "Over 10,000 successful adoptions and countless happy families created.",
+      description:
+        "Over 10,000 successful adoptions and countless happy families created.",
     },
-  ]
+  ];
 
   return (
     <div className="landing-page">
@@ -95,7 +99,12 @@ export default function LandingPage() {
           <div className="navbarr-content">
             {/* Logo */}
             <div className="logo">
-              <img src={logo || "/placeholder.svg"} alt="logo" width="48" height="48" />
+              <img
+                src={logo || "/placeholder.svg"}
+                alt="logo"
+                width="48"
+                height="48"
+              />
               <span className="logo-text">FurEverHome</span>
             </div>
 
@@ -110,16 +119,25 @@ export default function LandingPage() {
 
             {/* Desktop Actions */}
             <div className="nav-actions">
-              <button className="search-btn" onClick={() => setIsSearchOpen(!isSearchOpen)}>
+              <button
+                className="search-btn"
+                onClick={() => setIsSearchOpen(!isSearchOpen)}
+              >
                 <Search size={20} />
               </button>
-              <button className="signup-btn" onClick={() => navigate("/signup")}>
+              <button
+                className="signup-btn"
+                onClick={() => navigate("/signup")}
+              >
                 Sign Up
               </button>
             </div>
 
             {/* Mobile Menu Button */}
-            <button className="mobile-menu-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+            <button
+              className="mobile-menu-btn"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
               {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
@@ -157,10 +175,10 @@ export default function LandingPage() {
                   transition: "border-color 0.2s",
                 }}
                 onFocus={(e) => {
-                  e.target.style.borderColor = "#8b5cf6"
+                  e.target.style.borderColor = "#8b5cf6";
                 }}
                 onBlur={(e) => {
-                  e.target.style.borderColor = "#e5e7eb"
+                  e.target.style.borderColor = "#e5e7eb";
                 }}
               />
               <Search
@@ -201,15 +219,15 @@ export default function LandingPage() {
                         transition: "background-color 0.2s",
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = "#f9fafb"
+                        e.currentTarget.style.backgroundColor = "#f9fafb";
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = "white"
+                        e.currentTarget.style.backgroundColor = "white";
                       }}
                       onClick={() => {
-                        setSearchQuery("")
-                        setIsSearchOpen(false)
-                        onNavigateToCategories()
+                        setSearchQuery("");
+                        setIsSearchOpen(false);
+                        onNavigateToCategories();
                       }}
                     >
                       <img
@@ -254,9 +272,9 @@ export default function LandingPage() {
                       cursor: "pointer",
                     }}
                     onClick={() => {
-                      setSearchQuery("")
-                      setIsSearchOpen(false)
-                      onNavigateToCategories()
+                      setSearchQuery("");
+                      setIsSearchOpen(false);
+                      onNavigateToCategories();
                     }}
                   >
                     View all {filteredPets.length} results
@@ -275,7 +293,10 @@ export default function LandingPage() {
                 {item}
               </a>
             ))}
-            <button className="mobile-signup-btn" onClick={() => navigate("/signup")}>
+            <button
+              className="mobile-signup-btn"
+              onClick={() => navigate("/signup")}
+            >
               Sign Up
             </button>
           </div>
@@ -293,12 +314,15 @@ export default function LandingPage() {
               </h1>
 
               <p className="hero-subtitle">
-                Connect with loving pets from verified shelters and rescues. Every adoption saves a life and creates a
-                forever bond.
+                Connect with loving pets from verified shelters and rescues.
+                Every adoption saves a life and creates a forever bond.
               </p>
 
               <div className="hero-buttons">
-                <button className="hero-btn-primary" onClick={onNavigateToCategories}>
+                <button
+                  className="hero-btn-primary"
+                  onClick={onNavigateToCategories}
+                >
                   Browse Pets
                   <ArrowRight size={20} />
                 </button>
@@ -310,7 +334,12 @@ export default function LandingPage() {
 
             <div className="hero-image-container slide-right">
               <div className="hero-image">
-                <img src={dc || "/placeholder.svg"} alt="Happy pets" width="600" height="500" />
+                <img
+                  src={dc || "/placeholder.svg"}
+                  alt="Happy pets"
+                  width="600"
+                  height="500"
+                />
                 <div className="hero-overlay" />
               </div>
 
@@ -336,17 +365,35 @@ export default function LandingPage() {
         <div className="categories-container">
           <div className="section-header slide-up">
             <h2 className="section-title">Find Your Perfect Match</h2>
-            <p className="section-subtitle">Browse pets by category and find your new best friend</p>
+            <p className="section-subtitle">
+              Browse pets by category and find your new best friend
+            </p>
           </div>
 
           <div className="categories-grid">
             {[
-              { name: "Dogs", icon: "🐕", count: `${petsData.filter((pet) => pet.type === "Dogs").length}` },
-              { name: "Cats", icon: "🐱", count: `${petsData.filter((pet) => pet.type === "Cats").length}` },
+              {
+                name: "Dogs",
+                icon: "🐕",
+                count: `${
+                  petsData.filter((pet) => pet.type === "Dogs").length
+                }`,
+              },
+              {
+                name: "Cats",
+                icon: "🐱",
+                count: `${
+                  petsData.filter((pet) => pet.type === "Cats").length
+                }`,
+              },
               { name: "Others", icon: "🐰", count: "456" },
               { name: "Rescued", icon: "❤️", count: "890" },
             ].map((category, index) => (
-              <div key={category.name} className="category-card slide-up" style={{ animationDelay: `${index * 0.1}s` }}>
+              <div
+                key={category.name}
+                className="category-card slide-up"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
                 <div className="category-icon">{category.icon}</div>
                 <h3 className="category-name">{category.name}</h3>
                 <p className="category-count">{category.count} available</p>
@@ -357,11 +404,16 @@ export default function LandingPage() {
       </section>
 
       {/* Featured Pets - Updated with 2 dogs and 2 cats */}
-      <section className="featured-pets" style={{ background: "white", padding: "4rem 0" }}>
+      <section
+        className="featured-pets"
+        style={{ background: "white", padding: "4rem 0" }}
+      >
         <div className="featured-pets-container">
           <div className="section-header slide-up">
             <h2 className="section-title">Pets Available for Adoption</h2>
-            <p className="section-subtitle">Meet some of our wonderful pets looking for their forever homes</p>
+            <p className="section-subtitle">
+              Meet some of our wonderful pets looking for their forever homes
+            </p>
           </div>
 
           <div
@@ -389,16 +441,22 @@ export default function LandingPage() {
                 }}
                 className="landing-pet-card"
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateY(-2px)"
+                  e.currentTarget.style.transform = "translateY(-2px)";
                   e.currentTarget.style.boxShadow =
-                    "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)"
+                    "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "translateY(0)"
-                  e.currentTarget.style.boxShadow = "none"
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow = "none";
                 }}
               >
-                <div style={{ position: "relative", width: "100%", paddingTop: "100%" }}>
+                <div
+                  style={{
+                    position: "relative",
+                    width: "100%",
+                    paddingTop: "100%",
+                  }}
+                >
                   <img
                     src={pet.imageUrl || "/placeholder.svg"}
                     alt={pet.name}
@@ -412,16 +470,16 @@ export default function LandingPage() {
                       transition: "transform 0.3s ease",
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = "scale(1.05)"
+                      e.currentTarget.style.transform = "scale(1.05)";
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = "scale(1)"
+                      e.currentTarget.style.transform = "scale(1)";
                     }}
                   />
                   <button
                     onClick={(e) => {
-                      e.stopPropagation()
-                      toggleFavorite(pet.id)
+                      e.stopPropagation();
+                      toggleFavorite(pet.id);
                     }}
                     style={{
                       position: "absolute",
@@ -441,12 +499,14 @@ export default function LandingPage() {
                       backdropFilter: "blur(4px)",
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = "rgba(243, 244, 246, 0.95)"
-                      e.currentTarget.style.transform = "scale(1.1)"
+                      e.currentTarget.style.backgroundColor =
+                        "rgba(243, 244, 246, 0.95)";
+                      e.currentTarget.style.transform = "scale(1.1)";
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.9)"
-                      e.currentTarget.style.transform = "scale(1)"
+                      e.currentTarget.style.backgroundColor =
+                        "rgba(255, 255, 255, 0.9)";
+                      e.currentTarget.style.transform = "scale(1)";
                     }}
                   >
                     <Heart
@@ -457,9 +517,20 @@ export default function LandingPage() {
                   </button>
                 </div>
                 <div style={{ padding: "1rem" }}>
-                  <div style={{ display: "flex", alignItems: "center", marginBottom: "0.5rem" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      marginBottom: "0.5rem",
+                    }}
+                  >
                     <h3
-                      style={{ fontSize: "1.25rem", fontWeight: "600", marginRight: "0.5rem", margin: "0 0.5rem 0 0" }}
+                      style={{
+                        fontSize: "1.25rem",
+                        fontWeight: "600",
+                        marginRight: "0.5rem",
+                        margin: "0 0.5rem 0 0",
+                      }}
                     >
                       {pet.name}
                     </h3>
@@ -502,12 +573,12 @@ export default function LandingPage() {
               transition: "all 0.2s",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "#f3f4f6"
-              e.currentTarget.style.transform = "scale(1.05)"
+              e.currentTarget.style.backgroundColor = "#f3f4f6";
+              e.currentTarget.style.transform = "scale(1.05)";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "white"
-              e.currentTarget.style.transform = "scale(1)"
+              e.currentTarget.style.backgroundColor = "white";
+              e.currentTarget.style.transform = "scale(1)";
             }}
           >
             View All Pets
@@ -520,15 +591,21 @@ export default function LandingPage() {
         <div className="about-container">
           <div className="about-grid">
             <div className="about-image slide-left">
-              <img src={group || "/placeholder.svg"} alt="About us" width="600" height="500" />
+              <img
+                src={group || "/placeholder.svg"}
+                alt="About us"
+                width="600"
+                height="500"
+              />
             </div>
 
             <div className="about-content slide-right">
               <h2>Where Forever Homes Begin</h2>
 
               <p>
-                Our platform connects loving families with pets in need of homes. We work with verified shelters and
-                rescues to ensure every pet finds the perfect match.
+                Our platform connects loving families with pets in need of
+                homes. We work with verified shelters and rescues to ensure
+                every pet finds the perfect match.
               </p>
 
               <div className="about-features">
@@ -558,12 +635,18 @@ export default function LandingPage() {
         <div className="features-container">
           <div className="section-header slide-up">
             <h2 className="section-title">Why Choose FurEverHome?</h2>
-            <p className="section-subtitle">We're committed to making pet adoption safe, easy, and joyful</p>
+            <p className="section-subtitle">
+              We're committed to making pet adoption safe, easy, and joyful
+            </p>
           </div>
 
           <div className="features-grid">
             {features.map((feature, index) => (
-              <div key={index} className="feature-card slide-up" style={{ animationDelay: `${index * 0.1}s` }}>
+              <div
+                key={index}
+                className="feature-card slide-up"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
                 <div className="feature-icon">
                   <feature.icon size={32} />
                 </div>
@@ -580,12 +663,15 @@ export default function LandingPage() {
         <div className="cta-container slide-up">
           <h2>Ready to Find Your New Best Friend?</h2>
           <p>
-            Join thousands of happy families who found their perfect companion through FurEverHome. Start your adoption
-            journey today!
+            Join thousands of happy families who found their perfect companion
+            through FurEverHome. Start your adoption journey today!
           </p>
 
           <div className="cta-buttons">
-            <button className="cta-btn-primary" onClick={onNavigateToCategories}>
+            <button
+              className="cta-btn-primary"
+              onClick={onNavigateToCategories}
+            >
               Start Browsing Pets
             </button>
             <button className="cta-btn-secondary" onClick={() => navigate("/register-shelter")}>
@@ -602,19 +688,33 @@ export default function LandingPage() {
             {/* Company Info */}
             <div className="footer-section fade-in">
               <div className="logo" style={{ marginBottom: "1.5rem" }}>
-                <img src={logo || "/placeholder.svg"} alt="logo" width="48" height="48" />
+                <img
+                  src={logo || "/placeholder.svg"}
+                  alt="logo"
+                  width="48"
+                  height="48"
+                />
                 <span className="logo-text" style={{ color: "white" }}>
                   FurEverHome
                 </span>
               </div>
-              <p>Connecting loving families with pets in need of homes. Every adoption saves a life.</p>
+              <p>
+                Connecting loving families with pets in need of homes. Every
+                adoption saves a life.
+              </p>
             </div>
 
             {/* Quick Links */}
             <div className="footer-section fade-in">
               <h3>Quick Links</h3>
               <ul className="footer-links">
-                {["About Us", "Pet Listings", "Adoption Process", "Success Stories", "Contact"].map((link) => (
+                {[
+                  "About Us",
+                  "Pet Listings",
+                  "Adoption Process",
+                  "Success Stories",
+                  "Contact",
+                ].map((link) => (
                   <li key={link}>
                     <a href="#">{link}</a>
                   </li>
@@ -626,13 +726,17 @@ export default function LandingPage() {
             <div className="footer-section fade-in">
               <h3>Services</h3>
               <ul className="footer-links">
-                {["Pet Adoption", "Shelter Partnership", "Pet Care Tips", "Veterinary Network", "Support"].map(
-                  (service) => (
-                    <li key={service}>
-                      <a href="#">{service}</a>
-                    </li>
-                  ),
-                )}
+                {[
+                  "Pet Adoption",
+                  "Shelter Partnership",
+                  "Pet Care Tips",
+                  "Veterinary Network",
+                  "Support",
+                ].map((service) => (
+                  <li key={service}>
+                    <a href="#">{service}</a>
+                  </li>
+                ))}
               </ul>
             </div>
 
@@ -646,7 +750,9 @@ export default function LandingPage() {
                 </div>
                 <div className="footer-contact">
                   <Mail size={20} className="footer-contact-icon" />
-                  <span className="footer-contact-text">fureverhome@gmail.com</span>
+                  <span className="footer-contact-text">
+                    fureverhome@gmail.com
+                  </span>
                 </div>
                 <div className="footer-contact">
                   <MapPin size={20} className="footer-contact-icon" />
@@ -666,7 +772,10 @@ export default function LandingPage() {
           </div>
 
           <div className="footer-bottom fade-in">
-            <p>&copy; 2024 FurEverHome. All rights reserved. Made with ❤️ for pets and their families.</p>
+            <p>
+              &copy; 2024 FurEverHome. All rights reserved. Made with ❤️ for
+              pets and their families.
+            </p>
           </div>
         </div>
       </footer>

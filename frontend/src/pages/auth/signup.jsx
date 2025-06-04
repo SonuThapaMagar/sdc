@@ -2,8 +2,8 @@ import { Link, useNavigate } from "react-router-dom";
 import "../../styles/signup.css";
 import img2 from "../../images/login.png";
 import { useState } from "react";
-import Navbar from "../../components/Navbar"; 
-
+import { Navbar } from "../../components/Navbar";
+import api from "../../api/api";
 
 function Signup() {
   const [formData, setFormData] = useState({
@@ -43,46 +43,26 @@ function Signup() {
     }
 
     try {
-      const response = await fetch("/api/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fullName: formData.fullName,
-          address: formData.address,
-          phone: formData.phone,
-          email: formData.email,
-          password: formData.password,
-        }),
+      const response = await api.post("/api/auth/signup", {
+        fullName: formData.fullName,
+        address: formData.address,
+        phone: formData.phone,
+        email: formData.email,
+        password: formData.password,
       });
 
-      if (!response.ok) {
-        // Log the raw response for debugging
-        const rawResponse = await response.text();
-        console.log("Raw server response:", rawResponse);
-
-        // Attempt to parse JSON, but handle failure gracefully
-        let errorData;
-        try {
-          errorData = JSON.parse(rawResponse);
-        } catch (jsonError) {
-          console.error("Failed to parse JSON response:", jsonError);
-          throw new Error(`Signup failed: ${response.status} ${response.statusText}`);
-        }
-
-        const errorMessage = errorData.message || `Signup failed: ${response.status} ${response.statusText}`;
-        setError(errorMessage);
-        console.error("Signup failed:", errorMessage);
-        return;
-      }
-
-      const data = await response.json();
+      const data = response.data;
       setSuccess(data.message || "Signup successful!");
-      setUserId(data.userId || "");
-      console.log("User ID (UUID):", data.userId);
+      setUserId(data.id || "");
+      console.log("User ID (UUID):", data.id);
       setTimeout(() => navigate("/login"), 2000);
     } catch (error) {
-      setError(error.message || "An error occurred during signup");
-      console.error("Error:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "An error occurred during signup";
+      setError(errorMessage);
+      console.error("Error:", errorMessage);
     }
   };
 
