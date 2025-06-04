@@ -2,6 +2,8 @@ import { Link, useNavigate } from "react-router-dom";
 import "../../styles/signup.css";
 import img2 from "../../images/login.png";
 import { useState } from "react";
+import Navbar from "../../components/Navbar"; 
+
 
 function Signup() {
   const [formData, setFormData] = useState({
@@ -13,6 +15,7 @@ function Signup() {
     confirmPassword: "",
   });
 
+  
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [userId, setUserId] = useState("");

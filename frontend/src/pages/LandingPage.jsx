@@ -1,4 +1,3 @@
-import React from "react";
 "use client"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
@@ -303,7 +302,9 @@ export default function LandingPage() {
                   Browse Pets
                   <ArrowRight size={20} />
                 </button>
-                <button className="hero-btn-secondary">Learn More</button>
+                <button className="hero-btn-secondary" onClick={() => navigate("/learn-more")}>
+                  Learn More
+                </button>
               </div>
             </div>
 
@@ -544,7 +545,9 @@ export default function LandingPage() {
                 ))}
               </div>
 
-              <button className="about-btn">Learn More About Us</button>
+              <button className="about-btn" onClick={() => navigate("/about-us")}>
+                Learn More About Us
+              </button>
             </div>
           </div>
         </div>
@@ -585,7 +588,9 @@ export default function LandingPage() {
             <button className="cta-btn-primary" onClick={onNavigateToCategories}>
               Start Browsing Pets
             </button>
-            <button className="cta-btn-secondary">Register as Shelter</button>
+            <button className="cta-btn-secondary" onClick={() => navigate("/register-shelter")}>
+              Register as Shelter
+            </button>
           </div>
         </div>
       </section>

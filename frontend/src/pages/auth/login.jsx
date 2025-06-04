@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import "../../styles/login.css";
 import img from "../../images/login.png";
 import { useState } from "react";
+import Navbar from "../../components/Navbar"; 
 
 function Login() {
   const [formData, setFormData] = useState({
