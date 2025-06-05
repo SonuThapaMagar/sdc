@@ -1,182 +1,140 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import {
-    MenuFoldOutlined,
-    MenuUnfoldOutlined,
-    UserOutlined,
-    TeamOutlined,
-    PieChartOutlined,
-    LogoutOutlined,
-    ShopOutlined,
-    AppstoreOutlined,
-} from '@ant-design/icons';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { MenuOutlined, DashboardOutlined, UserOutlined, ShopOutlined, AppstoreOutlined, LogoutOutlined } from '@ant-design/icons';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const menuItems = [
     {
         key: 'dashboard',
-        icon: <PieChartOutlined />,
         label: 'Dashboard',
+        icon: <DashboardOutlined />,
         path: '/superadmin/dashboard'
     },
     {
         key: 'users',
-        icon: <TeamOutlined />,
         label: 'User Management',
+        icon: <UserOutlined />,
         path: '/superadmin/users'
     },
     {
-        key: 'petcenter',
-        icon: <ShopOutlined />,
+        key: 'centers',
         label: 'Pet Center Management',
-        path: '/superadmin/pet-centers'
+        icon: <ShopOutlined />,
+        path: '/superadmin/centers'
     },
     {
         key: 'pets',
-        icon: <AppstoreOutlined />,
         label: 'Pet Management',
+        icon: <AppstoreOutlined />,
         path: '/superadmin/pets'
-    },
-    {
-        key: 'logout',
-        icon: <LogoutOutlined />,
-        label: 'Logout',
-        path: '/logout'
-    },
+    }
 ];
 
 const SuperadminLayout = ({ children }) => {
-    const navigate = useNavigate();
-    const location = useLocation();
     const [collapsed, setCollapsed] = useState(false);
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const [activeMenu, setActiveMenu] = useState(() => {
-        const currentPath = location.pathname;
-        const menuItem = menuItems.find(item => item.path === currentPath);
-        return menuItem ? menuItem.key : 'dashboard';
-    });
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const location = useLocation();
+    const navigate = useNavigate();
 
-    const handleMenuClick = (item) => {
-        setActiveMenu(item.key);
-        if (item.key === 'logout') {
-            // Handle logout logic here
-            localStorage.removeItem('superadminToken');
-            navigate('/superadmin/login');
-        } else {
-            navigate(item.path);
-        }
+    const handleLogout = () => {
+        // Implement logout logic here
+        navigate('/superadmin/login');
     };
 
     return (
-        <div className="h-screen bg-[#f2f2f2] overflow-hidden">
+        <div className="min-h-screen bg-gray-100">
             {/* Mobile Header */}
-            <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-[#7d8ff5] flex items-center justify-center">
-                        <UserOutlined className="text-white text-xl" />
-                    </div>
-                    <span className="text-lg font-semibold text-[#757FF6]">Superadmin</span>
-                </div>
+            <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
                 <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                     className="lg:hidden"
                 >
-                    {isMobileMenuOpen ? <MenuFoldOutlined /> : <MenuUnfoldOutlined />}
+                    <MenuOutlined className="text-xl" />
                 </Button>
+                <h1 className="text-xl font-semibold text-gray-800">SDC Furever</h1>
             </div>
 
-            {/* Mobile Menu */}
-            <div className={cn(
-                "lg:hidden fixed inset-0 z-40 bg-[#f8fafc] transform transition-transform duration-300 ease-in-out",
-                isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+            {/* Mobile Menu Overlay */}
+            {mobileMenuOpen && (
+                <div 
+                    className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+                    onClick={() => setMobileMenuOpen(false)}
+                />
+            )}
+
+            {/* Sidebar */}
+            <aside className={cn(
+                "fixed top-0 left-0 h-full bg-white border-r border-gray-200 transition-all duration-300 z-50",
+                "lg:translate-x-0",
+                mobileMenuOpen ? "translate-x-0" : "-translate-x-full",
+                collapsed ? "w-20" : "w-64"
             )}>
-                <div className="p-6">
-                    <div className="flex flex-col items-center mb-8">
-                        <div className="w-16 h-16 rounded-full bg-[#7d8ff5] flex items-center justify-center mb-4">
-                            <UserOutlined className="text-white text-2xl" />
-                        </div>
-                        <span className="text-xl font-semibold text-[#757FF6]">Superadmin</span>
+                <div className="flex flex-col h-full">
+                    {/* Logo */}
+                    <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200">
+                        {!collapsed && <h1 className="text-xl font-semibold text-gray-800">SDC Furever</h1>}
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setCollapsed(!collapsed)}
+                            className="hidden lg:flex"
+                        >
+                            <MenuOutlined className="text-xl" />
+                        </Button>
                     </div>
-                    <nav className="space-y-2">
-                        {menuItems.map((item) => (
-                            <button
-                                key={item.key}
-                                onClick={() => handleMenuClick(item)}
-                                className={cn(
-                                    "w-full flex items-center gap-3 px-4 py-3 text-gray-600 rounded-lg transition-colors",
-                                    activeMenu === item.key 
-                                        ? "bg-[#e6e8fa] text-[#757FF6] font-medium" 
-                                        : "hover:bg-gray-100"
-                                )}
-                            >
-                                {item.icon}
-                                <span>{item.label}</span>
-                            </button>
-                        ))}
-                    </nav>
-                </div>
-            </div>
 
-            {/* Desktop Layout */}
-            <div className="hidden lg:flex h-screen">
-                {/* Sidebar */}
-                <aside className={cn(
-                    "fixed left-0 top-0 z-30 h-screen bg-[#f8fafc] border-r border-gray-100 transition-all duration-300",
-                    collapsed ? "w-[80px]" : "w-[280px]"
-                )}>
-                    <div className="flex flex-col h-full">
-                        <div className="flex flex-col items-center p-6">
-                            <div className="w-12 h-12 rounded-full bg-[#7d8ff5] flex items-center justify-center mb-4">
-                                <UserOutlined className="text-white text-xl" />
-                            </div>
-                            {!collapsed && (
-                                <span className="text-lg font-semibold text-[#757FF6]">Superadmin</span>
-                            )}
-                        </div>
-                        <nav className="flex-1 px-4 space-y-2">
+                    {/* Menu Items */}
+                    <nav className="flex-1 overflow-y-auto py-4">
+                        <ul className="space-y-1 px-2">
                             {menuItems.map((item) => (
-                                <button
-                                    key={item.key}
-                                    onClick={() => handleMenuClick(item)}
-                                    className={cn(
-                                        "w-full flex items-center gap-3 px-4 py-3 text-gray-600 rounded-lg transition-colors",
-                                        activeMenu === item.key 
-                                            ? "bg-[#e6e8fa] text-[#757FF6] font-medium" 
-                                            : "hover:bg-gray-100",
-                                        collapsed ? "justify-center" : "justify-start"
-                                    )}
-                                >
-                                    {item.icon}
-                                    {!collapsed && <span>{item.label}</span>}
-                                </button>
+                                <li key={item.key}>
+                                    <Link
+                                        to={item.path}
+                                        className={cn(
+                                            "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                                            "hover:bg-gray-100",
+                                            location.pathname === item.path
+                                                ? "bg-[#f0f4ff] text-[#757FF6]"
+                                                : "text-gray-600"
+                                        )}
+                                    >
+                                        <span className="text-xl">{item.icon}</span>
+                                        {!collapsed && <span>{item.label}</span>}
+                                    </Link>
+                                </li>
                             ))}
-                        </nav>
-                    </div>
-                </aside>
+                        </ul>
+                    </nav>
 
-                {/* Main Content */}
-                <main className={cn(
-                    "flex-1 transition-all duration-300 h-screen overflow-y-auto",
-                    collapsed ? "ml-[80px]" : "ml-[280px]"
-                )}>
-                    <div className="p-6">
-                        <div className="mb-6">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => setCollapsed(!collapsed)}
-                                className="hidden lg:flex"
-                            >
-                                {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-                            </Button>
-                        </div>
-                        {children}
+                    {/* Logout Button */}
+                    <div className="p-4 border-t border-gray-200">
+                        <Button
+                            variant="ghost"
+                            className={cn(
+                                "w-full flex items-center gap-3 text-gray-600 hover:text-red-600",
+                                collapsed ? "justify-center" : "justify-start"
+                            )}
+                            onClick={handleLogout}
+                        >
+                            <LogoutOutlined className="text-xl" />
+                            {!collapsed && <span>Logout</span>}
+                        </Button>
                     </div>
-                </main>
-            </div>
+                </div>
+            </aside>
+
+            {/* Main Content */}
+            <main className={cn(
+                "min-h-screen transition-all duration-300",
+                "lg:ml-64",
+                collapsed ? "lg:ml-20" : "lg:ml-64",
+                "pt-16 lg:pt-0" // Add top padding for mobile header
+            )}>
+                {children}
+            </main>
         </div>
     );
 };
