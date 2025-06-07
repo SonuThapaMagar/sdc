@@ -45,14 +45,14 @@ public class PetCenterService {
             petCenter.setEmail(updateRequest.getEmail());
         }
 
-        if (updateRequest.getName() != null) {
-            petCenter.setName(updateRequest.getName());
+        if (updateRequest.getShelterName() != null) {
+            petCenter.setShelterName(email);
         }
         if (updateRequest.getAddress() != null) {
             petCenter.setAddress(updateRequest.getAddress());
         }
-        if (updateRequest.getContact() != null) {
-            petCenter.setContact(updateRequest.getContact());
+        if (updateRequest.getPhone() != null) {
+            petCenter.setPhone(email);
         }
         if (updateRequest.getDescription() != null) {
             petCenter.setDescription(updateRequest.getDescription());
@@ -79,14 +79,14 @@ public class PetCenterService {
             petCenter.setEmail(updateRequest.getEmail());
         }
 
-        if (updateRequest.getName() != null) {
-            petCenter.setName(updateRequest.getName());
+        if (updateRequest.getShelterName() != null) {
+            petCenter.setShelterName(null);
         }
         if (updateRequest.getAddress() != null) {
             petCenter.setAddress(updateRequest.getAddress());
         }
-        if (updateRequest.getContact() != null) {
-            petCenter.setContact(updateRequest.getContact());
+        if (updateRequest.getPhone() != null) {
+            petCenter.setPhone(null);
         }
         if (updateRequest.getDescription() != null) {
             petCenter.setDescription(updateRequest.getDescription());
@@ -121,9 +121,9 @@ public class PetCenterService {
     private AdminProfileResponse mapToAdminProfileResponse(PetCenter petCenter) {
         AdminProfileResponse response = new AdminProfileResponse();
         response.setId(petCenter.getId());
-        response.setName(petCenter.getName());
+        response.setShelterName(petCenter.getShelterName());
         response.setAddress(petCenter.getAddress());
-        response.setContact(petCenter.getContact());
+        response.setPhone(petCenter.getPhone());
         response.setDescription(petCenter.getDescription());
         response.setEmail(petCenter.getEmail());
         return response;
