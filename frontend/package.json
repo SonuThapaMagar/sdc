@@ -27,7 +27,7 @@
 =======
     "recharts": "^2.15.3",
     "tailwind-merge": "^3.3.0",
->>>>>>> 3969f1fee02de0f482a859ee1e1072eea98dfe64
+    "xlsx": "^0.18.5",
     "zod": "^3.24.4"
   },
   "devDependencies": {
