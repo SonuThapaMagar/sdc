@@ -1,4 +1,4 @@
-import React from "react";
+
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { X, Camera, User, Mail, Calendar, Shield, Edit2, Save } from "lucide-react"
