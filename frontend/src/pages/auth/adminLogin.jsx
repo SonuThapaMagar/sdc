@@ -1,8 +1,7 @@
 import { Button, Form, Input, Card, Typography, message } from "antd";
-import bgImage from "../../assets/bg.png";
-import "../../styles/adminLogin.css";
+import bgImage from "../../images/bg.png";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from "../../api/api";
 
 const { Title } = Typography;
 
@@ -11,26 +10,35 @@ const AdminLogin = () => {
 
   const onFinish = async (values) => {
     try {
-      const response = await axios.post('http://localhost:8080/api/auth/superadmin/login', {
-        username: values.username,
-        password: values.password
+      console.log("Sending login request with:", values);
+      const response = await axios.post("/api/superadmin/auth/login", values, {
+        withCredentials: true,
       });
 
+      console.log("Login response:", response.data);
       if (response.data.success) {
-        // Store the token in localStorage
-        localStorage.setItem('superadminToken', response.data.token);
-        message.success('Login successful!');
-        navigate('/superadmin/dashboard');
+        localStorage.setItem("superadminToken", response.data.token);
+        message.success("Login successful!");
+        console.log("Attempting to navigate to /superadmin/dashboard");
+        navigate("/superadmin/dashboard", { replace: true });
+      } else {
+        message.error("Login failed: Invalid credentials");
       }
     } catch (error) {
-      message.error('Invalid credentials or server error');
-      console.error('Login error:', error);
+      console.error("Login error:", error.response?.data || error.message);
+      if (error.response?.status === 403) {
+        message.error("Access forbidden: Check server configuration or credentials");
+      } else if (error.response?.status === 401) {
+        message.error("Invalid username or password");
+      } else {
+        message.error("Network error or server unavailable. Please try again.");
+      }
     }
   };
 
   const onFinishFailed = (errorInfo) => {
-    console.log("Failed:", errorInfo);
-    message.error('Please check your credentials');
+    console.log("Form validation failed:", errorInfo);
+    message.error("Please check your credentials");
   };
 
   return (
@@ -83,9 +91,7 @@ const AdminLogin = () => {
             <Form.Item
               label="Username"
               name="username"
-              rules={[
-                { required: true, message: "Please input your username!" },
-              ]}
+              rules={[{ required: true, message: "Please input your username!" }]}
               labelCol={{ style: { fontWeight: 500 } }}
             >
               <Input
@@ -98,9 +104,7 @@ const AdminLogin = () => {
             <Form.Item
               label="Password"
               name="password"
-              rules={[
-                { required: true, message: "Please input your password!" },
-              ]}
+              rules={[{ required: true, message: "Please input your password!" }]}
               labelCol={{ style: { fontWeight: 500 } }}
             >
               <Input.Password
@@ -112,7 +116,7 @@ const AdminLogin = () => {
 
             <Form.Item>
               <Button
-                type="submit"
+                type="primary"
                 htmlType="submit"
                 size="large"
                 block
