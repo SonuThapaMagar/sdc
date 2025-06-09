@@ -5,6 +5,7 @@ import SuperadminDashboard from '../pages/superadmin/pages/SuperadminDashboard';
 import UserManagement from '../pages/superadmin/pages/UserManagement';
 import PetCenterMgmt from '../pages/superadmin/pages/PetCenterMgmt';
 import PetMgmt from '../pages/superadmin/pages/PetMgmt';
+import SuperadminLogin from '../pages/auth/superadminLogin'; // <-- Add this import
 
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
@@ -16,6 +17,10 @@ const ProtectedRoute = ({ children }) => {
 };
 
 const superadminRoutes = [
+    {
+        path: '/superadmin/login',
+        element: <SuperadminLogin />,
+    },
     {
         path: '/superadmin',
         element: <Navigate to="/superadmin/dashboard" replace />,

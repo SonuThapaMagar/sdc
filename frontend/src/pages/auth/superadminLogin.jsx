@@ -3,7 +3,13 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import bgImage from "../../images/bg.png";
@@ -53,12 +59,16 @@ const SuperadminLogin = () => {
     setIsLoading(true);
 
     try {
-      const response = await axios.post("http://localhost:8080/api/auth/superadmin/login", {
-        username: formData.username,
-        password: formData.password,
-      });
+      const response = await axios.post(
+        "http://localhost:8080/api/superadmin/auth/login",
+        {
+          username: formData.username,
+          password: formData.password,
+        }
+      );
 
-      if (response.data.success) {
+      console.log("Response:", response.data);
+      if (response.data.message === "Login successful") {
         localStorage.setItem("superadminToken", response.data.token);
         toast({
           title: "Login Successful",
@@ -76,8 +86,10 @@ const SuperadminLogin = () => {
       toast({
         variant: "destructive",
         title: "Server Error",
-        description: error.response?.data?.message || "Login failed. Please try again.",
+        description:
+          error.response?.data?.message || "Login failed. Please try again.",
       });
+      console.error("Login error:", error); // Add logging for debugging
     } finally {
       setIsLoading(false);
     }
@@ -99,7 +111,9 @@ const SuperadminLogin = () => {
     >
       <Card className="w-full max-w-sm border-none shadow-lg bg-white/95 backdrop-blur-sm mx-4">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center text-[#757FF6]">Superadmin Login</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center text-[#757FF6]">
+            Superadmin Login
+          </CardTitle>
           <CardDescription className="text-center text-gray-500">
             Sign in to your superadmin account
           </CardDescription>
@@ -118,7 +132,9 @@ const SuperadminLogin = () => {
                 required
                 className={errors.username ? "border-red-500" : ""}
               />
-              {errors.username && <p className="text-sm text-red-500">{errors.username}</p>}
+              {errors.username && (
+                <p className="text-sm text-red-500">{errors.username}</p>
+              )}
             </div>
 
             <div className="grid gap-2">
@@ -142,7 +158,9 @@ const SuperadminLogin = () => {
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
-              {errors.password && <p className="text-sm text-red-500">{errors.password}</p>}
+              {errors.password && (
+                <p className="text-sm text-red-500">{errors.password}</p>
+              )}
             </div>
 
             <Button
