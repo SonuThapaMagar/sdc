@@ -32,6 +32,11 @@ public class PetCenterService {
         this.adoptionRequestRepository = adoptionRequestRepository;
     }
 
+    public PetCenter getPetCenterById(UUID id) {
+        return petCenterRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Pet Center not found with ID: " + id));
+    }
+
     @Transactional
     public AdminProfileResponse updatePetCenterProfile(String email, AdminProfileUpdateRequest updateRequest) {
         PetCenter petCenter = petCenterRepository.findByEmail(email)
@@ -46,13 +51,13 @@ public class PetCenterService {
         }
 
         if (updateRequest.getShelterName() != null) {
-            petCenter.setShelterName(email);
+            petCenter.setShelterName(updateRequest.getShelterName());
         }
         if (updateRequest.getAddress() != null) {
             petCenter.setAddress(updateRequest.getAddress());
         }
         if (updateRequest.getPhone() != null) {
-            petCenter.setPhone(email);
+            petCenter.setPhone(updateRequest.getPhone());
         }
         if (updateRequest.getDescription() != null) {
             petCenter.setDescription(updateRequest.getDescription());
@@ -80,13 +85,13 @@ public class PetCenterService {
         }
 
         if (updateRequest.getShelterName() != null) {
-            petCenter.setShelterName(null);
+            petCenter.setShelterName(updateRequest.getShelterName());
         }
         if (updateRequest.getAddress() != null) {
             petCenter.setAddress(updateRequest.getAddress());
         }
         if (updateRequest.getPhone() != null) {
-            petCenter.setPhone(null);
+            petCenter.setPhone(updateRequest.getPhone());
         }
         if (updateRequest.getDescription() != null) {
             petCenter.setDescription(updateRequest.getDescription());
@@ -101,7 +106,6 @@ public class PetCenterService {
         PetCenter petCenter = petCenterRepository.findById(petCenterId)
                 .orElseThrow(() -> new IllegalArgumentException("Pet Center not found with ID: " + petCenterId));
 
-        // Delete all adoption requests associated with pets from this pet center
         List<Pet> pets = petRepository.findByCenterId(petCenterId);
         for (Pet pet : pets) {
             List<AdoptionRequest> adoptionRequests = adoptionRequestRepository.findByPetId(pet.getId());
@@ -110,7 +114,6 @@ public class PetCenterService {
             }
         }
 
-        // Delete all pets associated with the pet center
         if (!pets.isEmpty()) {
             petRepository.deleteAll(pets);
         }

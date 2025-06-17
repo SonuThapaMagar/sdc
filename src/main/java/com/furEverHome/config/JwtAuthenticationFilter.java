@@ -29,9 +29,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
         System.out.println("Processing request for path: " + path);
 
-        // Skip authentication for public endpoints
-        if (path.startsWith("/api/auth") || path.startsWith("/api/admin/auth") || path.startsWith("/api/superadmin/auth") || path.equals("/api/test")) {
-            System.out.println("Skipping authentication for public endpoint: " + path);
+        // Add CORS headers for all responses
+        response.setHeader("Access-Control-Allow-Origin", "http://localhost:5173");
+        response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
+        response.setHeader("Access-Control-Allow-Headers", "*");
+        response.setHeader("Access-Control-Allow-Credentials", "true");
+        response.setHeader("Access-Control-Max-Age", "3600");
+
+        // Skip authentication for public endpoints and OPTIONS requests
+        if (request.getMethod().equals("OPTIONS") ||
+            path.startsWith("/api/auth") ||
+            path.startsWith("/api/admin/auth") ||
+            path.startsWith("/api/superadmin/auth") ||
+            path.equals("/api/test")) {
+            System.out.println("Skipping authentication for: " + path + " (Method: " + request.getMethod() + ")");
             filterChain.doFilter(request, response);
             return;
         }
@@ -58,8 +69,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         Role role = jwtUtil.getRoleFromToken(token);
         System.out.println("Token validated for email: " + email + ", role: " + role);
 
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(email,
-                null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role.name())));
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                email, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role.name())));
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         filterChain.doFilter(request, response);
