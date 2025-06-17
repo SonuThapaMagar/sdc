@@ -1,6 +1,8 @@
 package com.furEverHome.entity;
 
 import jakarta.persistence.*;
+
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -21,7 +23,7 @@ public class Pet {
 	@Column(name = "age", nullable = false)
 	private int age;
 
-	@Column(name = "gender", nullable = false) 
+	@Column(name = "gender", nullable = false)
 	private String gender;
 
 	@Column(name = "description")
@@ -36,6 +38,9 @@ public class Pet {
 	@Column(name = "center_id", nullable = false)
 	private UUID centerId; // References the PetCenter ID
 
+	@Column(name = "created_at", nullable = false)
+	private LocalDateTime createdAt;
+
 	public Pet() {
 	}
 
@@ -49,6 +54,7 @@ public class Pet {
 		this.location = location;
 		this.status = status;
 		this.centerId = centerId;
+		this.createdAt = LocalDateTime.now();
 	}
 
 	// Getters and Setters
@@ -122,5 +128,13 @@ public class Pet {
 
 	public void setCenterId(UUID centerId) {
 		this.centerId = centerId;
+	}
+
+	public LocalDateTime getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(LocalDateTime createdAt) {
+		this.createdAt = createdAt;
 	}
 }

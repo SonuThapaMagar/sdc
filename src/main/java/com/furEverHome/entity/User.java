@@ -38,6 +38,9 @@ public class User {
 	@Enumerated(EnumType.STRING)
 	@Column(name = "role", nullable = false)
 	private Role role;
+	
+	@Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
 
 	public User() {
 	}
@@ -49,6 +52,7 @@ public class User {
 		this.email = email;
 		this.password = password;
 		this.role = role;
+		this.createdAt = LocalDateTime.now();
 	}
 
 	// Getters and Setters
@@ -123,6 +127,13 @@ public class User {
 	public void setOtpExpiry(LocalDateTime otpExpiry) {
 		this.otpExpiry = otpExpiry;
 	}
+	public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
 
 	@Override
 	public String toString() {

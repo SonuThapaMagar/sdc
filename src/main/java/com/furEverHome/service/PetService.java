@@ -15,68 +15,73 @@ import java.util.stream.Collectors;
 @Service
 public class PetService {
 
-    private final PetRepository petRepository;
+	private final PetRepository petRepository;
 
-    @Autowired
-    public PetService(PetRepository petRepository) {
-        this.petRepository = petRepository;
-    }
+	@Autowired
+	public PetService(PetRepository petRepository) {
+		this.petRepository = petRepository;
+	}
 
-    public List<PetResponse> getAllPets() {
-        return petRepository.findAll().stream()
-                .map(this::mapToPetResponse)
-                .collect(Collectors.toList());
-    }
+	public List<PetResponse> getAllPets() {
+		try {
+			return petRepository.findAll().stream().map(this::mapToPetResponse).collect(Collectors.toList());
+		} catch (Exception e) {
+			throw new RuntimeException("Failed to fetch pets: " + e.getMessage(), e);
+		}
+	}
 
-    @Transactional
-    public PetResponse updatePet(UUID id, PetRequest updateRequest) {
-        Pet pet = petRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Pet not found with ID: " + id));
+	public Pet getPetById(UUID id) {
+		return petRepository.findById(id)
+				.orElseThrow(() -> new IllegalArgumentException("Pet not found with id: " + id));
+	}
 
-        if (updateRequest.getName() != null) {
-            pet.setName(updateRequest.getName());
-        }
-        if (updateRequest.getBreed() != null) {
-            pet.setBreed(updateRequest.getBreed());
-        }
-        if (updateRequest.getAge() > 0) {
-            pet.setAge(updateRequest.getAge());
-        }
-        if (updateRequest.getGender() != null) {
-            pet.setGender(updateRequest.getGender());
-        }
-        if (updateRequest.getDescription() != null) {
-            pet.setDescription(updateRequest.getDescription());
-        }
-        if (updateRequest.getLocation() != null) {
-            pet.setLocation(updateRequest.getLocation());
-        }
-        if (updateRequest.getStatus() != null) {
-            pet.setStatus(updateRequest.getStatus());
-        }
+	@Transactional
+	public PetResponse updatePet(UUID id, PetRequest updateRequest) {
+		Pet pet = petRepository.findById(id)
+				.orElseThrow(() -> new IllegalArgumentException("Pet not found with ID: " + id));
 
-        pet = petRepository.save(pet);
-        return mapToPetResponse(pet);
-    }
+		if (updateRequest.getName() != null) {
+			pet.setName(updateRequest.getName());
+		}
+		if (updateRequest.getBreed() != null) {
+			pet.setBreed(updateRequest.getBreed());
+		}
+		if (updateRequest.getAge() > 0) {
+			pet.setAge(updateRequest.getAge());
+		}
+		if (updateRequest.getGender() != null) {
+			pet.setGender(updateRequest.getGender());
+		}
+		if (updateRequest.getDescription() != null) {
+			pet.setDescription(updateRequest.getDescription());
+		}
+		if (updateRequest.getLocation() != null) {
+			pet.setLocation(updateRequest.getLocation());
+		}
+		if (updateRequest.getStatus() != null) {
+			pet.setStatus(updateRequest.getStatus());
+		}
+		if (updateRequest.getCenterId() != null) {
+			pet.setCenterId(updateRequest.getCenterId());
+		}
 
-    @Transactional
-    public void deletePet(UUID id) {
-        Pet pet = petRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Pet not found with ID: " + id));
-        petRepository.delete(pet);
-    }
+		try {
+			pet = petRepository.save(pet);
+			return mapToPetResponse(pet);
+		} catch (Exception e) {
+			throw new RuntimeException("Failed to update pet: " + e.getMessage(), e);
+		}
+	}
 
-    private PetResponse mapToPetResponse(Pet pet) {
-        return new PetResponse(
-                pet.getId(),
-                pet.getName(),
-                pet.getBreed(),
-                pet.getAge(),
-                pet.getGender(),
-                pet.getDescription(),
-                pet.getLocation(),
-                pet.getStatus(),
-                pet.getCenterId()
-        );
-    }
+	@Transactional
+	public void deletePet(UUID id) {
+		Pet pet = petRepository.findById(id)
+				.orElseThrow(() -> new IllegalArgumentException("Pet not found with ID: " + id));
+		petRepository.delete(pet);
+	}
+
+	private PetResponse mapToPetResponse(Pet pet) {
+		return new PetResponse(pet.getId(), pet.getName(), pet.getBreed(), pet.getAge(), pet.getGender(),
+				pet.getDescription(), pet.getLocation(), pet.getStatus(), pet.getCenterId());
+	}
 }

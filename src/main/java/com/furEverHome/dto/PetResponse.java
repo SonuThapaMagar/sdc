@@ -27,6 +27,10 @@ public class PetResponse {
 		this.centerId = centerId; // Include in constructor
 	}
 
+	public PetResponse() {
+		// TODO Auto-generated constructor stub
+	}
+
 	// Getters and Setters
 	public UUID getId() {
 		return id;

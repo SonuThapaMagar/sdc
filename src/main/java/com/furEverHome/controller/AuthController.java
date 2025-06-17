@@ -12,6 +12,7 @@ import com.furEverHome.service.OtpService;
 import com.furEverHome.util.JwtUtil;
 
 import java.util.UUID;
+import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -22,165 +23,166 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-	private final UserRepository userRepository;
-	private final PasswordEncoder passwordEncoder;
-	private final OtpService otpservice;
-	private final JwtUtil jwtUtil;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final OtpService otpservice;
+    private final JwtUtil jwtUtil;
 
-	@Autowired
-	public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder, OtpService otpService,
-			JwtUtil jwtUtil) {
-		this.userRepository = userRepository;
-		this.passwordEncoder = passwordEncoder;
-		this.otpservice = otpService;
-		this.jwtUtil = jwtUtil;
-		System.out.println("AuthController initialized. userRepository: " + userRepository + ", passwordEncoder: "
-				+ passwordEncoder);
-	}
+    @Autowired
+    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder, OtpService otpService,
+                          JwtUtil jwtUtil) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.otpservice = otpService;
+        this.jwtUtil = jwtUtil;
+        System.out.println("AuthController initialized. userRepository: " + userRepository + ", passwordEncoder: "
+                + passwordEncoder);
+    }
 
-	@PostMapping("/signup")
-	public ResponseEntity<?> signup(@RequestBody SignupRequest request) {
-		System.out.println("Received signup request: " + request);
-		if (request.getEmail() == null || request.getEmail().isEmpty()) {
-			System.out.println("Email validation failed");
-			return ResponseEntity.badRequest().body(new ErrorResponse("Email is required"));
-		}
+    @PostMapping("/signup")
+    public ResponseEntity<?> signup(@RequestBody SignupRequest request) {
+        System.out.println("Received signup request: " + request);
+        if (request.getEmail() == null || request.getEmail().isEmpty()) {
+            System.out.println("Email validation failed");
+            return ResponseEntity.badRequest().body(new ErrorResponse("Email is required"));
+        }
 
-		if (userRepository.existsByEmail(request.getEmail())) {
-			System.out.println("Email already exists: " + request.getEmail());
-			return ResponseEntity.badRequest().body(new ErrorResponse("Email already exists"));
-		}
+        if (userRepository.existsByEmail(request.getEmail())) {
+            System.out.println("Email already exists: " + request.getEmail());
+            return ResponseEntity.badRequest().body(new ErrorResponse("Email already exists"));
+        }
 
-		String rawPassword = request.getPassword();
-		System.out.println("Raw Password: " + rawPassword);
-		String hashedPassword = passwordEncoder.encode(rawPassword);
-		System.out.println("Hashed Password: " + hashedPassword);
+        String rawPassword = request.getPassword();
+        System.out.println("Raw Password: " + rawPassword);
+        String hashedPassword = passwordEncoder.encode(rawPassword);
+        System.out.println("Hashed Password: " + hashedPassword);
 
-		User user = new User();
-		user.setFullName(request.getFullName());
-		user.setAddress(request.getAddress());
-		user.setPhone(request.getPhone());
-		user.setEmail(request.getEmail());
-		user.setPassword(hashedPassword);
-		user.setRole(Role.USER);
+        // Use parameterized constructor to ensure createdAt is set
+        User user = new User(
+                request.getFullName(),
+                request.getAddress(),
+                request.getPhone(),
+                request.getEmail(),
+                hashedPassword,
+                Role.USER
+        );
 
-		try {
-			userRepository.save(user);
-			return ResponseEntity.status(201).body(new SuccessResponse("User signup successful", user.getId()));
-		} catch (Exception e) {
-			return ResponseEntity.status(500).body(new ErrorResponse("Failed to save user: " + e.getMessage()));
-		}
-	}
+        try {
+            userRepository.save(user);
+            return ResponseEntity.status(201).body(new SuccessResponse("User signup successful", user.getId()));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(new ErrorResponse("Failed to save user: " + e.getMessage()));
+        }
+    }
 
-	@PostMapping("/login")
-	public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-		if (request.getEmail() == null || request.getPassword() == null) {
-			return ResponseEntity.status(400).body(new ErrorResponse("Email and password are required"));
-		}
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+        if (request.getEmail() == null || request.getPassword() == null) {
+            return ResponseEntity.status(400).body(new ErrorResponse("Email and password are required"));
+        }
 
-		User user = userRepository.findByEmail(request.getEmail()).orElse(null);
-		if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-			return ResponseEntity.status(401).body(new ErrorResponse("Invalid email or password"));
-		}
+        User user = userRepository.findByEmail(request.getEmail()).orElse(null);
+        if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            return ResponseEntity.status(401).body(new ErrorResponse("Invalid email or password"));
+        }
 
-		String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
-		return ResponseEntity.ok(new LoginResponse("User login successful", user.getId(), token));
-	}
+        String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
+        return ResponseEntity.ok(new LoginResponse("User login successful", user.getId(), token));
+    }
 
-	@PostMapping("/forgotPassword")
-	public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequest request) {
-		User user = userRepository.findByEmail(request.getEmail()).orElse(null);
-		if (user == null) {
-			return ResponseEntity.badRequest().body(new ErrorResponse("Email not found"));
-		}
+    @PostMapping("/forgotPassword")
+    public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        User user = userRepository.findByEmail(request.getEmail()).orElse(null);
+        if (user == null) {
+            return ResponseEntity.badRequest().body(new ErrorResponse("Email not found"));
+        }
 
-		otpservice.generateOtp(user);
-		return ResponseEntity.ok(new SuccessResponse("OTP sent to your email!", user.getId()));
-	}
+        otpservice.generateOtp(user);
+        return ResponseEntity.ok(new SuccessResponse("OTP sent to your email!", user.getId()));
+    }
 
-	@PostMapping("/verifyOtp")
-	public ResponseEntity<?> resetPassword(@RequestBody OtpVerificationRequest request) {
+    @PostMapping("/verifyOtp")
+    public ResponseEntity<?> verifyOtp(@RequestBody OtpVerificationRequest request) {
+        User user = userRepository.findByEmail(request.getEmail()).orElse(null);
+        if (user == null || !otpservice.validateOtp(user, request.getOtpCode())) {
+            return ResponseEntity.badRequest().body(new ErrorResponse("Invalid or expired OTP"));
+        }
+        otpservice.clearOtp(user);
+        return ResponseEntity.ok(new SuccessResponse("OTP verified successfully!", user.getId()));
+    }
 
-		User user = userRepository.findByEmail(request.getEmail()).orElse(null);
-		if (user == null || !otpservice.validateOtp(user, request.getOtpCode())) {
-			return ResponseEntity.badRequest().body(new ErrorResponse("Invalid or expired OTP"));
-		}
-		otpservice.clearOtp(user);
-		return ResponseEntity.ok(new SuccessResponse("OTP verified successfully!", user.getId()));
-	}
+    @PostMapping("/resetPassword")
+    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest request,
+                                          @RequestParam String newPassword) {
+        User user = userRepository.findByEmail(request.getEmail()).orElse(null);
+        if (user == null || user.getOtp() != null) {
+            return ResponseEntity.badRequest().body(new ErrorResponse("User not found or OTP not cleared"));
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        return ResponseEntity.ok(new SuccessResponse("Password reset successfully!", user.getId()));
+    }
 
-	@PostMapping("/resetPassword")
-	public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest request,
-			@RequestParam String newPassword) {
-		User user = userRepository.findByEmail(request.getEmail()).orElse(null);
-		if (user == null || user.getOtp() != null) {
-			return ResponseEntity.badRequest().body(new ErrorResponse("User not found"));
-		}
-		user.setPassword(passwordEncoder.encode(newPassword));
-		userRepository.save(user);
-		return ResponseEntity.ok(new SuccessResponse("Password reset successfully!", user.getId()));
-	}
+    @GetMapping("/test")
+    public String test() {
+        return "Backend is running!";
+    }
 
-	@GetMapping("/test")
-	public String test() {
-		return "Backend is running!";
-	}
+    static class SuccessResponse {
+        private String message;
+        private UUID id;
 
-	static class SuccessResponse {
-		private String message;
-		private UUID id;
+        public SuccessResponse(String message, UUID id) {
+            this.message = message;
+            this.id = id;
+        }
 
-		public SuccessResponse(String message, UUID id) {
-			this.message = message;
-			this.id = id;
-		}
+        public String getMessage() {
+            return message;
+        }
 
-		public String getMessage() {
-			return message;
-		}
+        public UUID getId() {
+            return id;
+        }
+    }
 
-		public UUID getId() {
-			return id;
-		}
-	}
+    static class LoginResponse {
+        private String message;
+        private UUID id;
+        private String token;
 
-	static class LoginResponse {
-		private String message;
-		private UUID id;
-		private String token;
+        public LoginResponse(String message, UUID id, String token) {
+            this.message = message;
+            this.id = id;
+            this.token = token;
+        }
 
-		public LoginResponse(String message, UUID id, String token) {
-			this.message = message;
-			this.id = id;
-			this.token = token;
-		}
+        public String getMessage() {
+            return message;
+        }
 
-		public String getMessage() {
-			return message;
-		}
+        public UUID getId() {
+            return id;
+        }
 
-		public UUID getId() {
-			return id;
-		}
+        public String getToken() {
+            return token;
+        }
+    }
 
-		public String getToken() {
-			return token;
-		}
-	}
+    static class ErrorResponse {
+        private String message;
 
-	static class ErrorResponse {
-		private String message;
+        public ErrorResponse(String message) {
+            this.message = message;
+        }
 
-		public ErrorResponse(String message) {
-			this.message = message;
-		}
+        public String getMessage() {
+            return message;
+        }
 
-		public String getMessage() {
-			return message;
-		}
-
-		public void setMessage(String message) {
-			this.message = message;
-		}
-	}
+        public void setMessage(String message) {
+            this.message = message;
+        }
+    }
 }

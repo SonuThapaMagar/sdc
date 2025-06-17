@@ -1,5 +1,6 @@
 package com.furEverHome.entity;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -100,6 +101,9 @@ public class PetCenter {
 	// Authentication
 	@Column(name = "password", nullable = false)
 	private String password;
+	
+	@Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
 
 	public PetCenter() {
 	}
@@ -134,6 +138,7 @@ public class PetCenter {
 		this.insurancePath = insurancePath;
 		this.taxExemptPath = taxExemptPath;
 		this.password = password;
+		this.createdAt = LocalDateTime.now();
 	}
 
 	// Getters and Setters
@@ -344,5 +349,13 @@ public class PetCenter {
 	public void setPassword(String password) {
 		this.password = password;
 	}
+	
+	public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
 
 }
