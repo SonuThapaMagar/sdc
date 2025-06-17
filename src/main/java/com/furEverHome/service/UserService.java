@@ -63,6 +63,7 @@ public class UserService {
 		return userRepository.findAll().stream().filter(user -> user.getRole() == Role.USER)
 				.map(this::mapToUserResponse).collect(Collectors.toList());
 	}
+	
 
 	@Transactional
 	public UserResponse updateUser(UUID userId, UserUpdateRequest updateRequest) {
@@ -95,6 +96,13 @@ public class UserService {
 		return mapToUserResponse(user);
 	}
 
+	@Transactional
+	public UserResponse getUserById(UUID userId) {
+	    User user = userRepository.findById(userId)
+	            .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+	    return mapToUserResponse(user);
+	}
+	
 	@Transactional
 	public void deleteUser(UUID userId) {
 		User user = userRepository.findById(userId)
