@@ -1,27 +1,10 @@
-// src/pages/superadmin/pages/PetMgmt.jsx
 import React, { useState, useEffect } from 'react';
 import api from '../../../api/api';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { Download, Pencil, Trash2 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { toast } from 'react-toastify';
-import { TOAST_MESSAGES } from '../../../constants/toastMessages.jsx';
-import { Dialog, Transition } from '@headlessui/react';
-import { Fragment } from 'react';
 
-// Mock stats data (replace with API data later)
 const petStats = [
     { month: "Jan", pets: 45 },
     { month: "Feb", pets: 60 },
@@ -55,7 +38,6 @@ const PetMgmt = () => {
     });
     const [formErrors, setFormErrors] = useState({});
 
-    // Add authentication check
     useEffect(() => {
         const token = localStorage.getItem('superadminToken');
         if (!token) {
@@ -194,10 +176,10 @@ const PetMgmt = () => {
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, 'Pets');
             XLSX.writeFile(workbook, 'pets.xlsx');
-            toast.success(TOAST_MESSAGES.EXPORT_EXCEL_SUCCESS);
+            toast.success('Exported to Excel successfully.');
         } catch (err) {
             console.error('Export to Excel error:', err);
-            toast.error(TOAST_MESSAGES.EXPORT_EXCEL_FAILED);
+            toast.error('Failed to export to Excel.');
         }
     };
 
@@ -217,15 +199,15 @@ const PetMgmt = () => {
             {/* Charts Section */}
             {!loading && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                    <Card className="bg-white border border-gray-100 shadow-sm">
-                        <CardHeader className="flex flex-row items-center justify-between">
-                            <CardTitle className="text-xl font-semibold text-gray-800">Pet Statistics</CardTitle>
-                            <Button onClick={exportToExcel} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white">
+                    <div className="bg-white border border-gray-100 shadow-sm rounded-lg">
+                        <div className="flex flex-row items-center justify-between p-6 border-b border-gray-100">
+                            <div className="text-xl font-semibold text-gray-800">Pet Statistics</div>
+                            <button onClick={exportToExcel} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition">
                                 <Download className="w-4 h-4" />
                                 Export to Excel
-                            </Button>
-                        </CardHeader>
-                        <CardContent>
+                            </button>
+                        </div>
+                        <div className="p-6">
                             <div className="h-[300px]">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={petStats}>
@@ -236,14 +218,14 @@ const PetMgmt = () => {
                                     </BarChart>
                                 </ResponsiveContainer>
                             </div>
-                        </CardContent>
-                    </Card>
+                        </div>
+                    </div>
 
-                    <Card className="bg-white border border-gray-100 shadow-sm">
-                        <CardHeader>
-                            <CardTitle className="text-xl font-semibold text-gray-800">Adoption Status</CardTitle>
-                        </CardHeader>
-                        <CardContent>
+                    <div className="bg-white border border-gray-100 shadow-sm rounded-lg">
+                        <div className="p-6 border-b border-gray-100">
+                            <div className="text-xl font-semibold text-gray-800">Adoption Status</div>
+                        </div>
+                        <div className="p-6">
                             <div className="h-[300px]">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <PieChart>
@@ -264,39 +246,39 @@ const PetMgmt = () => {
                                     </PieChart>
                                 </ResponsiveContainer>
                             </div>
-                        </CardContent>
-                    </Card>
+                        </div>
+                    </div>
                 </div>
             )}
 
             {/* Table Section */}
             {!loading && (
-                <Card className="bg-white border border-gray-100 shadow-sm">
-                    <CardHeader>
-                        <CardTitle className="text-xl font-semibold text-gray-800">All Pets</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Name</TableHead>
-                                    <TableHead>Breed</TableHead>
-                                    <TableHead>Age</TableHead>
-                                    <TableHead>Gender</TableHead>
-                                    <TableHead>Location</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead className="text-right">Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
+                <div className="bg-white border border-gray-100 shadow-sm rounded-lg">
+                    <div className="p-6 border-b border-gray-100">
+                        <div className="text-xl font-semibold text-gray-800">All Pets</div>
+                    </div>
+                    <div className="p-6 overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-50">
+                                <tr>
+                                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Breed</th>
+                                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Age</th>
+                                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gender</th>
+                                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
                                 {pets.map((pet) => (
-                                    <TableRow key={pet.id}>
-                                        <TableCell>{pet.name || 'N/A'}</TableCell>
-                                        <TableCell>{pet.breed || 'N/A'}</TableCell>
-                                        <TableCell>{pet.age || 'N/A'}</TableCell>
-                                        <TableCell>{pet.gender || 'N/A'}</TableCell>
-                                        <TableCell>{pet.location || 'N/A'}</TableCell>
-                                        <TableCell>
+                                    <tr key={pet.id}>
+                                        <td className="px-4 py-2 whitespace-nowrap">{pet.name || 'N/A'}</td>
+                                        <td className="px-4 py-2 whitespace-nowrap">{pet.breed || 'N/A'}</td>
+                                        <td className="px-4 py-2 whitespace-nowrap">{pet.age || 'N/A'}</td>
+                                        <td className="px-4 py-2 whitespace-nowrap">{pet.gender || 'N/A'}</td>
+                                        <td className="px-4 py-2 whitespace-nowrap">{pet.location || 'N/A'}</td>
+                                        <td className="px-4 py-2 whitespace-nowrap">
                                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                                                 pet.status === 'AVAILABLE' 
                                                     ? 'bg-green-100 text-green-800' 
@@ -304,246 +286,166 @@ const PetMgmt = () => {
                                             }`}>
                                                 {pet.status || 'N/A'}
                                             </span>
-                                        </TableCell>
-                                        <TableCell className="text-right">
+                                        </td>
+                                        <td className="px-4 py-2 whitespace-nowrap text-right">
                                             <div className="flex justify-end gap-2">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() => handleEdit(pet.id)}
+                                                <button
+                                                    className="p-2 rounded hover:bg-blue-100"
                                                     title="Edit"
+                                                    onClick={() => handleEdit(pet.id)}
                                                 >
                                                     <Pencil className="w-4 h-4 text-blue-600" />
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() => handleDelete(pet.id)}
+                                                </button>
+                                                <button
+                                                    className="p-2 rounded hover:bg-red-100"
                                                     title="Delete"
+                                                    onClick={() => handleDelete(pet.id)}
                                                 >
                                                     <Trash2 className="w-4 h-4 text-red-600" />
-                                                </Button>
+                                                </button>
                                             </div>
-                                        </TableCell>
-                                    </TableRow>
+                                        </td>
+                                    </tr>
                                 ))}
                                 {pets.length === 0 && (
-                                    <TableRow>
-                                        <TableCell colSpan={7} className="text-center text-gray-600">
+                                    <tr>
+                                        <td colSpan={7} className="text-center text-gray-600">
                                             No pets found.
-                                        </TableCell>
-                                    </TableRow>
+                                        </td>
+                                    </tr>
                                 )}
-                            </TableBody>
-                        </Table>
-                    </CardContent>
-                </Card>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             )}
 
             {/* Delete Confirmation Modal */}
-            <Transition appear show={showDeleteConfirm} as={Fragment}>
-                <Dialog as="div" className="relative z-10" onClose={() => setShowDeleteConfirm(false)}>
-                    <Transition.Child
-                        as={Fragment}
-                        enter="ease-out duration-300"
-                        enterFrom="opacity-0"
-                        enterTo="opacity-100"
-                        leave="ease-in duration-200"
-                        leaveFrom="opacity-100"
-                        leaveTo="opacity-0"
-                    >
-                        <div className="fixed inset-0 bg-black bg-opacity-25" />
-                    </Transition.Child>
-
-                    <div className="fixed inset-0 overflow-y-auto">
-                        <div className="flex min-h-full items-center justify-center p-4 text-center">
-                            <Transition.Child
-                                as={Fragment}
-                                enter="ease-out duration-300"
-                                enterFrom="opacity-0 scale-95"
-                                enterTo="opacity-100 scale-100"
-                                leave="ease-in duration-200"
-                                leaveFrom="opacity-100 scale-100"
-                                leaveTo="opacity-0 scale-95"
+            {showDeleteConfirm && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
+                    <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+                        <div className="font-semibold text-lg mb-2">Confirm Deletion</div>
+                        <div className="text-gray-600 mb-4">Are you sure you want to delete this pet? This action cannot be undone.</div>
+                        <div className="mt-4 flex justify-end gap-2">
+                            <button
+                                type="button"
+                                className="bg-gray-300 text-gray-700 hover:bg-gray-400 px-4 py-2 rounded"
+                                onClick={() => setShowDeleteConfirm(false)}
                             >
-                                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                                    <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
-                                        Confirm Deletion
-                                    </Dialog.Title>
-                                    <div className="mt-2">
-                                        <p className="text-sm text-gray-500">
-                                            Are you sure you want to delete this pet? This action cannot be undone.
-                                        </p>
-                                    </div>
-                                    <div className="mt-4 flex justify-end gap-2">
-                                        <Button
-                                            type="button"
-                                            className="bg-gray-300 text-gray-700 hover:bg-gray-400"
-                                            onClick={() => setShowDeleteConfirm(false)}
-                                        >
-                                            Cancel
-                                        </Button>
-                                        <Button
-                                            type="button"
-                                            className="bg-red-600 text-white hover:bg-red-700"
-                                            onClick={confirmDelete}
-                                        >
-                                            Confirm
-                                        </Button>
-                                    </div>
-                                </Dialog.Panel>
-                            </Transition.Child>
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                className="bg-red-600 text-white hover:bg-red-700 px-4 py-2 rounded"
+                                onClick={confirmDelete}
+                            >
+                                Confirm
+                            </button>
                         </div>
                     </div>
-                </Dialog>
-            </Transition>
+                </div>
+            )}
 
             {/* Edit Modal */}
-            <Transition appear show={Boolean(editPet)} as={Fragment}>
-                <Dialog as="div" className="relative z-10" onClose={() => {
-                    setEditPet(null);
-                    setFormErrors({});
-                }}>
-                    <Transition.Child
-                        as={Fragment}
-                        enter="ease-out duration-300"
-                        enterFrom="opacity-0"
-                        enterTo="opacity-100"
-                        leave="ease-in duration-200"
-                        leaveFrom="opacity-100"
-                        leaveTo="opacity-0"
-                    >
-                        <div className="fixed inset-0 bg-black bg-opacity-25" />
-                    </Transition.Child>
-
-                    <div className="fixed inset-0 overflow-y-auto">
-                        <div className="flex min-h-full items-center justify-center p-4 text-center">
-                            <Transition.Child
-                                as={Fragment}
-                                enter="ease-out duration-300"
-                                enterFrom="opacity-0 scale-95"
-                                enterTo="opacity-100 scale-100"
-                                leave="ease-in duration-200"
-                                leaveFrom="opacity-100 scale-100"
-                                leaveTo="opacity-0 scale-95"
-                            >
-                                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                                    <Dialog.Title as="h3" className="text-lg font-semibold leading-6 text-gray-900">
-                                        Edit Pet
-                                    </Dialog.Title>
-                                    <div className="mt-2">
-                                        <form
-                                            onSubmit={(e) => {
-                                                e.preventDefault();
-                                                handleUpdate();
-                                            }}
-                                            className="space-y-4"
-                                        >
-                                            <div>
-                                                <Label htmlFor="name">Name</Label>
-                                                <Input
-                                                    id="name"
-                                                    value={formData.name}
-                                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                                    className={formErrors.name ? "border-red-500" : ""}
-                                                />
-                                                {formErrors.name && <p className="text-sm text-red-500">{formErrors.name}</p>}
-                                            </div>
-                                            <div>
-                                                <Label htmlFor="breed">Breed</Label>
-                                                <Input
-                                                    id="breed"
-                                                    value={formData.breed}
-                                                    onChange={(e) => setFormData({ ...formData, breed: e.target.value })}
-                                                    className={formErrors.breed ? "border-red-500" : ""}
-                                                />
-                                                {formErrors.breed && <p className="text-sm text-red-500">{formErrors.breed}</p>}
-                                            </div>
-                                            <div>
-                                                <Label htmlFor="age">Age</Label>
-                                                <Input
-                                                    id="age"
-                                                    type="number"
-                                                    value={formData.age}
-                                                    onChange={(e) => setFormData({ ...formData, age: e.target.value })}
-                                                    className={formErrors.age ? "border-red-500" : ""}
-                                                />
-                                                {formErrors.age && <p className="text-sm text-red-500">{formErrors.age}</p>}
-                                            </div>
-                                            <div>
-                                                <Label htmlFor="gender">Gender</Label>
-                                                <Input
-                                                    id="gender"
-                                                    value={formData.gender}
-                                                    onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-                                                    className={formErrors.gender ? "border-red-500" : ""}
-                                                />
-                                                {formErrors.gender && <p className="text-sm text-red-500">{formErrors.gender}</p>}
-                                            </div>
-                                            <div>
-                                                <Label htmlFor="description">Description</Label>
-                                                <textarea
-                                                    id="description"
-                                                    value={formData.description}
-                                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                                    className={`w-full p-2 border rounded ${formErrors.description ? 'border-red-500' : ''}`}
-                                                    rows={5}
-                                                />
-                                                {formErrors.description && <p className="text-sm text-red-500">{formErrors.description}</p>}
-                                            </div>
-                                            <div>
-                                                <Label htmlFor="location">Location</Label>
-                                                <Input
-                                                    id="location"
-                                                    value={formData.location}
-                                                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                                                    className={formErrors.location ? "border-red-500" : ""}
-                                                />
-                                                {formErrors.location && <p className="text-sm text-red-500">{formErrors.location}</p>}
-                                            </div>
-                                            <div>
-                                                <Label htmlFor="status">Status</Label>
-                                                <Input
-                                                    id="status"
-                                                    value={formData.status}
-                                                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                                                    className={formErrors.status ? "border-red-500" : ""}
-                                                />
-                                                {formErrors.status && <p className="text-sm text-red-500">{formErrors.status}</p>}
-                                            </div>
-                                            <div>
-                                                <Label htmlFor="centerId">Center ID</Label>
-                                                <Input
-                                                    id="centerId"
-                                                    value={formData.centerId}
-                                                    onChange={(e) => setFormData({ ...formData, centerId: e.target.value })}
-                                                    className={formErrors.centerId ? "border-red-500" : ""}
-                                                />
-                                                {formErrors.centerId && <p className="text-sm text-red-500">{formErrors.centerId}</p>}
-                                            </div>
-                                            <div className="mt-4 flex justify-end gap-2">
-                                                <Button
-                                                    type="button"
-                                                    className="bg-gray-300 text-gray-600 hover:bg-gray-400"
-                                                    onClick={() => {
-                                                        setEditPet(null);
-                                                        setFormErrors({});
-                                                    }}
-                                                >
-                                                    Cancel
-                                                </Button>
-                                                <Button type="submit" className="bg-[#757FF6] text-white hover:bg-[#6a73e0]">
-                                                    Save
-                                                </Button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </Dialog.Panel>
-                            </Transition.Child>
-                        </div>
+            {editPet && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
+                    <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+                        <div className="font-semibold text-lg mb-2">Edit Pet</div>
+                        <form
+                            onSubmit={e => { e.preventDefault(); handleUpdate(); }}
+                            className="space-y-4"
+                        >
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                                <input
+                                    className={`w-full p-2 border rounded ${formErrors.name ? 'border-red-500' : ''}`}
+                                    value={formData.name}
+                                    onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                />
+                                {formErrors.name && <p className="text-sm text-red-500">{formErrors.name}</p>}
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Breed</label>
+                                <input
+                                    className={`w-full p-2 border rounded ${formErrors.breed ? 'border-red-500' : ''}`}
+                                    value={formData.breed}
+                                    onChange={e => setFormData({ ...formData, breed: e.target.value })}
+                                />
+                                {formErrors.breed && <p className="text-sm text-red-500">{formErrors.breed}</p>}
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Age</label>
+                                <input
+                                    type="number"
+                                    className={`w-full p-2 border rounded ${formErrors.age ? 'border-red-500' : ''}`}
+                                    value={formData.age}
+                                    onChange={e => setFormData({ ...formData, age: e.target.value })}
+                                />
+                                {formErrors.age && <p className="text-sm text-red-500">{formErrors.age}</p>}
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+                                <input
+                                    className={`w-full p-2 border rounded ${formErrors.gender ? 'border-red-500' : ''}`}
+                                    value={formData.gender}
+                                    onChange={e => setFormData({ ...formData, gender: e.target.value })}
+                                />
+                                {formErrors.gender && <p className="text-sm text-red-500">{formErrors.gender}</p>}
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                                <textarea
+                                    className={`w-full p-2 border rounded ${formErrors.description ? 'border-red-500' : ''}`}
+                                    value={formData.description}
+                                    onChange={e => setFormData({ ...formData, description: e.target.value })}
+                                    rows={5}
+                                />
+                                {formErrors.description && <p className="text-sm text-red-500">{formErrors.description}</p>}
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                                <input
+                                    className={`w-full p-2 border rounded ${formErrors.location ? 'border-red-500' : ''}`}
+                                    value={formData.location}
+                                    onChange={e => setFormData({ ...formData, location: e.target.value })}
+                                />
+                                {formErrors.location && <p className="text-sm text-red-500">{formErrors.location}</p>}
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                                <input
+                                    className={`w-full p-2 border rounded ${formErrors.status ? 'border-red-500' : ''}`}
+                                    value={formData.status}
+                                    onChange={e => setFormData({ ...formData, status: e.target.value })}
+                                />
+                                {formErrors.status && <p className="text-sm text-red-500">{formErrors.status}</p>}
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Center ID</label>
+                                <input
+                                    className={`w-full p-2 border rounded ${formErrors.centerId ? 'border-red-500' : ''}`}
+                                    value={formData.centerId}
+                                    onChange={e => setFormData({ ...formData, centerId: e.target.value })}
+                                />
+                                {formErrors.centerId && <p className="text-sm text-red-500">{formErrors.centerId}</p>}
+                            </div>
+                            <div className="mt-4 flex justify-end gap-2">
+                                <button
+                                    type="button"
+                                    className="bg-gray-300 text-gray-600 hover:bg-gray-400 px-4 py-2 rounded"
+                                    onClick={() => {
+                                        setEditPet(null);
+                                        setFormErrors({});
+                                    }}
+                                >
+                                    Cancel
+                                </button>
+                                <button type="submit" className="bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded">Save</button>
+                            </div>
+                        </form>
                     </div>
-                </Dialog>
-            </Transition>
+                </div>
+            )}
         </div>
     );
 };

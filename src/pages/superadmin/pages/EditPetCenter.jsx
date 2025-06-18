@@ -1,179 +1,169 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useToast } from "@/components/ui/use-toast";
 
-const EditUser = () => {
-    const { userId } = useParams();
+const EditPetCenter = () => {
+    const { centerId } = useParams();
     const navigate = useNavigate();
-    const { toast } = useToast();
-    const [user, setUser] = useState({
-        fullName: '',
-        email: '',
-        phone: '',
+    const [center, setCenter] = useState({
+        shelterName: '',
         address: '',
-        role: ''
+        phone: '',
+        email: '',
+        description: ''
     });
     const [loading, setLoading] = useState(false);
+    const [errors, setErrors] = useState({});
+    const [toastMsg, setToastMsg] = useState(null);
 
     useEffect(() => {
-        const fetchUser = async () => {
+        const fetchCenter = async () => {
             const token = localStorage.getItem('superadminToken');
             if (!token) {
-                toast({
-                    variant: "destructive",
-                    title: "Authentication Error",
-                    description: "No superadmin token found. Please log in.",
-                });
+                setToastMsg({ type: 'error', text: 'No superadmin token found. Please log in.' });
                 navigate('/superadmin/login');
                 return;
             }
-
             try {
-                const response = await axios.get(`http://localhost:8080/api/superadmin/users/${userId}`, {
+                const response = await axios.get(`http://localhost:8080/api/superadmin/pet-centers/${centerId}`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
                 });
-                setUser(response.data);
+                setCenter(response.data);
             } catch (error) {
-                toast({
-                    variant: "destructive",
-                    title: "Error",
-                    description: "Failed to fetch user details.",
-                });
-                console.error("Error fetching user:", error);
+                setToastMsg({ type: 'error', text: 'Failed to fetch pet center details.' });
             }
         };
+        fetchCenter();
+    }, [centerId, navigate]);
 
-        fetchUser();
-    }, [userId, navigate, toast]);
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setCenter(prev => ({ ...prev, [name]: value }));
+        setErrors(prev => ({ ...prev, [name]: undefined }));
+    };
+
+    const validateForm = () => {
+        const newErrors = {};
+        if (!center.shelterName.trim()) newErrors.shelterName = "Shelter Name is required.";
+        if (!center.address.trim()) newErrors.address = "Address is required.";
+        if (!center.phone.trim()) newErrors.phone = "Phone is required.";
+        if (!center.email.trim()) newErrors.email = "Email is required.";
+        else if (!/\S+@\S+\.\S+/.test(center.email)) newErrors.email = "Invalid email format.";
+        if (!center.description.trim()) newErrors.description = "Description is required.";
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (!validateForm()) {
+            setToastMsg({ type: 'error', text: 'Please correct the errors in the form.' });
+            return;
+        }
         setLoading(true);
         const token = localStorage.getItem('superadminToken');
-
         try {
-            await axios.put(`http://localhost:8080/api/superadmin/users/${userId}`, user, {
+            await axios.put(`http://localhost:8080/api/superadmin/pet-centers/${centerId}`, center, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
             });
-            toast({
-                title: "Success",
-                description: "User updated successfully!",
-            });
-            navigate('/superadmin/users');
+            setToastMsg({ type: 'success', text: 'Pet center updated successfully!' });
+            setTimeout(() => navigate('/superadmin/pet-centers'), 1000);
         } catch (error) {
-            toast({
-                variant: "destructive",
-                title: "Error",
-                description: "Failed to update user.",
-            });
-            console.error("Error updating user:", error);
+            setToastMsg({ type: 'error', text: 'Failed to update pet center.' });
         } finally {
             setLoading(false);
         }
     };
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setUser(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
-
     return (
-        <div className="p-6 bg-gray-100">
-            <h1 className="text-2xl font-bold text-gray-800 mb-8">Edit User</h1>
-            <Card className="bg-white border border-gray-100 shadow-sm">
-                <CardHeader>
-                    <CardTitle className="text-xl font-semibold text-gray-800">Edit User Details</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="space-y-4">
-                            <div>
-                                <Label htmlFor="fullName">Full Name</Label>
-                                <Input
-                                    id="fullName"
-                                    name="fullName"
-                                    value={user.fullName}
-                                    onChange={handleChange}
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <Label htmlFor="email">Email</Label>
-                                <Input
-                                    id="email"
-                                    name="email"
-                                    type="email"
-                                    value={user.email}
-                                    onChange={handleChange}
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <Label htmlFor="phone">Phone</Label>
-                                <Input
-                                    id="phone"
-                                    name="phone"
-                                    value={user.phone}
-                                    onChange={handleChange}
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <Label htmlFor="address">Address</Label>
-                                <Input
-                                    id="address"
-                                    name="address"
-                                    value={user.address}
-                                    onChange={handleChange}
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <Label htmlFor="role">Role</Label>
-                                <Select
-                                    value={user.role}
-                                    onValueChange={(value) => setUser(prev => ({ ...prev, role: value }))}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select role" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="user">User</SelectItem>
-                                        <SelectItem value="admin">Admin</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-                        <div className="flex gap-4">
-                            <Button type="submit" disabled={loading}>
-                                {loading ? "Saving..." : "Save Changes"}
-                            </Button>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={() => navigate('/superadmin/users')}
-                            >
-                                Cancel
-                            </Button>
-                        </div>
-                    </form>
-                </CardContent>
-            </Card>
+        <div className="p-6 bg-gray-100 min-h-screen">
+            <div className="w-full max-w-2xl mx-auto bg-white rounded-lg shadow-md p-8">
+                <h1 className="text-2xl font-bold text-gray-800 mb-8">Edit Pet Center</h1>
+                {toastMsg && (
+                    <div className={`mb-4 p-3 rounded ${toastMsg.type === 'error' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>{toastMsg.text}</div>
+                )}
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="grid gap-2">
+                        <label htmlFor="shelterName" className="block text-sm font-medium text-gray-700 mb-1">Shelter Name</label>
+                        <input
+                            id="shelterName"
+                            name="shelterName"
+                            value={center.shelterName}
+                            onChange={handleChange}
+                            className={`w-full p-2 border rounded ${errors.shelterName ? 'border-red-500' : ''}`}
+                        />
+                        {errors.shelterName && <p className="text-sm text-red-500">{errors.shelterName}</p>}
+                    </div>
+                    <div className="grid gap-2">
+                        <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                        <input
+                            id="address"
+                            name="address"
+                            value={center.address}
+                            onChange={handleChange}
+                            className={`w-full p-2 border rounded ${errors.address ? 'border-red-500' : ''}`}
+                        />
+                        {errors.address && <p className="text-sm text-red-500">{errors.address}</p>}
+                    </div>
+                    <div className="grid gap-2">
+                        <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                        <input
+                            id="phone"
+                            name="phone"
+                            value={center.phone}
+                            onChange={handleChange}
+                            className={`w-full p-2 border rounded ${errors.phone ? 'border-red-500' : ''}`}
+                        />
+                        {errors.phone && <p className="text-sm text-red-500">{errors.phone}</p>}
+                    </div>
+                    <div className="grid gap-2">
+                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <input
+                            id="email"
+                            name="email"
+                            type="email"
+                            value={center.email}
+                            onChange={handleChange}
+                            className={`w-full p-2 border rounded ${errors.email ? 'border-red-500' : ''}`}
+                        />
+                        {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
+                    </div>
+                    <div className="grid gap-2">
+                        <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                        <textarea
+                            id="description"
+                            name="description"
+                            value={center.description}
+                            onChange={handleChange}
+                            className={`w-full p-2 border rounded ${errors.description ? 'border-red-500' : ''}`}
+                            rows={4}
+                        />
+                        {errors.description && <p className="text-sm text-red-500">{errors.description}</p>}
+                    </div>
+                    <div className="flex justify-end gap-4">
+                        <button
+                            type="button"
+                            className="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300"
+                            onClick={() => navigate('/superadmin/pet-centers')}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                            disabled={loading}
+                        >
+                            {loading ? 'Saving...' : 'Save Changes'}
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 };
 
-export default EditUser; 
+export default EditPetCenter; 

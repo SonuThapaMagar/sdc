@@ -1,30 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { Download, Pencil, Trash2 } from 'lucide-react';
-import * as XLSX from 'xlsx';
-import { useToast } from "@/components/ui/use-toast";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 const userStats = [
     { month: "Jan", users: 120 },
@@ -39,41 +17,31 @@ const UserManagement = () => {
     const [users, setUsers] = useState([]);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [userToDelete, setUserToDelete] = useState(null);
+    const [toastMsg, setToastMsg] = useState(null);
     const navigate = useNavigate();
-    const { toast } = useToast();
 
     useEffect(() => {
         const fetchUsers = async () => {
             const token = localStorage.getItem('superadminToken');
             if (!token) {
-                toast({
-                    variant: "destructive",
-                    title: "Authentication Error",
-                    description: "No superadmin token found. Please log in.",
-                });
+                setToastMsg({ type: 'error', text: 'No superadmin token found. Please log in.' });
                 navigate('/superadmin/login');
                 return;
             }
-
             try {
                 const response = await axios.get('http://localhost:8080/api/superadmin/users', {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
                 });
-                setUsers(response.data); // Adjust if response.data is wrapped (e.g., response.data.data)
+                setUsers(response.data);
             } catch (error) {
-                toast({
-                    variant: "destructive",
-                    title: "Error",
-                    description: "Failed to fetch users. Check console for details.",
-                });
+                setToastMsg({ type: 'error', text: 'Failed to fetch users. Check console for details.' });
                 console.error("Error fetching users:", error);
             }
         };
-
         fetchUsers();
-    }, [navigate, toast]);
+    }, [navigate]);
 
     const handleEdit = (userId) => {
         navigate(`/superadmin/users/edit/${userId}`);
@@ -87,15 +55,10 @@ const UserManagement = () => {
     const handleDeleteConfirm = async () => {
         const token = localStorage.getItem('superadminToken');
         if (!token) {
-            toast({
-                variant: "destructive",
-                title: "Authentication Error",
-                description: "No superadmin token found. Please log in.",
-            });
+            setToastMsg({ type: 'error', text: 'No superadmin token found. Please log in.' });
             navigate('/superadmin/login');
             return;
         }
-
         try {
             await axios.delete(`http://localhost:8080/api/superadmin/users/${userToDelete}`, {
                 headers: {
@@ -103,16 +66,9 @@ const UserManagement = () => {
                 },
             });
             setUsers(users.filter(user => user.id !== userToDelete));
-            toast({
-                title: "Success",
-                description: "User deleted successfully!",
-            });
+            setToastMsg({ type: 'success', text: 'User deleted successfully!' });
         } catch (error) {
-            toast({
-                variant: "destructive",
-                title: "Error",
-                description: "Failed to delete user. Check console for details.",
-            });
+            setToastMsg({ type: 'error', text: 'Failed to delete user. Check console for details.' });
             console.error("Error deleting user:", error);
         } finally {
             setDeleteDialogOpen(false);
@@ -121,24 +77,30 @@ const UserManagement = () => {
     };
 
     const exportToExcel = () => {
+        import('xlsx').then(XLSX => {
         const worksheet = XLSX.utils.json_to_sheet(users);
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "Users");
         XLSX.writeFile(workbook, "users.xlsx");
+        });
     };
 
     return (
-        <div className="p-6 bg-gray-100">
+        <div className="p-6 bg-gray-100 min-h-screen">
             <h1 className="text-2xl font-bold text-gray-800 mb-8">User Management</h1>
-            <Card className="bg-white border border-gray-100 shadow-sm mb-8">
-                <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle className="text-xl font-semibold text-gray-800">User Statistics</CardTitle>
-                    <Button onClick={exportToExcel} className="flex items-center gap-2">
+            {toastMsg && (
+                <div className={`mb-4 p-3 rounded ${toastMsg.type === 'error' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>{toastMsg.text}</div>
+            )}
+            {/* User Statistics Card */}
+            <div className="bg-white border border-gray-100 shadow-sm mb-8 rounded-lg">
+                <div className="flex flex-row items-center justify-between p-6 border-b border-gray-100">
+                    <div className="text-xl font-semibold text-gray-800">User Statistics</div>
+                    <button onClick={exportToExcel} className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
                         <Download className="w-4 h-4" />
                         Export to Excel
-                    </Button>
-                </CardHeader>
-                <CardContent>
+                    </button>
+                </div>
+                <div className="p-6">
                     <div className="h-[300px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={userStats}>
@@ -149,74 +111,80 @@ const UserManagement = () => {
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
-                </CardContent>
-            </Card>
-            <Card className="bg-white border border-gray-100 shadow-sm">
-                <CardHeader>
-                    <CardTitle className="text-xl font-semibold text-gray-800">All Users</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Full Name</TableHead>
-                                <TableHead>Email</TableHead>
-                                <TableHead>Phone</TableHead>
-                                <TableHead>Address</TableHead>
-                                <TableHead>Role</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
+                </div>
+            </div>
+            {/* All Users Card */}
+            <div className="bg-white border border-gray-100 shadow-sm rounded-lg">
+                <div className="p-6 border-b border-gray-100">
+                    <div className="text-xl font-semibold text-gray-800">All Users</div>
+                </div>
+                <div className="p-6 overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                            <tr>
+                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Full Name</th>
+                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
+                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th>
+                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
                             {users.map((user) => (
-                                <TableRow key={user.id}>
-                                    <TableCell>{user.fullName}</TableCell>
-                                    <TableCell>{user.email}</TableCell>
-                                    <TableCell>{user.phone}</TableCell>
-                                    <TableCell>{user.address}</TableCell>
-                                    <TableCell>{user.role}</TableCell>
-                                    <TableCell className="text-right">
+                                <tr key={user.id}>
+                                    <td className="px-4 py-2 whitespace-nowrap">{user.fullName}</td>
+                                    <td className="px-4 py-2 whitespace-nowrap">{user.email}</td>
+                                    <td className="px-4 py-2 whitespace-nowrap">{user.phone}</td>
+                                    <td className="px-4 py-2 whitespace-nowrap">{user.address}</td>
+                                    <td className="px-4 py-2 whitespace-nowrap">{user.role}</td>
+                                    <td className="px-4 py-2 whitespace-nowrap text-right">
                                         <div className="flex justify-end gap-2">
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
+                                            <button
+                                                className="p-2 rounded hover:bg-blue-100"
+                                                title="Edit"
                                                 onClick={() => handleEdit(user.id)}
                                             >
-                                                <Pencil className="w-4 h-4" />
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
+                                                <Pencil className="w-4 h-4 text-blue-600" />
+                                            </button>
+                                            <button
+                                                className="p-2 rounded hover:bg-red-100"
+                                                title="Delete"
                                                 onClick={() => handleDeleteClick(user.id)}
                                             >
-                                                <Trash2 className="w-4 h-4" />
-                                            </Button>
+                                                <Trash2 className="w-4 h-4 text-red-600" />
+                                            </button>
                                         </div>
-                                    </TableCell>
-                                </TableRow>
+                                    </td>
+                                </tr>
                             ))}
-                        </TableBody>
-                    </Table>
-                </CardContent>
-            </Card>
-
-            <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete the user
-                            and remove their data from our servers.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDeleteConfirm}>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {/* Delete Confirmation Dialog */}
+            {deleteDialogOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
+                    <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm">
+                        <div className="font-semibold text-lg mb-2">Are you sure?</div>
+                        <div className="text-gray-600 mb-4">This action cannot be undone. This will permanently delete the user and remove their data from our servers.</div>
+                        <div className="flex justify-end gap-2">
+                            <button
+                                className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
+                                onClick={() => setDeleteDialogOpen(false)}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
+                                onClick={handleDeleteConfirm}
+                            >
                             Delete
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

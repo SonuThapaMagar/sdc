@@ -2,6 +2,9 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "@/pages/auth/Login";
 import SuperadminLayout from "@/pages/superadmin/layout/SuperadminLayout";
 import Dashboard from "@/pages/superadmin/Dashboard";
+import UserManagement from "../pages/superadmin/pages/UserManagement";
+import PetCenterMgmt from "../pages/superadmin/pages/PetCenterMgmt";
+import PetMgmt from "../pages/superadmin/pages/PetMgmt";
 
 export default function AppRoutes() {
   return (
@@ -12,9 +15,9 @@ export default function AppRoutes() {
       {/* Protected routes with layout */}
       <Route path="/superadmin" element={<SuperadminLayout />}>
         <Route path="dashboard" element={<Dashboard />} />
-        {/* <Route path="users" element={<UserManagement />} />
+        <Route path="users" element={<UserManagement />} />
         <Route path="pet-centers" element={<PetCenterMgmt />} />
-        <Route path="pets" element={<PetMgmt />} /> */}
+        <Route path="pets" element={<PetMgmt />} />
       </Route>
     </Routes>
   );
