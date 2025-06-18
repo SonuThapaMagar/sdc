@@ -9,7 +9,7 @@ export default function UserList({ users, onEdit, onDelete }) {
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Name
+                Full Name
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Email
@@ -33,12 +33,12 @@ export default function UserList({ users, onEdit, onDelete }) {
                     <div className="flex-shrink-0 h-10 w-10">
                       <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
                         <span className="text-gray-500 font-medium">
-                          {user.name?.charAt(0).toUpperCase()}
+                          {user.fullName?.charAt(0).toUpperCase()}
                         </span>
                       </div>
                     </div>
                     <div className="ml-4">
-                      <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                      <div className="text-sm font-medium text-gray-900">{user.fullName}</div>
                     </div>
                   </div>
                 </td>
