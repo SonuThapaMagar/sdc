@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import {
     RiMenuFoldLine,
     RiMenuUnfoldLine,
@@ -152,7 +152,7 @@ const SuperadminLayout = ({ children }) => {
                                 {collapsed ? <RiMenuUnfoldLine className="text-xl" /> : <RiMenuFoldLine className="text-xl" />}
                             </button>
                         </div>
-                        {children}
+                        <Outlet />
                     </div>
                 </main>
             </div>
