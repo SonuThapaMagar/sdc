@@ -1,40 +1,97 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaUsers, FaPaw, FaStore, FaHeart } from 'react-icons/fa';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-
-const stats = [
-  { title: 'Total Users', value: 1200, icon: <FaUsers className="text-blue-500 text-2xl" /> },
-  { title: 'Total Pets', value: 350, icon: <FaPaw className="text-pink-500 text-2xl" /> },
-  { title: 'Total Pet Centers', value: 15, icon: <FaStore className="text-green-500 text-2xl" /> },
-  { title: 'Total Adoptions', value: 200, icon: <FaHeart className="text-red-500 text-2xl" /> },
-];
-
-const barData = [
-  { month: 'Jan', users: 100 },
-  { month: 'Feb', users: 150 },
-  { month: 'Mar', users: 120 },
-  { month: 'Apr', users: 180 },
-  { month: 'May', users: 200 },
-  { month: 'Jun', users: 170 },
-];
-
-const pieData = [
-  { name: 'Center A', value: 5, color: '#34d399' },
-  { name: 'Center B', value: 4, color: '#60a5fa' },
-  { name: 'Center C', value: 6, color: '#f472b6' },
-];
-
-const recentActivities = [
-  { activity: 'User John Doe registered', time: '2 hours ago' },
-  { activity: 'Pet Bella adopted', time: '4 hours ago' },
-  { activity: 'New pet center opened', time: '1 day ago' },
-  { activity: 'User Jane Smith updated profile', time: '2 days ago' },
-];
+import { useNavigate } from 'react-router-dom';
+import api from '../../api/api';
+import { toast } from 'react-toastify';
 
 export default function Dashboard() {
+  const navigate = useNavigate();
+  const [stats, setStats] = useState([]);
+  const [barData, setBarData] = useState([]);
+  const [pieData, setPieData] = useState([]);
+  const [recentActivities, setRecentActivities] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const token = localStorage.getItem('superadminToken');
+    if (!token) {
+      toast.error('Please log in to access the dashboard');
+      navigate('/superadmin/login');
+      return;
+    }
+    fetchDashboardData();
+  }, [navigate]);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+
+      // Fetch dashboard stats
+      const statsResponse = await api.get('/api/superadmin/dashboard/stats');
+      const statsData = [
+        { title: 'Total Users', value: statsResponse.data.totalUsers, icon: <FaUsers className="text-blue-500 text-2xl" /> },
+        { title: 'Total Pets', value: statsResponse.data.totalPets, icon: <FaPaw className="text-pink-500 text-2xl" /> },
+        { title: 'Total Pet Centers', value: statsResponse.data.totalCenters, icon: <FaStore className="text-green-500 text-2xl" /> },
+        { title: 'Total Adoptions', value: statsResponse.data.totalAdoptions, icon: <FaHeart className="text-red-500 text-2xl" /> },
+      ];
+      setStats(statsData);
+
+      // Fetch monthly stats
+      const monthlyStatsResponse = await api.get('/api/superadmin/dashboard/monthly-stats');
+      const mappedBarData = monthlyStatsResponse.data.map(stat => ({
+        month: stat.month,
+        users: stat.users,
+      }));
+      setBarData(mappedBarData);
+
+      // Fetch pet centers distribution (mocked since no specific endpoint)
+      const petCentersResponse = await api.get('/api/superadmin/pet-centers');
+      const centersCount = petCentersResponse.data.reduce((acc, center) => {
+        acc[center.shelterName] = (acc[center.shelterName] || 0) + 1;
+        return acc;
+      }, {});
+      const colors = ['#34d399', '#60a5fa', '#f472b6', '#f59e0b', '#ef4444'];
+      const mappedPieData = Object.entries(centersCount).map(([name, value], index) => ({
+        name,
+        value,
+        color: colors[index % colors.length],
+      }));
+      setPieData(mappedPieData);
+
+      // Fetch recent activities
+      const activitiesResponse = await api.get('/api/superadmin/dashboard/recent-activities');
+      const mappedActivities = activitiesResponse.data.map(activity => ({
+        activity: activity.description,
+        time: activity.time,
+      }));
+      setRecentActivities(mappedActivities);
+    } catch (error) {
+      console.error('Failed to fetch dashboard data:', error);
+      if (error.response?.status === 403) {
+        toast.error('Permission denied. Ensure you have SUPERADMIN role.');
+        navigate('/superadmin/login');
+      } else if (error.response?.status === 401) {
+        toast.error('Please log in to view dashboard');
+        navigate('/superadmin/login');
+      } else {
+        toast.error('Failed to load dashboard data. Please try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="p-6 bg-gray-100 min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 sm:p-6 bg-gray-100 min-h-screen">
-      {/* Header */}
       <h1 className="text-2xl font-bold text-gray-800 mb-6">Dashboard</h1>
 
       {/* Stats Cards */}

@@ -7,6 +7,14 @@ import PetCenterMgmt from "../pages/superadmin/pages/PetCenterMgmt";
 import PetMgmt from "../pages/superadmin/pages/PetMgmt";
 import EditUserPage from "../pages/superadmin/pages/EditUser";
 
+const ProtectedRoute = ({ children }) => {
+  const token = localStorage.getItem('superadminToken');
+  if (!token) {
+    return <Navigate to="/superadmin/login" replace />;
+  }
+  return children;
+};
+
 export default function AppRoutes() {
   return (
     <Routes>
@@ -14,7 +22,11 @@ export default function AppRoutes() {
       <Route path="/superadmin/login" element={<Login />} />
       
       {/* Protected routes with layout */}
-      <Route path="/superadmin" element={<SuperadminLayout />}>
+      <Route path="/superadmin" element={
+        <ProtectedRoute>
+          <SuperadminLayout />
+        </ProtectedRoute>
+      }>
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="users" element={<UserManagement />} />
         <Route path="users/edit/:userId" element={<EditUserPage />} />

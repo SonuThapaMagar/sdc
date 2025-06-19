@@ -9,27 +9,42 @@ const api = axios.create({
   withCredentials: true,
 });
 
+// Request interceptor
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('superadminToken');
-    console.log('Request URL:', config.url, 'Token:', token ? 'Present' : 'None');
-    // Only add Authorization header if token exists (e.g., after login)
     if (token && config.url !== '/api/superadmin/auth/login') {
-      config.headers.Authorization = `Bearer ${token}`;
+      const formattedToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+      config.headers.Authorization = formattedToken;
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    console.error('Request interceptor error:', error);
+    return Promise.reject(error);
+  }
 );
 
+// Response interceptor
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    return response;
+  },
   (error) => {
-    console.error('API Error:', error.response?.data || error.message);
-    if (error.response?.status === 401) {
+    console.error('API Error:', {
+      url: error.config?.url,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+    });
+
+    if (error.response?.status === 401 || error.response?.status === 403) {
       localStorage.removeItem('superadminToken');
-      window.location.href = '/superadmin/login';
-      toast.error('Session expired. Please log in again.');
+      localStorage.removeItem('superadminId');
+      if (!window.location.pathname.includes('/superadmin/login')) {
+        window.location.href = '/superadmin/login';
+        toast.error(error.response?.status === 401 ? 'Session expired. Please log in again.' : 'Permission denied. Please log in with SUPERADMIN role.');
+      }
     }
     return Promise.reject(error);
   }

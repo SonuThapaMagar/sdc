@@ -14,17 +14,45 @@ export default function Login() {
     setLoading(true);
 
     try {
+      console.log('Attempting login...');
       const response = await api.post('/api/superadmin/auth/login', credentials);
+      console.log('Login response:', response.data);
 
       const { message, token, id } = response.data;
-      toast.success(message || 'Logged in successfully!');
+      
+      if (!token) {
+        console.error('No token received in response');
+        toast.error('Login failed: No authentication token received');
+        return;
+      }
+
+      // Store the token
       localStorage.setItem('superadminToken', token);
       localStorage.setItem('superadminId', id);
+      
+      // Verify token was stored
+      const storedToken = localStorage.getItem('superadminToken');
+      console.log('Token stored:', storedToken ? 'Yes' : 'No');
+      
+      if (!storedToken) {
+        console.error('Failed to store token');
+        toast.error('Login failed: Could not store authentication token');
+        return;
+      }
+
+      toast.success(message || 'Logged in successfully!');
       navigate('/superadmin/dashboard');
     } catch (error) {
+      console.error('Login error:', error);
+      console.error('Error details:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        headers: error.response?.headers
+      });
+      
       const errorMessage = error.response?.data?.message || 'Login failed. Please try again.';
       toast.error(errorMessage);
-      console.error('Login error:', error);
     } finally {
       setLoading(false);
     }

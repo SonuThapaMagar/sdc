@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import {
     RiMenuFoldLine,
@@ -9,6 +9,7 @@ import {
     RiAppsLine,
     RiLogoutBoxLine,
 } from 'react-icons/ri';
+import { toast } from 'react-toastify';
 
 const menuItems = [
     {
@@ -43,11 +44,20 @@ const menuItems = [
     },
 ];
 
-const SuperadminLayout = ({ children }) => {
+const SuperadminLayout = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [collapsed, setCollapsed] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    useEffect(() => {
+        const token = localStorage.getItem('superadminToken');
+        if (!token) {
+            toast.error('Please log in to access superadmin features');
+            navigate('/superadmin/login');
+            return;
+        }
+    }, [navigate]);
 
     const handleMenuClick = (item) => {
         if (item.key === 'logout') {
