@@ -6,6 +6,8 @@ import UserManagement from "../pages/superadmin/pages/UserManagement";
 import PetCenterMgmt from "../pages/superadmin/pages/PetCenterMgmt";
 import PetMgmt from "../pages/superadmin/pages/PetMgmt";
 import EditUserPage from "../pages/superadmin/pages/EditUser";
+import EditPet from "../pages/superadmin/pages/EditPet";
+import EditPetCenter from "../pages/superadmin/pages/EditPetCenter";
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('superadminToken');
@@ -31,7 +33,9 @@ export default function AppRoutes() {
         <Route path="users" element={<UserManagement />} />
         <Route path="users/edit/:userId" element={<EditUserPage />} />
         <Route path="pet-centers" element={<PetCenterMgmt />} />
+        <Route path="pet-centers/edit/:centerId" element={<EditPetCenter />} />
         <Route path="pets" element={<PetMgmt />} />
+        <Route path="pets/edit/:petId" element={<EditPet />} />
       </Route>
     </Routes>
   );
