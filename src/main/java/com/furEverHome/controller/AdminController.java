@@ -104,6 +104,7 @@ public class AdminController {
         }
     }
 
+    
     @PutMapping("/profile")
     public ResponseEntity<?> updateAdminProfile(@RequestHeader("Authorization") String token,
                                                @RequestBody AdminProfileUpdateRequest updateRequest) {

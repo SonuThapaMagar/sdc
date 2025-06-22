@@ -9,6 +9,9 @@ public class UserResponse {
     private String phone;
     private String address;
     private String role;
+    
+    public UserResponse() {
+    }
 
     public UserResponse(UUID id, String fullName, String email, String phone, String address, String role) {
         this.id = id;
