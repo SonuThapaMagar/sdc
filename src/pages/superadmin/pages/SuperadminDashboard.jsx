@@ -1,4 +1,3 @@
-// src/pages/superadmin/SuperadminDashboard.jsx
 import React, { useState, useEffect } from 'react';
 import api from '../../../api/api';
 import { UserOutlined, AppstoreOutlined, SolutionOutlined, ShopOutlined } from '@ant-design/icons';

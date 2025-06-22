@@ -4,7 +4,7 @@ import api from '../../api/api';
 import { toast } from 'react-toastify';
 
 export default function Login() {
-  const [credentials, setCredentials] = useState({ username: '', password: '' });
+  const [credentials, setCredentials] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
@@ -14,83 +14,78 @@ export default function Login() {
     setLoading(true);
 
     try {
-      console.log('Attempting login...');
-      const response = await api.post('/api/superadmin/auth/login', credentials);
+      console.log('Attempting login with:', credentials);
+      const response = await api.post('/api/auth/login', credentials);
       console.log('Login response:', response.data);
 
-      const { message, token, id } = response.data;
-      
-      if (!token) {
-        console.error('No token received in response');
-        toast.error('Login failed: No authentication token received');
+      const { message, token, id, role } = response.data;
+
+      if (!token || !role) {
+        console.error('Invalid response: missing token or role');
+        toast.error('Login failed: Invalid server response');
         return;
       }
 
-      // Store the token
-      localStorage.setItem('superadminToken', token);
-      localStorage.setItem('superadminId', id);
-      
-      // Verify token was stored
-      const storedToken = localStorage.getItem('superadminToken');
-      console.log('Token stored:', storedToken ? 'Yes' : 'No');
-      
-      if (!storedToken) {
-        console.error('Failed to store token');
-        toast.error('Login failed: Could not store authentication token');
-        return;
+      // Store the token and role based on user type
+      if (role === 'SUPERADMIN') {
+        localStorage.setItem('superadminToken', token);
+        localStorage.setItem('superadminId', id);
+        localStorage.setItem('userRole', 'SUPERADMIN');
+        toast.success(message || 'Logged in successfully as Superadmin!');
+        navigate('/superadmin/dashboard');
+      } else if (role === 'ADMIN') {
+        localStorage.setItem('adminToken', token);
+        localStorage.setItem('adminId', id);
+        localStorage.setItem('userRole', 'ADMIN');
+        toast.success(message || 'Logged in successfully as Admin!');
+        navigate('/admin/dashboard');
+      } else {
+        toast.error('Invalid user role. Only Superadmin or Admin can log in here.');
       }
 
-      toast.success(message || 'Logged in successfully!');
-      navigate('/superadmin/dashboard');
     } catch (error) {
       console.error('Login error:', error);
       console.error('Error details:', {
         status: error.response?.status,
         statusText: error.response?.statusText,
         data: error.response?.data,
-        headers: error.response?.headers
       });
-      
-      const errorMessage = error.response?.data?.message || 'Login failed. Please try again.';
+
+      const errorMessage = error.response?.data?.message || 'Login failed. Please check your credentials.';
       toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
+  // JSX form remains unchanged
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
       <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Welcome Superadmin</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Welcome</h1>
           <p className="text-gray-600 mt-2">Enter your credentials to access your account</p>
         </div>
-        
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
-              Username
-            </label>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
             <input
-              id="username"
-              type="text"
-              placeholder="superadmin"
-              value={credentials.username}
-              onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
+              id="email"
+              type="email"
+              placeholder="Enter email"
+              value={credentials.email}
+              onChange={(e) => setCredentials({ ...credentials, email: e.target.value })}
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
             />
           </div>
-          
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-              Password
-            </label>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
             <div className="relative">
               <input
                 id="password"
                 type={showPassword ? 'text' : 'password'}
-                placeholder="admin123"
+                placeholder="Enter password"
                 value={credentials.password}
                 onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
                 required
@@ -98,7 +93,6 @@ export default function Login() {
               />
               <button
                 type="button"
-                tabIndex={-1}
                 onClick={() => setShowPassword((prev) => !prev)}
                 className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-gray-700 focus:outline-none"
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
@@ -116,7 +110,6 @@ export default function Login() {
               </button>
             </div>
           </div>
-
           <button
             type="submit"
             disabled={loading}

@@ -16,25 +16,31 @@ const menuItems = [
         key: 'dashboard',
         icon: <RiDashboardLine className="text-lg" />,
         label: 'Dashboard',
-        path: '/superadmin/dashboard'
+        path: '/admin/dashboard'
     },
     {
         key: 'users',
         icon: <RiUserLine className="text-lg" />,
-        label: 'User Management',
-        path: '/superadmin/users'
-    },
-    {
-        key: 'petcenter',
-        icon: <RiStore2Line className="text-lg" />,
-        label: 'Pet Center Management',
-        path: '/superadmin/pet-centers'
+        label: 'View Users',
+        path: '/admin/users'
     },
     {
         key: 'pets',
         icon: <RiAppsLine className="text-lg" />,
         label: 'Pet Management',
-        path: '/superadmin/pets'
+        path: '/admin/pets'
+    },
+    {
+        key: 'adoptionRequests',
+        icon: <RiStore2Line className="text-lg" />,
+        label: 'Adoption Requests',
+        path: '/admin/adoptionRequests'
+    },
+    {
+        key: 'profile',
+        icon: <RiStore2Line className="text-lg" />,
+        label: 'Profile',
+        path: '/admin/adminProfile'
     },
     {
         key: 'logout',
@@ -44,17 +50,17 @@ const menuItems = [
     },
 ];
 
-const SuperadminLayout = () => {
+const AdminLayout = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [collapsed, setCollapsed] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     useEffect(() => {
-        const token = localStorage.getItem('superadminToken');
+        const token = localStorage.getItem('adminToken');
         const userRole = localStorage.getItem('userRole');
-        if (!token || userRole !== 'SUPERADMIN') {
-            toast.error('Please log in to access superadmin features');
+        if (!token || userRole !== 'ADMIN') {
+            toast.error('Please log in to access admin features');
             navigate('/login');
             return;
         }
@@ -62,8 +68,8 @@ const SuperadminLayout = () => {
 
     const handleMenuClick = (item) => {
         if (item.key === 'logout') {
-            localStorage.removeItem('superadminToken');
-            localStorage.removeItem('superadminId');
+            localStorage.removeItem('adminToken');
+            localStorage.removeItem('adminId');
             localStorage.removeItem('userRole');
             navigate('/login');
         } else {
@@ -80,7 +86,7 @@ const SuperadminLayout = () => {
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
                         <RiUserLine className="text-white text-xl" />
                     </div>
-                    <span className="text-lg font-semibold text-gray-800">Superadmin</span>
+                    <span className="text-lg font-semibold text-gray-800">Admin</span>
                 </div>
                 <button
                     onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -97,7 +103,7 @@ const SuperadminLayout = () => {
                         <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mb-4">
                             <RiUserLine className="text-white text-2xl" />
                         </div>
-                        <span className="text-xl font-semibold text-gray-800">Superadmin</span>
+                        <span className="text-xl font-semibold text-gray-800">Admin</span>
                     </div>
                     <nav className="space-y-2">
                         {menuItems.map((item) => (
@@ -130,7 +136,7 @@ const SuperadminLayout = () => {
                                 <RiUserLine className="text-white text-xl" />
                             </div>
                             {!collapsed && (
-                                <span className="text-lg font-semibold text-gray-800">Superadmin</span>
+                                <span className="text-lg font-semibold text-gray-800">Admin</span>
                             )}
                         </div>
                         <nav className="flex-1 px-4 py-6 space-y-2">
@@ -173,4 +179,4 @@ const SuperadminLayout = () => {
     );
 };
 
-export default SuperadminLayout;
+export default AdminLayout;

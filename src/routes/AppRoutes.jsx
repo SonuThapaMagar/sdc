@@ -8,24 +8,51 @@ import PetMgmt from "../pages/superadmin/pages/PetMgmt";
 import EditUserPage from "../pages/superadmin/pages/EditUser";
 import EditPet from "../pages/superadmin/pages/EditPet";
 import EditPetCenter from "../pages/superadmin/pages/EditPetCenter";
+import AdminLayout from "../pages/admin/layout/AdminLayout";
+import AdminDashboard from "../pages/admin/pages/AdminDashboard";
+import AdoptionRequests from "../pages/admin/pages/AdoptionRequests";
+import PetCenterProfile from "../pages/admin/pages/PetCenterProfile";
 
-const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem('superadminToken');
-  if (!token) {
-    return <Navigate to="/superadmin/login" replace />;
+const ProtectedRoute = ({ children, requiredRole }) => {
+  const superadminToken = localStorage.getItem('superadminToken');
+  const adminToken = localStorage.getItem('adminToken');
+  const userRole = localStorage.getItem('userRole');
+  
+  if (!superadminToken && !adminToken) {
+    return <Navigate to="/login" replace />;
   }
+  
+  if (requiredRole && userRole !== requiredRole) {
+    return <Navigate to="/login" replace />;
+  }
+  
   return children;
 };
 
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/superadmin/login" replace />} />
-      <Route path="/superadmin/login" element={<Login />} />
+      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/login" element={<Login />} />
+
+      {/* Admin routes */}
+      <Route path="/admin" element={
+        <ProtectedRoute requiredRole="ADMIN">
+          <AdminLayout />
+        </ProtectedRoute>
+      }>
+        <Route path="dashboard" element={<AdminDashboard />} />
+        <Route path="users" element={<UserManagement />} />
+        <Route path="pets" element={<PetMgmt />} />
+        <Route path="pets/edit/:petId" element={<EditPet />} />
+        <Route path="adoptionRequests" element={<AdoptionRequests />} />
+        <Route path="adminProfile" element={<PetCenterProfile />} />
+        <Route path="pet-centers/edit/:centerId" element={<EditPetCenter />} />
+      </Route>
       
-      {/* Protected routes with layout */}
+      {/* Superadmin routes */}
       <Route path="/superadmin" element={
-        <ProtectedRoute>
+        <ProtectedRoute requiredRole="SUPERADMIN">
           <SuperadminLayout />
         </ProtectedRoute>
       }>
