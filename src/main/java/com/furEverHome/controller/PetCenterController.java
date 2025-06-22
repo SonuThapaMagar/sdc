@@ -74,7 +74,7 @@ public class PetCenterController {
 	public ResponseEntity<?> viewPets(@RequestHeader("Authorization") String token) {
 		// Extract email from the token
 		String email = jwtUtil.getEmailFromToken(token.substring(7));
-		
+
 		PetCenter petCenter = petCenterRepository.findByEmail(email).orElse(null);
 
 		// Validate that the user is a Pet Center Admin
@@ -185,5 +185,22 @@ public class PetCenterController {
 
 		petRepository.delete(pet);
 		return ResponseEntity.ok(new AuthController.SuccessResponse("Pet deleted successfully", id));
+	}
+
+	@GetMapping("/dashboard")
+	public ResponseEntity<?> getDashboard(@RequestHeader("Authorization") String authHeader) {
+		try {
+			String token = authHeader.replace("Bearer ", "");
+			if (!jwtUtil.validateToken(token)) {
+				return ResponseEntity.status(401).body("Invalid token");
+			}
+			Role role = jwtUtil.getRoleFromToken(token);
+			if (!Role.ADMIN.equals(role)) {
+				return ResponseEntity.status(403).body("Access denied: ADMIN role required");
+			}
+			return ResponseEntity.ok("Welcome to Admin Dashboard");
+		} catch (Exception e) {
+			return ResponseEntity.status(401).body("Unauthorized: " + e.getMessage());
+		}
 	}
 }

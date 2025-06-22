@@ -5,8 +5,10 @@ import com.furEverHome.dto.LoginRequest;
 import com.furEverHome.dto.OtpVerificationRequest;
 import com.furEverHome.dto.ResetPasswordRequest;
 import com.furEverHome.dto.SignupRequest;
+import com.furEverHome.entity.PetCenter;
 import com.furEverHome.entity.Role;
 import com.furEverHome.entity.User;
+import com.furEverHome.repository.PetCenterRepository;
 import com.furEverHome.repository.UserRepository;
 import com.furEverHome.service.OtpService;
 import com.furEverHome.util.JwtUtil;
@@ -27,14 +29,16 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final OtpService otpservice;
     private final JwtUtil jwtUtil;
+    private final PetCenterRepository petCenterRepository;
 
     @Autowired
     public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder, OtpService otpService,
-                          JwtUtil jwtUtil) {
+                          JwtUtil jwtUtil,PetCenterRepository petCenterRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.otpservice = otpService;
         this.jwtUtil = jwtUtil;
+		this.petCenterRepository = petCenterRepository;
         System.out.println("AuthController initialized. userRepository: " + userRepository + ", passwordEncoder: "
                 + passwordEncoder);
     }
@@ -81,13 +85,54 @@ public class AuthController {
             return ResponseEntity.status(400).body(new ErrorResponse("Email and password are required"));
         }
 
-        User user = userRepository.findByEmail(request.getEmail()).orElse(null);
-        if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            return ResponseEntity.status(401).body(new ErrorResponse("Invalid email or password"));
+     // Check for Superadmin
+        if (request.getEmail().equals("superadmin@gmail.com")) {
+            if ("admin123".equals(request.getPassword())) {
+                String token = jwtUtil.generateToken(request.getEmail(), Role.SUPERADMIN);
+                return ResponseEntity.ok(new EnhancedLoginResponse(
+                    "Superadmin login successful",
+                    "superadmin-uuid",
+                    token,
+                    Role.SUPERADMIN.name()
+                ));
+            } else {
+                return ResponseEntity.status(401).body(new ErrorResponse("Invalid superadmin password"));
+            }
         }
-
-        String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
-        return ResponseEntity.ok(new LoginResponse("User login successful", user.getId(), token));
+        
+        
+     // Check for Admin (PetCenter)
+        PetCenter petCenter = petCenterRepository.findByEmail(request.getEmail()).orElse(null); // Use instance
+        if (petCenter != null && passwordEncoder.matches(request.getPassword(), petCenter.getPassword())) {
+            String token = jwtUtil.generateToken(petCenter.getEmail(), Role.ADMIN);
+            return ResponseEntity.ok(new EnhancedLoginResponse(
+                "Pet Center login successful",
+                petCenter.getId().toString(),
+                token,
+                Role.ADMIN.name() // Return role without ROLE_ prefix
+            ));
+        }
+        
+     // Check for User
+        User user = userRepository.findByEmail(request.getEmail()).orElse(null);
+        if (user != null && passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
+            return ResponseEntity.ok(new EnhancedLoginResponse(
+                "User login successful",
+                user.getId().toString(),
+                token,
+                user.getRole().name()
+            ));
+        }
+        return ResponseEntity.status(401).body(new ErrorResponse("Invalid email or password"));
+        
+//        User user = userRepository.findByEmail(request.getEmail()).orElse(null);
+//        if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+//            return ResponseEntity.status(401).body(new ErrorResponse("Invalid email or password"));
+//        }
+//
+//        String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
+//        return ResponseEntity.ok(new LoginResponse("User login successful", user.getId(), token));
     }
 
     @PostMapping("/forgotPassword")
@@ -183,6 +228,36 @@ public class AuthController {
 
         public void setMessage(String message) {
             this.message = message;
+        }
+    }
+ // Enhanced LoginResponse to include role
+    static class EnhancedLoginResponse {
+        private String message;
+        private String id;
+        private String token;
+        private String role;
+
+        public EnhancedLoginResponse(String message, String id, String token, String role) {
+            this.message = message;
+            this.id = id;
+            this.token = token;
+            this.role = role;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public String getToken() {
+            return token;
+        }
+
+        public String getRole() {
+            return role;
         }
     }
 }
