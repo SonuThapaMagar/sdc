@@ -16,7 +16,6 @@ export default function ViewUsers() {
 
   const fetchUsers = async () => {
     try {
-      // Fetch users from the admin API endpoint
       const res = await api.get('/api/admin/users');
       setUsers(res.data);
     } catch (error) {

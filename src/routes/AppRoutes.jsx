@@ -13,6 +13,7 @@ import AdminDashboard from "../pages/admin/pages/AdminDashboard";
 import AdoptionRequests from "../pages/admin/pages/AdoptionRequests";
 import PetCenterProfile from "../pages/admin/pages/PetCenterProfile";
 import ViewUsers from "../pages/admin/pages/ViewUsers";
+import PetCRUD from "../pages/admin/pages/PetCRUD";
 
 const ProtectedRoute = ({ children, requiredRole }) => {
   const superadminToken = localStorage.getItem('superadminToken');
@@ -43,9 +44,8 @@ export default function AppRoutes() {
         </ProtectedRoute>
       }>
         <Route path="dashboard" element={<AdminDashboard />} />
-        <Route path="users" element={<UserManagement />} />
-        <Route path="pets" element={<PetMgmt />} />
-        <Route path="pets/edit/:petId" element={<EditPet />} />
+        <Route path="users" element={<ViewUsers />} />
+        <Route path="pets" element={<PetCRUD />} />
         <Route path="adoptionRequests" element={<AdoptionRequests />} />
         <Route path="adminProfile" element={<PetCenterProfile />} />
         <Route path="pet-centers/edit/:centerId" element={<EditPetCenter />} />
@@ -58,7 +58,7 @@ export default function AppRoutes() {
         </ProtectedRoute>
       }>
         <Route path="dashboard" element={<Dashboard />} />
-        <Route path="users" element={<ViewUsers />} />
+        <Route path="users" element={<UserManagement />} />
         <Route path="users/edit/:userId" element={<EditUserPage />} />
         <Route path="pet-centers" element={<PetCenterMgmt />} />
         <Route path="pet-centers/edit/:centerId" element={<EditPetCenter />} />
