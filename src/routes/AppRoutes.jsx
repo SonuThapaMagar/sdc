@@ -12,6 +12,7 @@ import AdminLayout from "../pages/admin/layout/AdminLayout";
 import AdminDashboard from "../pages/admin/pages/AdminDashboard";
 import AdoptionRequests from "../pages/admin/pages/AdoptionRequests";
 import PetCenterProfile from "../pages/admin/pages/PetCenterProfile";
+import ViewUsers from "../pages/admin/pages/ViewUsers";
 
 const ProtectedRoute = ({ children, requiredRole }) => {
   const superadminToken = localStorage.getItem('superadminToken');
@@ -57,7 +58,7 @@ export default function AppRoutes() {
         </ProtectedRoute>
       }>
         <Route path="dashboard" element={<Dashboard />} />
-        <Route path="users" element={<UserManagement />} />
+        <Route path="users" element={<ViewUsers />} />
         <Route path="users/edit/:userId" element={<EditUserPage />} />
         <Route path="pet-centers" element={<PetCenterMgmt />} />
         <Route path="pet-centers/edit/:centerId" element={<EditPetCenter />} />
