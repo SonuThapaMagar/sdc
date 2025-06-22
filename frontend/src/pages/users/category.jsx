@@ -1,7 +1,7 @@
-
 // React & Animation
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+import { useNavigate } from "react-router-dom"
 
 // Icons
 import { Search, Bell, Heart, Filter, ChevronLeft, MapPin, ArrowLeft, ArrowRight, Menu } from "lucide-react"
@@ -10,8 +10,8 @@ import { Search, Bell, Heart, Filter, ChevronLeft, MapPin, ArrowLeft, ArrowRight
 import FilterModal from "./filtermodal"
 import NotificationsPanel from "./notificationpanel"
 import SearchModal from "./searchmodal"
-import MobileNav from "./mobilenav"
 import ProfileModal from "./ProfileModal"
+import Navbar from "./Navbar"
 
 // Data & Assets
 import { petsData } from "../../data/petsData"
@@ -24,14 +24,11 @@ import "../../styles/category.css"
 import "../../styles/petdetails.css"
 import "../../styles/notification.css"
 
-
-
 export default function PetCategories() {
   // State management
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
-  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [activeFilters, setActiveFilters] = useState({})
   const [activeCategory, setActiveCategory] = useState("Dogs")
@@ -175,101 +172,14 @@ export default function PetCategories() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      {/* Navigation Bar */}
-      <motion.nav
-        className="main-navbar"
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-      >
-        <div className="container navbar-container">
-          <div className="navbar-left">
-            {/* Mobile Menu Button */}
-            <motion.button
-              className="mobile-menu-button"
-              onClick={() => setIsMobileNavOpen(true)}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Menu size={24} />
-            </motion.button>
-
-            <motion.div
-              className="logo"
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: "spring", stiffness: 400, damping: 10 }}
-            >
-             <img src="../images/logo.png" width="40" height="40" alt="Logo" />
-
-            </motion.div>
-
-            <div className="nav-menu">
-              {["Home", "About Us", "Services", "Contact Us", "Gallery"].map((item, index) => (
-                <motion.a
-                  key={item}
-                  href="#"
-                  className={`nav-link ${index === 0 ? "active" : ""}`}
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 + 0.3 }}
-                  whileHover={{ y: -2 }}
-                >
-                  {item}
-                </motion.a>
-              ))}
-            </div>
-          </div>
-
-          <div className="navbar-right">
-            <div className="header-actions">
-              <motion.button
-                className="icon-button"
-                onClick={() => setIsSearchOpen(true)}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                <Search size={20} />
-              </motion.button>
-              <motion.button
-                className="icon-button notification-button"
-                onClick={() => setIsNotificationsOpen(true)}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                <Bell size={20} />
-                {hasUnreadNotifications && (
-                  <motion.span
-                    className="notification-indicator"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", stiffness: 500, damping: 15 }}
-                  />
-                )}
-              </motion.button>
-            </div>
-
-            <motion.div
-              className="profile-section"
-              whileHover={{ scale: 1.02 }}
-              onClick={() => setIsProfileOpen(true)}
-              style={{ cursor: "pointer" }}
-            >
-              <div className="profile-image">
-                <img src={userProfile.profileImage || "/placeholder.svg"} alt="Profile" />
-              </div>
-              <div className="profile-info">
-                <div className="location-text">
-                  Location
-                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-                <div className="location-value">{userProfile.fullName}</div>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </motion.nav>
+      {/* Modular Navbar */}
+      <Navbar 
+        showSearch={true}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchResults={filteredPets}
+        onSearchResultClick={handleResultClick}
+      />
 
       <motion.main
         className="container"
@@ -398,7 +308,7 @@ export default function PetCategories() {
         </motion.div>
 
         <motion.div className="pet-grid" layout>
-          <AnimatePresence mode="wait">
+          <AnimatePresence>
             {filteredPets.length > 0 ? (
               filteredPets.map((pet, index) => (
                 <motion.div
@@ -465,13 +375,6 @@ export default function PetCategories() {
           </AnimatePresence>
         </motion.div>
       </motion.main>
-
-      {/* Mobile Navigation */}
-      <AnimatePresence>
-        {isMobileNavOpen && (
-          <MobileNav isOpen={isMobileNavOpen} onClose={() => setIsMobileNavOpen(false)} profileImage={profileImage} />
-        )}
-      </AnimatePresence>
 
       {/* Modals */}
       <AnimatePresence>
@@ -620,8 +523,9 @@ function PetDetail({ petId, onClose, pets = [], favorites, onToggleFavorite }) {
   const [currentPet, setCurrentPet] = useState(null)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [petImages, setPetImages] = useState([])
+  const navigate = useNavigate()
 
-  useState(() => {
+  useEffect(() => {
     const foundPet = pets.find((pet) => pet.id === petId)
     if (foundPet) {
       setCurrentPet(foundPet)
@@ -635,6 +539,12 @@ function PetDetail({ petId, onClose, pets = [], favorites, onToggleFavorite }) {
 
   const handleNextImage = () => {
     setCurrentImageIndex((prev) => (prev === petImages.length - 1 ? 0 : prev + 1))
+  }
+
+  const handleAdoptClick = () => {
+    if (currentPet) {
+      navigate(`/adoptme/${currentPet.id}`)
+    }
   }
 
   if (!currentPet) return null
@@ -860,6 +770,7 @@ function PetDetail({ petId, onClose, pets = [], favorites, onToggleFavorite }) {
               transition={{ delay: 1.4 }}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              onClick={handleAdoptClick}
             >
               Adopt Me
             </motion.button>

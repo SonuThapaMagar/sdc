@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react"
 import { ChevronLeft, Heart, MapPin, ArrowLeft, ArrowRight } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 import "../../styles/petdetails.css"
 
 const PetDetail = ({ petId, onClose, pets = [] }) => {
   const [currentPet, setCurrentPet] = useState(null)
   const [isFavorite, setIsFavorite] = useState(false)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const navigate = useNavigate();
 
   // Mock pet images for gallery
   const petImages = ["/placeholder.jpg", "/placeholder.jpg", "/placeholder.jpg", "/placeholder.jpg"]
@@ -170,7 +172,12 @@ const PetDetail = ({ petId, onClose, pets = [] }) => {
               </div>
             </div>
 
-            <button className="adopt-button">Adopt Me</button>
+            <button
+              className="adopt-button"
+              onClick={() => navigate(`/adoptme/${currentPet?.id || petId || 1}`)}
+            >
+              Adopt Me
+            </button>
           </div>
         </div>
       </div>

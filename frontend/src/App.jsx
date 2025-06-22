@@ -8,6 +8,8 @@ import LandingPage from "./pages/LandingPage";
 import LearnMore from "./pages/users/LearnMore";
 import AboutUs from "./pages/users/AboutUs";
 import ShelterRegistration from "./pages/users/ShelterRegistration";
+import Adoptme from "./pages/users/Adoptme";
+import AdoptionSuccess from "./pages/users/AdoptionSucess";
 
 export default function App() {
   return (
@@ -19,7 +21,8 @@ export default function App() {
       <Route path="/learn-more" element={<LearnMore />} />
       <Route path="/about-us" element={<AboutUs />} />
       <Route path="/register-shelter" element={<ShelterRegistration />} />
-     
+      <Route path="/adoptme/:petId?" element={<Adoptme />} />
+      <Route path="/adoption-success/:petId/:applicationId" element={<AdoptionSuccess />} />
     </Routes>
   );
 }

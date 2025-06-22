@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import {
   ArrowLeft,
@@ -17,6 +17,7 @@ import {
 } from "lucide-react"
 import "../../styles/landing.css"
 import logo from "../../images/logo.png"
+import Navbar from "./Navbar"
 
 export default function ShelterRegistration() {
   const navigate = useNavigate()
@@ -25,6 +26,11 @@ export default function ShelterRegistration() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState({})
   const [touchedFields, setTouchedFields] = useState({})
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
 
   const [formData, setFormData] = useState({
     // Basic Information
@@ -365,80 +371,8 @@ export default function ShelterRegistration() {
 
   return (
     <div className="landing-page">
-      {/* Navbar */}
-      <nav className="navbarr">
-        <div className="navbarr-container">
-          <div className="navbarr-content">
-            <div className="logo" onClick={() => navigate("/")}>
-              <img src={logo || "/placeholder.svg"} alt="logo" width="48" height="48" />
-              <span className="logo-text">FurEverHome</span>
-            </div>
-
-            <div className="nav-menu">
-              <a href="#" onClick={() => navigate("/")} className="nav-link">
-                Home
-              </a>
-              <a href="#" onClick={() => navigate("/learn-more")} className="nav-link">
-                Learn
-              </a>
-              <a href="#" onClick={() => navigate("/category")} className="nav-link">
-                Pet Listing
-              </a>
-              <a href="#" className="nav-link">
-                Contact
-              </a>
-            </div>
-
-            <div className="nav-actions">
-              <button className="signup-btn" onClick={() => navigate("/signup")}>
-                Sign Up
-              </button>
-            </div>
-
-            <button className="mobile-menu-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-          </div>
-        </div>
-
-        {isMobileMenuOpen && (
-          <div className="mobile-menu">
-            <a
-              href="#"
-              onClick={() => {
-                navigate("/")
-                setIsMobileMenuOpen(false)
-              }}
-            >
-              Home
-            </a>
-            <a
-              href="#"
-              onClick={() => {
-                navigate("/learn-more")
-                setIsMobileMenuOpen(false)
-              }}
-            >
-              Learn
-            </a>
-            <a
-              href="#"
-              onClick={() => {
-                navigate("/category")
-                setIsMobileMenuOpen(false)
-              }}
-            >
-              Pet Listing
-            </a>
-            <a href="#" onClick={() => setIsMobileMenuOpen(false)}>
-              Contact
-            </a>
-            <button className="mobile-signup-btn" onClick={() => navigate("/signup")}>
-              Sign Up
-            </button>
-          </div>
-        )}
-      </nav>
+      {/* Modular Navbar */}
+      <Navbar />
 
       {/* Header */}
       <section className="hero" style={{ padding: "3rem 0 2rem" }}>

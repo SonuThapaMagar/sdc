@@ -1,14 +1,19 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { ArrowLeft, Heart, Shield, Users, Award, Target, Eye, Phone, Mail, MapPin, Menu, X } from "lucide-react"
 import "../../styles/landing.css"
-import logo from "../../images/logo.png"
 import group from "../../images/group.png"
+import Navbar from "./Navbar"
 
 export default function AboutUs() {
   const navigate = useNavigate()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
 
   const stats = [
     { number: "10,000+", label: "Successful Adoptions", icon: Heart },
@@ -69,74 +74,8 @@ export default function AboutUs() {
 
   return (
     <div className="landing-page">
-      {/* Navbar */}
-      <nav className="navbarr">
-        <div className="navbarr-container">
-          <div className="navbarr-content">
-            <div className="logo" onClick={() => navigate("/")}>
-              <img src={logo || "/placeholder.svg"} alt="logo" width="48" height="48" />
-              <span className="logo-text">FurEverHome</span>
-            </div>
-
-            <div className="nav-menu">
-              <a href="#" onClick={() => navigate("/")} className="nav-link">
-                Home
-              </a>
-              <a href="#" className="nav-link active">
-                About
-              </a>
-              <a href="#" onClick={() => navigate("/category")} className="nav-link">
-                Pet Listing
-              </a>
-              <a href="#" className="nav-link">
-                Contact
-              </a>
-            </div>
-
-            <div className="nav-actions">
-              <button className="signup-btn" onClick={() => navigate("/signup")}>
-                Sign Up
-              </button>
-            </div>
-
-            <button className="mobile-menu-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-          </div>
-        </div>
-
-        {isMobileMenuOpen && (
-          <div className="mobile-menu">
-            <a
-              href="#"
-              onClick={() => {
-                navigate("/")
-                setIsMobileMenuOpen(false)
-              }}
-            >
-              Home
-            </a>
-            <a href="#" onClick={() => setIsMobileMenuOpen(false)}>
-              About
-            </a>
-            <a
-              href="#"
-              onClick={() => {
-                navigate("/category")
-                setIsMobileMenuOpen(false)
-              }}
-            >
-              Pet Listing
-            </a>
-            <a href="#" onClick={() => setIsMobileMenuOpen(false)}>
-              Contact
-            </a>
-            <button className="mobile-signup-btn" onClick={() => navigate("/signup")}>
-              Sign Up
-            </button>
-          </div>
-        )}
-      </nav>
+      {/* Modular Navbar */}
+      <Navbar />
 
       {/* Header Section */}
       <section className="hero" style={{ padding: "3rem 0" }}>
@@ -176,7 +115,7 @@ export default function AboutUs() {
 
             <div className="hero-image-container">
               <div className="hero-image">
-                <img src={group || "/placeholder.svg"} alt="Our team" width="600" height="500" />
+                <img src={group || "/group.png"} alt="Our team" width="600" height="500" />
                 <div className="hero-overlay" />
               </div>
             </div>

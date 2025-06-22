@@ -1,9 +1,11 @@
 "use client"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { ArrowLeft, Heart, Home, CheckCircle, Clock, FileText, Search, Menu, X } from "lucide-react"
+import { ArrowLeft, Heart, Home, CheckCircle, Clock, FileText, Search, Menu, X, Shield, Users } from "lucide-react"
 import "../../styles/landing.css"
-import logo from "../../images/logo.png"
+// import logo from "../images/logo.png"
+// import group from "../images/group.png"
+import Navbar from "./Navbar"
 
 export default function LearnMore() {
   const navigate = useNavigate()
@@ -14,72 +16,63 @@ export default function LearnMore() {
       step: 1,
       title: "Browse & Search",
       description:
-        "Explore our database of pets available for adoption. Use filters to find pets that match your lifestyle and preferences.",
+        "Explore our extensive database of pets available for adoption. Use our advanced search and filter options to find your perfect match based on breed, age, size, and more.",
+      time: "5-10 minutes",
       icon: Search,
-      time: "5-15 minutes",
     },
     {
       step: 2,
-      title: "Submit Application",
+      title: "Connect & Meet",
       description:
-        "Fill out our comprehensive adoption application. This helps us ensure the best match between you and your future pet.",
-      icon: FileText,
-      time: "15-30 minutes",
+        "Contact the shelter or rescue organization to arrange a meeting with your potential pet. This is your chance to get to know each other and see if it's a good fit.",
+      time: "1-2 days",
+      icon: Heart,
     },
     {
       step: 3,
-      title: "Meet & Greet",
+      title: "Application & Review",
       description:
-        "Schedule a visit to meet your potential new family member. This is a crucial step to ensure compatibility.",
-      icon: Heart,
-      time: "1-2 hours",
+        "Complete the adoption application. The shelter will review your information, conduct a home visit if required, and ensure you're ready for pet ownership.",
+      time: "3-7 days",
+      icon: Shield,
     },
     {
       step: 4,
-      title: "Home Check",
+      title: "Adoption & Homecoming",
       description:
-        "Our team will conduct a brief home visit to ensure your living space is safe and suitable for your new pet.",
-      icon: Home,
-      time: "30-45 minutes",
-    },
-    {
-      step: 5,
-      title: "Finalize Adoption",
-      description: "Complete the adoption paperwork, pay adoption fees, and welcome your new family member home!",
-      icon: CheckCircle,
-      time: "30 minutes",
+        "Once approved, complete the adoption paperwork, pay any fees, and bring your new family member home. We'll provide guidance for a smooth transition.",
+      time: "Same day",
+      icon: Users,
     },
   ]
 
   const preparationTips = [
     {
-      category: "Before Adoption",
+      category: "Home Preparation",
       tips: [
-        "Research different pet breeds and their needs",
-        "Calculate the long-term costs of pet ownership",
-        "Pet-proof your home by removing hazards",
-        "Purchase essential supplies (food, bed, toys, etc.)",
-        "Find a local veterinarian",
+        "Pet-proof your home by removing hazardous items",
+        "Set up designated areas for food, water, and rest",
+        "Install baby gates if needed for safety",
+        "Prepare a comfortable sleeping area",
       ],
     },
     {
-      category: "First Week Home",
+      category: "Essential Supplies",
       tips: [
-        "Give your pet time to adjust to their new environment",
-        "Establish a routine for feeding and exercise",
-        "Schedule a vet checkup within the first week",
-        "Begin basic training and socialization",
-        "Be patient - adjustment can take several weeks",
+        "Food and water bowls",
+        "High-quality pet food",
+        "Collar, leash, and ID tags",
+        "Toys and enrichment items",
+        "Grooming supplies",
       ],
     },
     {
-      category: "Long-term Care",
+      category: "Health & Safety",
       tips: [
-        "Maintain regular veterinary checkups",
-        "Provide consistent training and mental stimulation",
-        "Ensure proper nutrition and exercise",
-        "Keep identification tags and microchip info updated",
-        "Build a relationship with local pet services",
+        "Schedule a vet appointment within the first week",
+        "Ensure vaccinations are up to date",
+        "Consider pet insurance for unexpected costs",
+        "Keep emergency vet contact information handy",
       ],
     },
   ]
@@ -109,74 +102,8 @@ export default function LearnMore() {
 
   return (
     <div className="landing-page">
-      {/* Navbar */}
-      <nav className="navbarr">
-        <div className="navbarr-container">
-          <div className="navbarr-content">
-            <div className="logo" onClick={() => navigate("/")}>
-              <img src={logo || "/placeholder.svg"} alt="logo" width="48" height="48" />
-              <span className="logo-text">FurEverHome</span>
-            </div>
-
-            <div className="nav-menu">
-              <a href="#" onClick={() => navigate("/")} className="nav-link">
-                Home
-              </a>
-              <a href="#" className="nav-link active">
-                Learn
-              </a>
-              <a href="#" onClick={() => navigate("/category")} className="nav-link">
-                Pet Listing
-              </a>
-              <a href="#" className="nav-link">
-                Contact
-              </a>
-            </div>
-
-            <div className="nav-actions">
-              <button className="signup-btn" onClick={() => navigate("/signup")}>
-                Sign Up
-              </button>
-            </div>
-
-            <button className="mobile-menu-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-          </div>
-        </div>
-
-        {isMobileMenuOpen && (
-          <div className="mobile-menu">
-            <a
-              href="#"
-              onClick={() => {
-                navigate("/")
-                setIsMobileMenuOpen(false)
-              }}
-            >
-              Home
-            </a>
-            <a href="#" onClick={() => setIsMobileMenuOpen(false)}>
-              Learn
-            </a>
-            <a
-              href="#"
-              onClick={() => {
-                navigate("/category")
-                setIsMobileMenuOpen(false)
-              }}
-            >
-              Pet Listing
-            </a>
-            <a href="#" onClick={() => setIsMobileMenuOpen(false)}>
-              Contact
-            </a>
-            <button className="mobile-signup-btn" onClick={() => navigate("/signup")}>
-              Sign Up
-            </button>
-          </div>
-        )}
-      </nav>
+      {/* Modular Navbar */}
+      <Navbar />
 
       {/* Header Section */}
       <section className="hero" style={{ padding: "3rem 0" }}>

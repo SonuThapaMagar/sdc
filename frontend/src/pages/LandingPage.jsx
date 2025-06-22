@@ -23,13 +23,12 @@ import "../styles/landing.css";
 import logo from "../images/logo.png";
 import dc from "../images/dc.png";
 import group from "../images/group.png";
+import Navbar from "./users/Navbar";
 
 export default function LandingPage() {
   const navigate = useNavigate(); // React Router navigation hook
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isFavorite, setIsFavorite] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const toggleFavorite = (petId) => {
     setIsFavorite((prev) => {
@@ -93,215 +92,14 @@ export default function LandingPage() {
 
   return (
     <div className="landing-page">
-      {/* Sticky Navbar */}
-      <nav className="navbarr">
-        <div className="navbarr-container">
-          <div className="navbarr-content">
-            {/* Logo */}
-            <div className="logo">
-              <img
-                src={logo || "/placeholder.svg"}
-                alt="logo"
-                width="48"
-                height="48"
-              />
-              <span className="logo-text">FurEverHome</span>
-            </div>
-
-            {/* Desktop Navigation */}
-            <div className="nav-menu">
-              {["Home", "About", "Pet Listing", "Contact"].map((item) => (
-                <a key={item} href="#" className="nav-link">
-                  {item}
-                </a>
-              ))}
-            </div>
-
-            {/* Desktop Actions */}
-            <div className="nav-actions">
-              <button
-                className="search-btn"
-                onClick={() => setIsSearchOpen(!isSearchOpen)}
-              >
-                <Search size={20} />
-              </button>
-              <button
-                className="signup-btn"
-                onClick={() => navigate("/signup")}
-              >
-                Sign Up
-              </button>
-            </div>
-
-            {/* Mobile Menu Button */}
-            <button
-              className="mobile-menu-btn"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-          </div>
-        </div>
-
-        {/* Search Bar */}
-        {isSearchOpen && (
-          <div
-            style={{
-              background: "white",
-              borderTop: "1px solid #e5e7eb",
-              padding: "1rem",
-              boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-            }}
-          >
-            <div
-              style={{
-                maxWidth: "1280px",
-                margin: "0 auto",
-                position: "relative",
-              }}
-            >
-              <input
-                type="text"
-                placeholder="Search for pets by name, breed, or type..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "0.75rem 3rem 0.75rem 1rem",
-                  border: "2px solid #e5e7eb",
-                  borderRadius: "9999px",
-                  fontSize: "1rem",
-                  outline: "none",
-                  transition: "border-color 0.2s",
-                }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = "#8b5cf6";
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = "#e5e7eb";
-                }}
-              />
-              <Search
-                size={20}
-                style={{
-                  position: "absolute",
-                  right: "1rem",
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  color: "#6b7280",
-                }}
-              />
-            </div>
-
-            {/* Search Results */}
-            {searchQuery && (
-              <div
-                style={{
-                  maxWidth: "1280px",
-                  margin: "1rem auto 0",
-                  background: "white",
-                  border: "1px solid #e5e7eb",
-                  borderRadius: "0.5rem",
-                  maxHeight: "300px",
-                  overflowY: "auto",
-                }}
-              >
-                {filteredPets.length > 0 ? (
-                  filteredPets.slice(0, 5).map((pet) => (
-                    <div
-                      key={pet.id}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        padding: "0.75rem 1rem",
-                        borderBottom: "1px solid #f3f4f6",
-                        cursor: "pointer",
-                        transition: "background-color 0.2s",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = "#f9fafb";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = "white";
-                      }}
-                      onClick={() => {
-                        setSearchQuery("");
-                        setIsSearchOpen(false);
-                        onNavigateToCategories();
-                      }}
-                    >
-                      <img
-                        src={pet.imageUrl || "/placeholder.svg"}
-                        alt={pet.name}
-                        style={{
-                          width: "3rem",
-                          height: "3rem",
-                          borderRadius: "50%",
-                          objectFit: "cover",
-                          marginRight: "1rem",
-                        }}
-                      />
-                      <div>
-                        <div style={{ fontWeight: "600", color: "#111827" }}>
-                          {pet.name} {pet.gender === "female" ? "♀️" : "♂️"}
-                        </div>
-                        <div style={{ fontSize: "0.875rem", color: "#6b7280" }}>
-                          {pet.age} • {pet.breed} • {pet.type}
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div
-                    style={{
-                      padding: "2rem",
-                      textAlign: "center",
-                      color: "#6b7280",
-                    }}
-                  >
-                    No pets found matching "{searchQuery}"
-                  </div>
-                )}
-                {filteredPets.length > 5 && (
-                  <div
-                    style={{
-                      padding: "0.75rem 1rem",
-                      textAlign: "center",
-                      borderTop: "1px solid #f3f4f6",
-                      color: "#8b5cf6",
-                      cursor: "pointer",
-                    }}
-                    onClick={() => {
-                      setSearchQuery("");
-                      setIsSearchOpen(false);
-                      onNavigateToCategories();
-                    }}
-                  >
-                    View all {filteredPets.length} results
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Mobile Menu */}
-        {isMobileMenuOpen && (
-          <div className="mobile-menu">
-            {["Home", "About", "Pet Listing", "Contact"].map((item) => (
-              <a key={item} href="#" onClick={() => setIsMobileMenuOpen(false)}>
-                {item}
-              </a>
-            ))}
-            <button
-              className="mobile-signup-btn"
-              onClick={() => navigate("/signup")}
-            >
-              Sign Up
-            </button>
-          </div>
-        )}
-      </nav>
+      {/* Modular Navbar */}
+      <Navbar 
+        showSearch={true}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchResults={filteredPets}
+        onSearchResultClick={onNavigateToCategories}
+      />
 
       {/* Hero Section */}
       <section className="hero">
@@ -689,7 +487,7 @@ export default function LandingPage() {
             <div className="footer-section fade-in">
               <div className="logo" style={{ marginBottom: "1.5rem" }}>
                 <img
-                  src={logo || "/placeholder.svg"}
+                  src={logo || "/logo.png"}
                   alt="logo"
                   width="48"
                   height="48"
