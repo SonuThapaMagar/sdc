@@ -11,8 +11,9 @@ public class CorsConfig implements WebMvcConfigurer {
         registry.addMapping("/api/**")
                 .allowedOrigins("http://localhost:5173")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
-                .allowedHeaders("*")
-                .allowCredentials(true)
+                .allowedHeaders("*") // This allows all headers, but for security, list specific ones
+                .exposedHeaders("Authorization") // Expose Authorization if needed by the client
+                .allowCredentials(true) // Required for withCredentials
                 .maxAge(3600);
         System.out.println("CORS configuration applied for /api/** from http://localhost:5173");
     }

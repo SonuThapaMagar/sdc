@@ -14,7 +14,7 @@ import com.furEverHome.util.JwtUtil;
 public class SuperAdminAuthService {
 
 	// Static credentials
-	private static final String STATIC_USERNAME = "superadmin";
+	private static final String STATIC_EMAIL = "superadmin@gmail.com";
 	private static final String STATIC_PASSWORD = "admin123";
 
 	@Autowired
@@ -23,7 +23,7 @@ public class SuperAdminAuthService {
 	public Map<String, Object> authenticate(SuperAdminLoginRequest request) {
 		Map<String, Object> response = new HashMap<>();
 
-		if (STATIC_USERNAME.equals(request.getUsername()) && STATIC_PASSWORD.equals(request.getPassword())) {
+		if (STATIC_EMAIL.equals(request.getUsername()) && STATIC_PASSWORD.equals(request.getPassword())) {
 			String token = jwtUtil.generateToken("superadmin@fureverhome.com", Role.SUPERADMIN);
 			response.put("success", true);
 			response.put("token", token);

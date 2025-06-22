@@ -8,11 +8,18 @@ import org.springframework.web.bind.annotation.*;
 
 import com.furEverHome.dto.AdminProfileResponse;
 import com.furEverHome.dto.AdminProfileUpdateRequest;
+import com.furEverHome.dto.DashboardStatsResponse;
+import com.furEverHome.dto.MonthlyStatsResponse;
+import com.furEverHome.dto.PetRequest;
 import com.furEverHome.dto.PetResponse;
+import com.furEverHome.dto.PetStatusResponse;
+import com.furEverHome.dto.RecentActivityResponse;
 import com.furEverHome.dto.UserResponse;
 import com.furEverHome.dto.UserUpdateRequest;
+import com.furEverHome.entity.Pet;
 import com.furEverHome.entity.PetCenter;
 import com.furEverHome.entity.Role;
+import com.furEverHome.service.DashboardService;
 import com.furEverHome.service.PetCenterService;
 import com.furEverHome.service.PetService;
 import com.furEverHome.service.UserService;
@@ -25,14 +32,16 @@ public class SuperAdminController {
 	private final UserService userService;
 	private final PetCenterService petCenterService;
 	private final PetService petService;
+	private final DashboardService dashboardService;
 
 	@Autowired
 	public SuperAdminController(JwtUtil jwtUtil, UserService userService, PetCenterService petCenterService,
-			PetService petService) {
+			PetService petService, DashboardService dashboardService) {
 		this.jwtUtil = jwtUtil;
 		this.userService = userService;
 		this.petCenterService = petCenterService;
 		this.petService = petService;
+		this.dashboardService = dashboardService;
 	}
 
 	@GetMapping("/users")
@@ -151,35 +160,126 @@ public class SuperAdminController {
 					.body(new AuthController.ErrorResponse("Failed to delete pet center: " + e.getMessage()));
 		}
 	}
-	
+
 	@GetMapping("/pets")
-    public ResponseEntity<?> getAllPets(@RequestHeader("Authorization") String token) {
-        if (!jwtUtil.getRoleFromToken(token.substring(7)).equals(Role.SUPERADMIN)) {
-            return ResponseEntity.status(403).body(new AuthController.ErrorResponse("User must have SUPERADMIN role"));
-        }
-        try {
-            List<PetResponse> pets = petService.getAllPets();
-            return ResponseEntity.ok(pets);
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(new AuthController.ErrorResponse("Failed to fetch pets: " + e.getMessage()));
-        }
-    }	
-	
+	public ResponseEntity<?> getAllPets(@RequestHeader("Authorization") String token) {
+		if (!jwtUtil.getRoleFromToken(token.substring(7)).equals(Role.SUPERADMIN)) {
+			return ResponseEntity.status(403).body(new AuthController.ErrorResponse("User must have SUPERADMIN role"));
+		}
+		try {
+			List<PetResponse> pets = petService.getAllPets();
+			return ResponseEntity.ok(pets);
+		} catch (Exception e) {
+			return ResponseEntity.status(500)
+					.body(new AuthController.ErrorResponse("Failed to fetch pets: " + e.getMessage()));
+		}
+	}
+
+	@GetMapping("/pets/{id}")
+	public ResponseEntity<?> getPetById(@RequestHeader("Authorization") String token, @PathVariable UUID id) {
+		if (!jwtUtil.getRoleFromToken(token.substring(7)).equals(Role.SUPERADMIN)) {
+			return ResponseEntity.status(403).body(new AuthController.ErrorResponse("User must have SUPERADMIN role"));
+		}
+		try {
+			Pet pet = petService.getPetById(id);
+			PetResponse response = mapToPetResponse(pet);
+			return ResponseEntity.ok(response);
+		} catch (IllegalArgumentException e) {
+			return ResponseEntity.status(404).body(new AuthController.ErrorResponse(e.getMessage()));
+		} catch (Exception e) {
+			return ResponseEntity.status(500)
+					.body(new AuthController.ErrorResponse("Failed to fetch pet: " + e.getMessage()));
+		}
+	}
+
+	@PutMapping("/pets/{id}")
+	public ResponseEntity<?> updatePet(@RequestHeader("Authorization") String token, @PathVariable UUID id,
+			@RequestBody PetRequest petRequest) {
+		if (!jwtUtil.getRoleFromToken(token.substring(7)).equals(Role.SUPERADMIN)) {
+			return ResponseEntity.status(403).body(new AuthController.ErrorResponse("User must have SUPERADMIN role"));
+		}
+		try {
+			PetResponse updatedPet = petService.updatePet(id, petRequest);
+			return ResponseEntity.ok(new SuccessResponse("Pet updated successfully", updatedPet));
+		} catch (IllegalArgumentException e) {
+			return ResponseEntity.status(400).body(new AuthController.ErrorResponse(e.getMessage()));
+		} catch (Exception e) {
+			return ResponseEntity.status(500)
+					.body(new AuthController.ErrorResponse("Failed to update pet: " + e.getMessage()));
+		}
+	}
+
 	@DeleteMapping("/pets/{id}")
-    public ResponseEntity<?> deletePet(@RequestHeader("Authorization") String token, @PathVariable UUID id) {
-        if (!jwtUtil.getRoleFromToken(token.substring(7)).equals(Role.SUPERADMIN)) {
-            return ResponseEntity.status(403).body(new AuthController.ErrorResponse("User must have SUPERADMIN role"));
-        }
-        try {
-            petService.deletePet(id);
-            return ResponseEntity.ok(new SuccessResponse("Pet deleted successfully", null));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(new AuthController.ErrorResponse(e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(new AuthController.ErrorResponse("Failed to delete pet: " + e.getMessage()));
-        }
-    }
-	
+	public ResponseEntity<?> deletePet(@RequestHeader("Authorization") String token, @PathVariable UUID id) {
+		if (!jwtUtil.getRoleFromToken(token.substring(7)).equals(Role.SUPERADMIN)) {
+			return ResponseEntity.status(403).body(new AuthController.ErrorResponse("User must have SUPERADMIN role"));
+		}
+		try {
+			petService.deletePet(id);
+			return ResponseEntity.ok(new SuccessResponse("Pet deleted successfully", null));
+		} catch (IllegalArgumentException e) {
+			return ResponseEntity.badRequest().body(new AuthController.ErrorResponse(e.getMessage()));
+		} catch (Exception e) {
+			return ResponseEntity.status(500)
+					.body(new AuthController.ErrorResponse("Failed to delete pet: " + e.getMessage()));
+		}
+	}
+
+	@GetMapping("/dashboard/stats")
+	public ResponseEntity<?> getDashboardStats(@RequestHeader("Authorization") String token) {
+		if (!jwtUtil.getRoleFromToken(token.substring(7)).equals(Role.SUPERADMIN)) {
+			return ResponseEntity.status(403).body(new AuthController.ErrorResponse("User must have SUPERADMIN role"));
+		}
+		try {
+			DashboardStatsResponse stats = dashboardService.getDashboardStats();
+			return ResponseEntity.ok(stats);
+		} catch (Exception e) {
+			return ResponseEntity.status(500)
+					.body(new AuthController.ErrorResponse("Failed to fetch dashboard stats: " + e.getMessage()));
+		}
+	}
+
+	@GetMapping("/dashboard/monthly-stats")
+	public ResponseEntity<?> getMonthlyStats(@RequestHeader("Authorization") String token) {
+		if (!jwtUtil.getRoleFromToken(token.substring(7)).equals(Role.SUPERADMIN)) {
+			return ResponseEntity.status(403).body(new AuthController.ErrorResponse("User must have SUPERADMIN role"));
+		}
+		try {
+			List<MonthlyStatsResponse> stats = dashboardService.getMonthlyStats();
+			return ResponseEntity.ok(stats);
+		} catch (Exception e) {
+			return ResponseEntity.status(500)
+					.body(new AuthController.ErrorResponse("Failed to fetch monthly stats: " + e.getMessage()));
+		}
+	}
+
+	@GetMapping("/dashboard/pet-status")
+	public ResponseEntity<?> getPetStatus(@RequestHeader("Authorization") String token) {
+		if (!jwtUtil.getRoleFromToken(token.substring(7)).equals(Role.SUPERADMIN)) {
+			return ResponseEntity.status(403).body(new AuthController.ErrorResponse("User must have SUPERADMIN role"));
+		}
+		try {
+			List<PetStatusResponse> status = dashboardService.getPetStatus();
+			return ResponseEntity.ok(status);
+		} catch (Exception e) {
+			return ResponseEntity.status(500)
+					.body(new AuthController.ErrorResponse("Failed to fetch pet status: " + e.getMessage()));
+		}
+	}
+
+	@GetMapping("/dashboard/recent-activities")
+	public ResponseEntity<?> getRecentActivities(@RequestHeader("Authorization") String token) {
+		if (!jwtUtil.getRoleFromToken(token.substring(7)).equals(Role.SUPERADMIN)) {
+			return ResponseEntity.status(403).body(new AuthController.ErrorResponse("User must have SUPERADMIN role"));
+		}
+		try {
+			List<RecentActivityResponse> activities = dashboardService.getRecentActivities();
+			return ResponseEntity.ok(activities);
+		} catch (Exception e) {
+			return ResponseEntity.status(500)
+					.body(new AuthController.ErrorResponse("Failed to fetch recent activities: " + e.getMessage()));
+		}
+	}
 
 	private AdminProfileResponse mapToAdminProfileResponse(PetCenter petCenter) {
 		AdminProfileResponse response = new AdminProfileResponse();
@@ -189,6 +289,20 @@ public class SuperAdminController {
 		response.setPhone(petCenter.getPhone());
 		response.setDescription(petCenter.getDescription());
 		response.setEmail(petCenter.getEmail());
+		return response;
+	}
+
+	private PetResponse mapToPetResponse(Pet pet) {
+		PetResponse response = new PetResponse();
+		response.setId(pet.getId());
+		response.setName(pet.getName());
+		response.setBreed(pet.getBreed());
+		response.setAge(pet.getAge());
+		response.setGender(pet.getGender());
+		response.setDescription(pet.getDescription());
+		response.setLocation(pet.getLocation());
+		response.setStatus(pet.getStatus());
+		response.setCenterId(pet.getCenterId());
 		return response;
 	}
 

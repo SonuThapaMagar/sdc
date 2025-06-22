@@ -20,13 +20,13 @@ import com.furEverHome.repository.UserRepository;
 @Service
 public class UserService {
 	private final UserRepository userRepository;
-    private final AdoptionRequestRepository adoptionRequestRepository;
+	private final AdoptionRequestRepository adoptionRequestRepository;
 
-    @Autowired
-    public UserService(UserRepository userRepository, AdoptionRequestRepository adoptionRequestRepository) {
-        this.userRepository = userRepository;
-        this.adoptionRequestRepository = adoptionRequestRepository;
-    }
+	@Autowired
+	public UserService(UserRepository userRepository, AdoptionRequestRepository adoptionRequestRepository) {
+		this.userRepository = userRepository;
+		this.adoptionRequestRepository = adoptionRequestRepository;
+	}
 
 	@Transactional
 	public UserResponse updateUserProfile(String email, UserUpdateRequest updateRequest, Role expectedRole) {
@@ -55,6 +55,7 @@ public class UserService {
 			user.setAddress(updateRequest.getAddress());
 		}
 
+		// No need to set createdAt; it’s already set during creation
 		user = userRepository.save(user);
 		return mapToUserResponse(user);
 	}
@@ -63,7 +64,6 @@ public class UserService {
 		return userRepository.findAll().stream().filter(user -> user.getRole() == Role.USER)
 				.map(this::mapToUserResponse).collect(Collectors.toList());
 	}
-	
 
 	@Transactional
 	public UserResponse updateUser(UUID userId, UserUpdateRequest updateRequest) {
@@ -98,11 +98,11 @@ public class UserService {
 
 	@Transactional
 	public UserResponse getUserById(UUID userId) {
-	    User user = userRepository.findById(userId)
-	            .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
-	    return mapToUserResponse(user);
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+		return mapToUserResponse(user);
 	}
-	
+
 	@Transactional
 	public void deleteUser(UUID userId) {
 		User user = userRepository.findById(userId)
