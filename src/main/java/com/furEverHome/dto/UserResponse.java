@@ -3,50 +3,71 @@ package com.furEverHome.dto;
 import java.util.UUID;
 
 public class UserResponse {
-	private UUID id;
-	private String fullName;
-	private String email;
-	private String phone;
-	private String address;
+    private UUID id;
+    private String fullName;
+    private String email;
+    private String phone;
+    private String address;
+    private String role;
+    
+    public UserResponse() {
+    }
 
-	// Getters and Setters
-	public UUID getId() {
-		return id;
-	}
+    public UserResponse(UUID id, String fullName, String email, String phone, String address, String role) {
+        this.id = id;
+        this.fullName = fullName;
+        this.email = email;
+        this.phone = phone;
+        this.address = address;
+        this.role = role;
+    }
 
-	public void setId(UUID id) {
-		this.id = id;
-	}
+    // Getters and Setters
+    public UUID getId() {
+        return id;
+    }
 
-	public String getFullName() {
-		return fullName;
-	}
+    public void setId(UUID id) {
+        this.id = id;
+    }
 
-	public void setFullName(String fullName) {
-		this.fullName = fullName;
-	}
+    public String getFullName() {
+        return fullName;
+    }
 
-	public String getEmail() {
-		return email;
-	}
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
 
-	public void setEmail(String email) {
-		this.email = email;
-	}
+    public String getEmail() {
+        return email;
+    }
 
-	public String getPhone() {
-		return phone;
-	}
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
-	public void setPhone(String phone) {
-		this.phone = phone;
-	}
+    public String getPhone() {
+        return phone;
+    }
 
-	public String getAddress() {
-		return address;
-	}
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
 
-	public void setAddress(String address) {
-		this.address = address;
-	}
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
 }

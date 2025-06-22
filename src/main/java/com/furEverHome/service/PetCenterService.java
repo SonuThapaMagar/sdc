@@ -20,115 +20,133 @@ import com.furEverHome.repository.PetRepository;
 
 @Service
 public class PetCenterService {
-    private final PetCenterRepository petCenterRepository;
-    private final PetRepository petRepository;
-    private final AdoptionRequestRepository adoptionRequestRepository;
+	private final PetCenterRepository petCenterRepository;
+	private final PetRepository petRepository;
+	private final AdoptionRequestRepository adoptionRequestRepository;
 
-    @Autowired
-    public PetCenterService(PetCenterRepository petCenterRepository, PetRepository petRepository,
-            AdoptionRequestRepository adoptionRequestRepository) {
-        this.petCenterRepository = petCenterRepository;
-        this.petRepository = petRepository;
-        this.adoptionRequestRepository = adoptionRequestRepository;
-    }
+	@Autowired
+	public PetCenterService(PetCenterRepository petCenterRepository, PetRepository petRepository,
+			AdoptionRequestRepository adoptionRequestRepository) {
+		this.petCenterRepository = petCenterRepository;
+		this.petRepository = petRepository;
+		this.adoptionRequestRepository = adoptionRequestRepository;
+	}
 
-    public PetCenter getPetCenterById(UUID id) {
-        return petCenterRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Pet Center not found with ID: " + id));
-    }
+	public AdminProfileResponse getAdminProfileByEmail(String email) {
+		PetCenter petCenter = petCenterRepository.findByEmail(email)
+				.orElseThrow(() -> new IllegalArgumentException("Pet Center not found with email: " + email));
+		return mapToAdminProfileResponse(petCenter);
+	}
 
-    @Transactional
-    public AdminProfileResponse updatePetCenterProfile(String email, AdminProfileUpdateRequest updateRequest) {
-        PetCenter petCenter = petCenterRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("Pet Center not found with email: " + email));
+	public PetCenter getPetCenterById(UUID id) {
+		return petCenterRepository.findById(id)
+				.orElseThrow(() -> new IllegalArgumentException("Pet Center not found with ID: " + id));
+	}
 
-        if (updateRequest.getEmail() != null && !updateRequest.getEmail().equals(petCenter.getEmail())) {
-            Optional<PetCenter> existingPetCenterWithEmail = petCenterRepository.findByEmail(updateRequest.getEmail());
-            if (existingPetCenterWithEmail.isPresent()) {
-                throw new IllegalArgumentException("Email is already in use: " + updateRequest.getEmail());
-            }
-            petCenter.setEmail(updateRequest.getEmail());
-        }
+	@Transactional
+	public AdminProfileResponse updatePetCenterProfile(String email, AdminProfileUpdateRequest updateRequest) {
+		PetCenter petCenter = petCenterRepository.findByEmail(email)
+				.orElseThrow(() -> new IllegalArgumentException("Pet Center not found with email: " + email));
 
-        if (updateRequest.getShelterName() != null) {
-            petCenter.setShelterName(updateRequest.getShelterName());
-        }
-        if (updateRequest.getAddress() != null) {
-            petCenter.setAddress(updateRequest.getAddress());
-        }
-        if (updateRequest.getPhone() != null) {
-            petCenter.setPhone(updateRequest.getPhone());
-        }
-        if (updateRequest.getDescription() != null) {
-            petCenter.setDescription(updateRequest.getDescription());
-        }
+		if (updateRequest.getEmail() != null && !updateRequest.getEmail().equals(petCenter.getEmail())) {
+			Optional<PetCenter> existingPetCenterWithEmail = petCenterRepository.findByEmail(updateRequest.getEmail());
+			if (existingPetCenterWithEmail.isPresent()) {
+				throw new IllegalArgumentException("Email is already in use: " + updateRequest.getEmail());
+			}
+			petCenter.setEmail(updateRequest.getEmail());
+		}
 
-        petCenter = petCenterRepository.save(petCenter);
-        return mapToAdminProfileResponse(petCenter);
-    }
+		if (updateRequest.getShelterName() != null) {
+			petCenter.setShelterName(updateRequest.getShelterName());
+		}
+		if (updateRequest.getAddress() != null) {
+			petCenter.setAddress(updateRequest.getAddress());
+		}
+		if (updateRequest.getPhone() != null) {
+			petCenter.setPhone(updateRequest.getPhone());
+		}
+		if (updateRequest.getDescription() != null) {
+			petCenter.setDescription(updateRequest.getDescription());
+		}
+		if (updateRequest.getCapacity() != null) {
+			petCenter.setCapacity(updateRequest.getCapacity());
+		}
+		if (updateRequest.getWebsite() != null) {
+			petCenter.setWebsite(updateRequest.getWebsite());
+		}
 
-    public List<AdminProfileResponse> getAllPetCenters() {
-        return petCenterRepository.findAll().stream().map(this::mapToAdminProfileResponse).collect(Collectors.toList());
-    }
+		petCenter = petCenterRepository.save(petCenter);
+		return mapToAdminProfileResponse(petCenter);
+	}
 
-    @Transactional
-    public AdminProfileResponse updatePetCenter(UUID petCenterId, AdminProfileUpdateRequest updateRequest) {
-        PetCenter petCenter = petCenterRepository.findById(petCenterId)
-                .orElseThrow(() -> new IllegalArgumentException("Pet Center not found with ID: " + petCenterId));
+	public List<AdminProfileResponse> getAllPetCenters() {
+		return petCenterRepository.findAll().stream().map(this::mapToAdminProfileResponse).collect(Collectors.toList());
+	}
 
-        if (updateRequest.getEmail() != null && !updateRequest.getEmail().equals(petCenter.getEmail())) {
-            Optional<PetCenter> existingPetCenterWithEmail = petCenterRepository.findByEmail(updateRequest.getEmail());
-            if (existingPetCenterWithEmail.isPresent()) {
-                throw new IllegalArgumentException("Email is already in use: " + updateRequest.getEmail());
-            }
-            petCenter.setEmail(updateRequest.getEmail());
-        }
+	@Transactional
+	public AdminProfileResponse updatePetCenter(UUID petCenterId, AdminProfileUpdateRequest updateRequest) {
+		PetCenter petCenter = petCenterRepository.findById(petCenterId)
+				.orElseThrow(() -> new IllegalArgumentException("Pet Center not found with ID: " + petCenterId));
 
-        if (updateRequest.getShelterName() != null) {
-            petCenter.setShelterName(updateRequest.getShelterName());
-        }
-        if (updateRequest.getAddress() != null) {
-            petCenter.setAddress(updateRequest.getAddress());
-        }
-        if (updateRequest.getPhone() != null) {
-            petCenter.setPhone(updateRequest.getPhone());
-        }
-        if (updateRequest.getDescription() != null) {
-            petCenter.setDescription(updateRequest.getDescription());
-        }
+		if (updateRequest.getEmail() != null && !updateRequest.getEmail().equals(petCenter.getEmail())) {
+			Optional<PetCenter> existingPetCenterWithEmail = petCenterRepository.findByEmail(updateRequest.getEmail());
+			if (existingPetCenterWithEmail.isPresent()) {
+				throw new IllegalArgumentException("Email is already in use: " + updateRequest.getEmail());
+			}
+			petCenter.setEmail(updateRequest.getEmail());
+		}
 
-        petCenter = petCenterRepository.save(petCenter);
-        return mapToAdminProfileResponse(petCenter);
-    }
+		if (updateRequest.getShelterName() != null) {
+			petCenter.setShelterName(updateRequest.getShelterName());
+		}
+		if (updateRequest.getAddress() != null) {
+			petCenter.setAddress(updateRequest.getAddress());
+		}
+		if (updateRequest.getPhone() != null) {
+			petCenter.setPhone(updateRequest.getPhone());
+		}
+		if (updateRequest.getDescription() != null) {
+			petCenter.setDescription(updateRequest.getDescription());
+		}
 
-    @Transactional
-    public void deletePetCenter(UUID petCenterId) {
-        PetCenter petCenter = petCenterRepository.findById(petCenterId)
-                .orElseThrow(() -> new IllegalArgumentException("Pet Center not found with ID: " + petCenterId));
+		if (updateRequest.getCapacity() != null) {
+			petCenter.setCapacity(updateRequest.getCapacity());
+		}
+		if (updateRequest.getWebsite() != null) {
+			petCenter.setWebsite(updateRequest.getWebsite());
+		}
 
-        List<Pet> pets = petRepository.findByCenterId(petCenterId);
-        for (Pet pet : pets) {
-            List<AdoptionRequest> adoptionRequests = adoptionRequestRepository.findByPetId(pet.getId());
-            if (!adoptionRequests.isEmpty()) {
-                adoptionRequestRepository.deleteAll(adoptionRequests);
-            }
-        }
+		petCenter = petCenterRepository.save(petCenter);
+		return mapToAdminProfileResponse(petCenter);
+	}
 
-        if (!pets.isEmpty()) {
-            petRepository.deleteAll(pets);
-        }
+	@Transactional
+	public void deletePetCenter(UUID petCenterId) {
+		PetCenter petCenter = petCenterRepository.findById(petCenterId)
+				.orElseThrow(() -> new IllegalArgumentException("Pet Center not found with ID: " + petCenterId));
 
-        petCenterRepository.delete(petCenter);
-    }
+		List<Pet> pets = petRepository.findByCenterId(petCenterId);
+		for (Pet pet : pets) {
+			List<AdoptionRequest> adoptionRequests = adoptionRequestRepository.findByPetId(pet.getId());
+			if (!adoptionRequests.isEmpty()) {
+				adoptionRequestRepository.deleteAll(adoptionRequests);
+			}
+		}
+		if (!pets.isEmpty()) {
+			petRepository.deleteAll(pets);
+		}
+		petCenterRepository.delete(petCenter);
+	}
 
-    private AdminProfileResponse mapToAdminProfileResponse(PetCenter petCenter) {
-        AdminProfileResponse response = new AdminProfileResponse();
-        response.setId(petCenter.getId());
-        response.setShelterName(petCenter.getShelterName());
-        response.setAddress(petCenter.getAddress());
-        response.setPhone(petCenter.getPhone());
-        response.setDescription(petCenter.getDescription());
-        response.setEmail(petCenter.getEmail());
-        return response;
-    }
+	private AdminProfileResponse mapToAdminProfileResponse(PetCenter petCenter) {
+		AdminProfileResponse response = new AdminProfileResponse();
+		response.setId(petCenter.getId());
+		response.setShelterName(petCenter.getShelterName());
+		response.setAddress(petCenter.getAddress());
+		response.setPhone(petCenter.getPhone());
+		response.setDescription(petCenter.getDescription());
+		response.setEmail(petCenter.getEmail());
+		response.setCapacity(petCenter.getCapacity());
+		return response;
+	}
 }
