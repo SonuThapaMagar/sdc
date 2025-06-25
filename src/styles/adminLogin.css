@@ -1,0 +1,71 @@
+.login-container {
+  min-height: 100vh;
+  width: 100%;
+}
+
+.login-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  backdrop-filter: blur(2px);
+}
+
+.ant-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.ant-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15) !important;
+}
+
+.ant-input,
+.ant-input-password {
+  padding: 10px 12px !important;
+}
+
+.ant-form-item-label>label {
+  color: #444 !important;
+}
+
+.form-card {
+  background-color: var(--primary-light);
+}
+
+.curve-bg {
+  width: 60vw;
+  height: 100vh;
+  left: 0;
+  top: 0;
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.curve-bg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: none;
+  z-index: 0;
+  /* SVG curve as background-image */
+  background-image: url("data:image/svg+xml;utf8,<svg width='100%' height='100%' viewBox='0 0 800 800' fill='none' xmlns='http://www.w3.org/2000/svg'><path d='M0 0 Q 400 100 800 0 L800 800 L0 800 Z' fill='%23b1bbf9'/></svg>");
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: left top;
+  opacity: 1;
+}
+
+.main-content {
+  min-height: 100vh;
+  height: 100vh;
+  box-sizing: border-box;
+  position: relative;
+  /* ...existing styles... */
+}

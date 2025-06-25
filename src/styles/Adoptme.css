@@ -1,0 +1,393 @@
+.adoption-form-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.adoption-form-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.adoption-form-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+}
+
+.adoption-form-subtitle {
+  color: #6b7280;
+  font-size: 1rem;
+}
+
+.adoption-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.adoption-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.adoption-form-label {
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.875rem;
+}
+
+.adoption-form-input,
+.adoption-form-textarea,
+.adoption-form-select {
+  padding: 0.75rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.adoption-form-input:focus,
+.adoption-form-textarea:focus,
+.adoption-form-select:focus {
+  outline: none;
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+.adoption-form-textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.adoption-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.adoption-checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.adoption-form-checkbox {
+  width: 1.25rem;
+  height: 1.25rem;
+  accent-color: #8b5cf6;
+}
+
+.adoption-checkbox-group .adoption-form-label {
+  margin: 0;
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+.adoption-submit-button {
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  color: white;
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  margin-top: 1rem;
+}
+
+.adoption-submit-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
+}
+
+.adoption-submit-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.adoption-pet-info {
+  background: #f9fafb;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  border-left: 4px solid #8b5cf6;
+}
+
+.adoption-pet-name {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #1f2937;
+  margin-bottom: 0.25rem;
+}
+
+.adoption-pet-details {
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+/* Pet Details Card Styling */
+.adoption-pet-details-card {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  border: 1px solid #e2e8f0;
+}
+
+.adoption-pet-details-header {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  align-items: flex-start;
+}
+
+.adoption-pet-image {
+  width: 80px;
+  height: 80px;
+  border-radius: 0.75rem;
+  object-fit: cover;
+  border: 2px solid #8b5cf6;
+  flex-shrink: 0;
+}
+
+.adoption-pet-basic-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.adoption-pet-name-large {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.adoption-gender-female {
+  color: #ec4899;
+}
+
+.adoption-gender-male {
+  color: #3b82f6;
+}
+
+.adoption-pet-breed {
+  color: #64748b;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+.adoption-pet-location-info {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+.adoption-pet-attributes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.adoption-pet-attribute {
+  background: white;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  text-align: center;
+  border: 1px solid #e2e8f0;
+}
+
+.adoption-pet-attribute-value {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 0.875rem;
+}
+
+.adoption-pet-attribute-label {
+  color: #64748b;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+/* Loading and Error States */
+.adoption-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  font-size: 1.125rem;
+  color: #6b7280;
+}
+
+.adoption-error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  font-size: 1.125rem;
+  color: #dc2626;
+}
+
+/* Success States */
+.adoption-success-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 1rem;
+  background-color: #f9fafb;
+}
+
+.adoption-success-card {
+  background: white;
+  border-radius: 1rem;
+  padding: 2rem;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  max-width: 500px;
+  width: 100%;
+}
+
+.adoption-success-icon {
+  color: #10b981;
+  margin-bottom: 1rem;
+}
+
+.adoption-success-title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 0.75rem;
+}
+
+.adoption-success-subtitle {
+  font-size: 1.125rem;
+  color: #6b7280;
+  margin-bottom: 1.5rem;
+}
+
+.adoption-success-details {
+  background: #f9fafb;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.adoption-success-details p {
+  margin-bottom: 0.5rem;
+  color: #374151;
+  line-height: 1.5;
+}
+
+.adoption-success-details p:last-child {
+  margin-bottom: 0;
+}
+
+.adoption-success-button {
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.adoption-success-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
+}
+
+@media (max-width: 768px) {
+  .adoption-form-container {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
+
+  .adoption-form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .adoption-form-title {
+    font-size: 1.5rem;
+  }
+
+  .adoption-pet-details-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .adoption-pet-image {
+    width: 100px;
+    height: 100px;
+  }
+
+  .adoption-pet-name-large {
+    font-size: 1.25rem;
+    justify-content: center;
+  }
+
+  .adoption-pet-location-info {
+    justify-content: center;
+  }
+
+  .adoption-pet-attributes-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .adoption-success-card {
+    padding: 1.5rem;
+  }
+
+  .adoption-success-title {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .adoption-form-container {
+    margin: 0.5rem;
+    padding: 1rem;
+  }
+
+  .adoption-pet-details-card {
+    padding: 1rem;
+  }
+
+  .adoption-pet-attributes-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .adoption-pet-attribute {
+    padding: 0.5rem;
+  }
+
+  .adoption-checkbox-group {
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .adoption-form-checkbox {
+    margin-top: 0.25rem;
+  }
+}

@@ -49,6 +49,7 @@ const SuperadminLayout = () => {
     const location = useLocation();
     const [collapsed, setCollapsed] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
     useEffect(() => {
         const token = localStorage.getItem('superadminToken');
@@ -62,14 +63,19 @@ const SuperadminLayout = () => {
 
     const handleMenuClick = (item) => {
         if (item.key === 'logout') {
-            localStorage.removeItem('superadminToken');
-            localStorage.removeItem('superadminId');
-            localStorage.removeItem('userRole');
-            navigate('/login');
+            setShowLogoutDialog(true);
         } else {
             navigate(item.path);
         }
         setIsMobileMenuOpen(false);
+    };
+
+    const handleLogout = () => {
+        localStorage.removeItem('superadminToken');
+        localStorage.removeItem('superadminId');
+        localStorage.removeItem('userRole');
+        setShowLogoutDialog(false);
+        navigate('/login');
     };
 
     return (
@@ -169,6 +175,29 @@ const SuperadminLayout = () => {
                     </div>
                 </main>
             </div>
+
+            {/* Logout Confirmation Dialog */}
+            {showLogoutDialog && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm">
+                        <div className="font-semibold text-lg mb-2">Do you want to logout?</div>
+                        <div className="flex justify-end gap-2 mt-4">
+                            <button
+                                className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
+                                onClick={() => setShowLogoutDialog(false)}
+                            >
+                                No
+                            </button>
+                            <button
+                                className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
+                                onClick={handleLogout}
+                            >
+                                Yes, Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

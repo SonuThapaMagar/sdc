@@ -1,6 +1,6 @@
 // src/components/layout/Sidebar.jsx
 import { Link, useNavigate } from 'react-router-dom';
-import { toast } from '@/utils/toast';
+import { toast } from 'react-toastify';
 
 export default function Sidebar() {
   const navigate = useNavigate();

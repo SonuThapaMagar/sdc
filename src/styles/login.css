@@ -1,0 +1,223 @@
+/* Login Page Styles - Consistent with Signup */
+/* body, .page-container, .main-content {
+  overflow: hidden;
+} */
+
+.page-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  gap: 2rem;
+  min-height: 100vh;
+  height: 100vh;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.curve-bg {
+  width: 60vw;
+  height: 100vh;
+  left: 0;
+  top: 0;
+  position: absolute;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.curve-bg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: none;
+  z-index: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg width='100%' height='100%' viewBox='0 0 800 800' fill='none' xmlns='http://www.w3.org/2000/svg'><path d='M0 0 Q 400 100 800 0 L800 800 L0 800 Z' fill='%23b1bbf9'/></svg>");
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: left top;
+  opacity: 1;
+}
+
+.form-container {
+  width: 100%;
+  max-width: 600px;
+  padding: 1rem;
+  z-index: 1;
+}
+
+.form-card {
+  background-color: var(--white);
+  border-radius: 1rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  width: 100%;
+}
+
+.form-title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: var(--gray-900);
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--gray-700);
+  font-size: 0.875rem;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1.5px solid var(--primary-color);
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  background-color: var(--primary-light);
+  color: var(--gray-900);
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--primary-dark);
+  background-color: #e9eefd;
+  box-shadow: 0 0 0 3px var(--primary-lighter);
+}
+
+.form-group input::placeholder {
+  color: var(--gray-400);
+  opacity: 1;
+}
+
+.submit-button {
+  width: 100%;
+  background-color: var(--primary-light);
+  color: var(--primary-color);
+  padding: 0.875rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+  margin-top: 1.5rem;
+  transition: all 0.2s ease;
+  border: 1.5px solid var(--primary-color);
+  cursor: pointer;
+}
+
+.submit-button:hover {
+  background-color: var(--primary-color);
+  color: var(--white);
+  border-color: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(117, 127, 246, 0.3);
+}
+
+.submit-button:active {
+  transform: translateY(0);
+}
+
+.form-footer {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--gray-600);
+}
+
+.form-link {
+  color: var(--primary-color);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.form-link:hover {
+  color: var(--primary-dark);
+  text-decoration: underline;
+}
+
+/* Responsive styles */
+@media (min-width: 640px) {
+  .main-content {
+    padding: 2rem;
+  }
+  .form-card {
+    padding: 2.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .main-content {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 3rem;
+    padding: 2rem 4rem;
+  }
+  .form-container {
+    width: 55%;
+    max-width: 500px;
+    margin: 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  .main-content {
+    padding: 3rem 6rem;
+    gap: 4rem;
+  }
+  .form-container {
+    width: 50%;
+    max-width: 550px;
+  }
+  .form-card {
+    padding: 3rem;
+  }
+  .form-title {
+    font-size: 2.25rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .main-content {
+    padding: 4rem 8rem;
+  }
+  .form-container {
+    max-width: 600px;
+  }
+}
+
+/* Mobile optimizations */
+@media (max-width: 639px) {
+  .main-content {
+    padding: 1rem;
+    gap: 1.5rem;
+  }
+  .form-container {
+    padding: 0.5rem;
+  }
+  .form-card {
+    padding: 1.5rem;
+  }
+  .form-title {
+    font-size: 1.5rem;
+  }
+}
+  
