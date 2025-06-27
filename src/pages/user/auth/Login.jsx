@@ -1,62 +1,63 @@
-import { Link, useNavigate } from "react-router-dom";
-import "../../../styles/login.css";
-import img from "../../../images/login.png";
+import { Link, useNavigate } from 'react-router-dom';
+import '../../../styles/login.css';
+import img from '../../../images/login.png';
 import '../../../styles/global.css';
-
-import { useState } from "react";
-import api from "../../../api/api"; // Import the Axios instance
+import { useState } from 'react';
+import api from '../../../api/api';
+import { toast } from 'react-toastify';
+import { useAuth } from '../pages/auth-provider';
 
 function Login() {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
-
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-  const [userId, setUserId] = useState("");
+  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.id]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.id]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
-    setUserId("");
+    setError('');
+    setSuccess('');
 
-    console.log("Login form submitted with data:", formData);
+    console.log('Login form submitted with data:', formData);
 
     try {
-      const response = await api.post("/api/auth/login", {
+      const response = await api.post('/api/auth/login', {
         email: formData.email,
         password: formData.password,
       });
 
-      const data = response.data;
-      setSuccess(data.message || "Login successful!");
-      setUserId(data.id || "");
-      console.log("User ID (UUID):", data.id);
+      const { message, id, token, role } = response.data;
+      setSuccess(message || 'Login successful!');
+      console.log('User ID:', id, 'Role:', role);
 
-      // Store the JWT token and userId in localStorage
-      if (data.token) {
-        localStorage.setItem("jwtToken", data.token);
-        localStorage.setItem("userId", data.id);
-      }
+      // Use AuthProvider's login function
+      const userData = {
+        id: id,
+        role: role,
+        fullName: response.data.fullName || "User",
+        email: formData.email,
+        profileImage: response.data.profileImage || "/placeholder.svg?height=40&width=40"
+      };
+      
+      login(userData, token);
 
-      setTimeout(() => navigate("/dashboard"), 2000);
+      // Role-based redirection
+      setTimeout(() => {
+        if (role === 'SUPERADMIN') navigate('/superadmin/dashboard');
+        else if (role === 'ADMIN') navigate('/admin/dashboard');
+        else if (role === 'USER') navigate('/user/dashboard');
+      }, 2000);
     } catch (error) {
       const errorMessage =
-        error.response?.data?.message ||
-        error.message ||
-        "An error occurred during login";
+        error.response?.data?.message || error.message || 'An error occurred during login';
       setError(errorMessage);
-      console.error("Error:", errorMessage);
+      console.error('Error:', errorMessage);
+      toast.error(errorMessage);
     }
   };
 
@@ -64,47 +65,22 @@ function Login() {
     <div className="page-container">
       <main className="main-content">
         <div className="illustration-container">
-          <img
-            src={img}
-            alt="Pet care illustration"
-            className="pet-illustration"
-          />
+          <img src={img} alt="Pet care illustration" className="pet-illustration" />
         </div>
         <div className="form-container">
           <div className="form-card">
             <h4 className="title">FurEverHome</h4>
             <h2 className="form-title">Login</h2>
             {error && <p className="text-red-500 text-center mb-4">{error}</p>}
-            {success && (
-              <p className="text-green-500 text-center mb-4">{success}</p>
-            )}
-            {userId && (
-              <p className="text-blue-500 text-center mb-4">
-                Your User ID: {userId}
-              </p>
-            )}
+            {success && <p className="text-green-500 text-center mb-4">{success}</p>}
             <form className="login-form" onSubmit={handleSubmit}>
               <div className="form-group">
                 <label htmlFor="email">Email*</label>
-                <input
-                  type="email"
-                  id="email"
-                  placeholder="Enter Your Email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                />
+                <input type="email" id="email" placeholder="Enter Your Email" value={formData.email} onChange={handleChange} required />
               </div>
               <div className="form-group">
                 <label htmlFor="password">Password*</label>
-                <input
-                  type="password"
-                  id="password"
-                  placeholder="Enter Your Password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                />
+                <input type="password" id="password" placeholder="Enter Your Password" value={formData.password} onChange={handleChange} required />
               </div>
               <div className="forgot-password">
                 <Link to="/forgot-password">Forget Password</Link>
@@ -115,10 +91,7 @@ function Login() {
             </form>
             <div className="form-footer">
               <p>
-                Don't have Account?{" "}
-                <Link to="/signup" className="form-link">
-                  Sign up Here
-                </Link>
+                Don't have Account? <Link to="/signup" className="form-link">Sign up Here</Link>
               </p>
             </div>
           </div>

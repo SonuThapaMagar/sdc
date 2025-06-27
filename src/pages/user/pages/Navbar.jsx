@@ -4,6 +4,7 @@ import { Search, Menu, X, Heart } from "lucide-react"
 import ProfileModal from "./ProfileModal"
 import logo from "../../../images/logo.png"
 import "../../../styles/Navbar.css"
+import { useAuth } from "./auth-provider"
 
 export default function Navbar({
   showSearch = true,
@@ -12,18 +13,17 @@ export default function Navbar({
   searchResults = [],
   onSearchResultClick,
   className = "",
+  forceAuthButtons = false,
 }) {
   const navigate = useNavigate()
+  const { user, isAuthenticated, logout } = useAuth()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
 
-  // Mock user data - you can replace this with actual auth state
-  const isAuthenticated = false
-  const user = {
-    fullName: "User",
-    profileImage: "/placeholder.svg?height=40&width=40"
-  }
+  // Check if user is authenticated and has USER role
+  const showProfile = isAuthenticated && user?.role === 'USER' && !forceAuthButtons;
 
   const navigationLinks = [
     { name: "Home", href: "/" },
@@ -44,6 +44,11 @@ export default function Navbar({
     if (onSearchResultClick) {
       onSearchResultClick()
     }
+  }
+
+  const handleLogout = () => {
+    logout();
+    setIsProfileDropdownOpen(false);
   }
 
   return (
@@ -93,23 +98,45 @@ export default function Navbar({
                 </button>
               )}
 
-              {isAuthenticated ? (
-                <div className="navbar-profile" onClick={() => setIsProfileOpen(true)}>
-                  <div className="navbar-profile-image">
+              {showProfile ? (
+                <div
+                  className="navbar-profile"
+                  tabIndex={0}
+                  style={{ position: "relative" }}
+                >
+                  <div
+                    className="navbar-profile-image"
+                    onClick={() => setIsProfileDropdownOpen((prev) => !prev)}
+                    style={{ cursor: "pointer" }}
+                  >
                     <img
                       src={user?.profileImage || "/placeholder.svg?height=40&width=40"}
                       alt={user?.fullName || "Profile"}
                     />
                   </div>
-                  <div className="navbar-profile-info">
-                    <div className="navbar-profile-location">
-                      Location
-                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </div>
+                  <div className="navbar-profile-info" onClick={() => setIsProfileDropdownOpen((prev) => !prev)} style={{ cursor: "pointer" }}>
                     <div className="navbar-profile-name">{user?.fullName || "User"}</div>
                   </div>
+                  {isProfileDropdownOpen && (
+                    <div className="navbar-profile-dropdown" style={{ position: "absolute", top: "100%", right: 0, background: "white", border: "1px solid #eee", borderRadius: "6px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", minWidth: "160px", zIndex: 100, display: "flex", flexDirection: "column" }}>
+                      <button onClick={() => { navigate("/user/profile"); setIsProfileDropdownOpen(false); }} style={{ background: "none", border: "none", padding: "10px 16px", textAlign: "left", cursor: "pointer", fontSize: "1rem", color: "#333", transition: "background 0.2s" }}>
+                        My Profile
+                      </button>
+                      <button onClick={() => { navigate("/user/change-password"); setIsProfileDropdownOpen(false); }} style={{ background: "none", border: "none", padding: "10px 16px", textAlign: "left", cursor: "pointer", fontSize: "1rem", color: "#333", transition: "background 0.2s" }}>
+                        Change Password
+                      </button>
+                      <button onClick={handleLogout} style={{ background: "none", border: "none", padding: "10px 16px", textAlign: "left", cursor: "pointer", fontSize: "1rem", color: "#e53e3e", transition: "background 0.2s" }}>
+                        Logout
+                      </button>
+                    </div>
+                  )}
+                  {/* Click outside to close dropdown */}
+                  {isProfileDropdownOpen && (
+                    <div
+                      style={{ position: "fixed", inset: 0, zIndex: 99 }}
+                      onClick={() => setIsProfileDropdownOpen(false)}
+                    />
+                  )}
                 </div>
               ) : (
                 <div className="navbar-auth-buttons">
@@ -193,7 +220,7 @@ export default function Navbar({
               </a>
             ))}
 
-            {isAuthenticated ? (
+            {showProfile ? (
               <div className="navbar-mobile-profile">
                 <div
                   className="navbar-mobile-profile-info"

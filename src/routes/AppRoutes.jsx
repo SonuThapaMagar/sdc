@@ -25,20 +25,21 @@ import Adoptme from "../pages/user/pages/Adoptme";
 import AdoptionSuccess from "../pages/user/pages/AdoptionSuccess";
 import Category from "../pages/user/pages/category";
 import LandingPage from "../pages/user/LandingPage";
+import UserLayout from "../pages/user/layout/UserLayout";
+import Profile from "../pages/user/pages/Profile";
+import UserDashboard from "../pages/user/pages/UserDashboard";
 
 const ProtectedRoute = ({ children, requiredRole }) => {
-  const superadminToken = localStorage.getItem('superadminToken');
-  const adminToken = localStorage.getItem('adminToken');
+  const token = localStorage.getItem('token');
   const userRole = localStorage.getItem('userRole');
-  
-  if (!superadminToken && !adminToken) {
+
+  if (!token) {
     return <Navigate to="/login" replace />;
   }
-  
   if (requiredRole && userRole !== requiredRole) {
     return <Navigate to="/login" replace />;
   }
-  
+
   return children;
 };
 
@@ -57,17 +58,18 @@ export default function AppRoutes() {
       <Route path="/register-shelter" element={<ShelterRegistration />} />
       <Route path="/adoptme/:petId?" element={<Adoptme />} />
       <Route path="/adoption-success/:petId/:applicationId" element={<AdoptionSuccess />} />
-      
-      {/* Placeholder routes for pages referenced in navigation */}
-      <Route path="/pets" element={<div className="min-h-screen bg-gray-50 flex items-center justify-center"><div className="text-center"><h1 className="text-2xl font-bold text-gray-900 mb-4">Pet Listings</h1><p className="text-gray-600">Coming soon! This page will show all available pets for adoption.</p></div></div>} />
-      <Route path="/about" element={<div className="min-h-screen bg-gray-50 flex items-center justify-center"><div className="text-center"><h1 className="text-2xl font-bold text-gray-900 mb-4">About Us</h1><p className="text-gray-600">Coming soon! Learn more about our mission and values.</p></div></div>} />
-      
+      <Route path="/pets" element={<Category />} />
+
+
+      {/* User routes */}
+      <Route path="/user" element={<ProtectedRoute requiredRole="USER"><UserLayout /></ProtectedRoute>}>
+        <Route path="dashboard" element={<UserDashboard />} />
+        <Route path="profile" element={<Profile />} />
+        <Route path="pets" element={<Category />} /> {/* Reuse Category */}
+      </Route>
+
       {/* Admin routes */}
-      <Route path="/admin" element={
-        <ProtectedRoute requiredRole="ADMIN">
-          <AdminLayout />
-        </ProtectedRoute>
-      }>
+      <Route path="/admin" element={<ProtectedRoute requiredRole="ADMIN"><AdminLayout /></ProtectedRoute>}>
         <Route path="dashboard" element={<AdminDashboard />} />
         <Route path="users" element={<ViewUsers />} />
         <Route path="pets" element={<PetCRUD />} />
@@ -75,13 +77,9 @@ export default function AppRoutes() {
         <Route path="adminProfile" element={<PetCenterProfile />} />
         <Route path="pet-centers/edit/:centerId" element={<EditPetCenter />} />
       </Route>
-      
+
       {/* Superadmin routes */}
-      <Route path="/superadmin" element={
-        <ProtectedRoute requiredRole="SUPERADMIN">
-          <SuperadminLayout />
-        </ProtectedRoute>
-      }>
+      <Route path="/superadmin" element={<ProtectedRoute requiredRole="SUPERADMIN"><SuperadminLayout /></ProtectedRoute>}>
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="users" element={<UserManagement />} />
         <Route path="users/edit/:userId" element={<EditUserPage />} />
@@ -90,7 +88,7 @@ export default function AppRoutes() {
         <Route path="pets" element={<PetMgmt />} />
         <Route path="pets/edit/:petId" element={<EditPet />} />
       </Route>
-      
+
       {/* Catch all route for 404 */}
       <Route path="*" element={<NotFound />} />
     </Routes>

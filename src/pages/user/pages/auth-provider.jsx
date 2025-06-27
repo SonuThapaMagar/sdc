@@ -10,17 +10,29 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     // Check for existing authentication on mount
-    const token = localStorage.getItem("jwtToken");
-    const userData = localStorage.getItem("userData");
+    const token = localStorage.getItem("token");
+    const userId = localStorage.getItem("userId");
+    const userRole = localStorage.getItem("userRole");
 
-    if (token && userData) {
+    if (token && userId && userRole) {
       try {
-        const parsedUser = JSON.parse(userData);
-        setUser(parsedUser);
+        // Create user object from localStorage data
+        const userData = {
+          id: userId,
+          role: userRole,
+          fullName: localStorage.getItem("userFullName") || "User",
+          email: localStorage.getItem("userEmail") || "",
+          profileImage: localStorage.getItem("userProfileImage") || "/placeholder.svg?height=40&width=40"
+        };
+        setUser(userData);
       } catch (error) {
         console.error("Error parsing user data:", error);
-        localStorage.removeItem("jwtToken");
-        localStorage.removeItem("userData");
+        localStorage.removeItem("token");
+        localStorage.removeItem("userId");
+        localStorage.removeItem("userRole");
+        localStorage.removeItem("userFullName");
+        localStorage.removeItem("userEmail");
+        localStorage.removeItem("userProfileImage");
       }
     }
 
@@ -28,14 +40,23 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = (userData, token) => {
-    localStorage.setItem("jwtToken", token);
-    localStorage.setItem("userData", JSON.stringify(userData));
+    localStorage.setItem("token", token);
+    localStorage.setItem("userId", userData.id);
+    localStorage.setItem("userRole", userData.role);
+    if (userData.fullName) localStorage.setItem("userFullName", userData.fullName);
+    if (userData.email) localStorage.setItem("userEmail", userData.email);
+    if (userData.profileImage) localStorage.setItem("userProfileImage", userData.profileImage);
+    
     setUser(userData);
   };
 
   const logout = () => {
-    localStorage.removeItem("jwtToken");
-    localStorage.removeItem("userData");
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("userRole");
+    localStorage.removeItem("userFullName");
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("userProfileImage");
     setUser(null);
     navigate("/");
   };

@@ -6,18 +6,14 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true,
+  withCredentials: false,
 });
 
 // Request interceptor
 api.interceptors.request.use(
   (config) => {
-    const superadminToken = localStorage.getItem('superadminToken');
-    const adminToken = localStorage.getItem('adminToken');
-    const token = superadminToken || adminToken;
-
-    // Skip Authorization header for auth-related endpoints
-    if (token && !config.url.includes('/api/auth')) {
+    const token = localStorage.getItem('token');
+    if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
@@ -30,9 +26,7 @@ api.interceptors.request.use(
 
 // Response interceptor
 api.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   (error) => {
     console.error('API Error:', {
       url: error.config?.url,
@@ -41,16 +35,22 @@ api.interceptors.response.use(
       data: error.response?.data,
     });
 
+    // Only handle 401/403 errors for authenticated routes
     if (error.response?.status === 401 || error.response?.status === 403) {
-      localStorage.removeItem('superadminToken');
-      localStorage.removeItem('superadminId');
-      localStorage.removeItem('adminToken');
-      localStorage.removeItem('adminId');
-      localStorage.removeItem('userRole');
-
-      if (!window.location.pathname.includes('/login')) {
-        window.location.href = '/login';
-        toast.error(error.response?.status === 401 ? 'Session expired. Please log in again.' : 'Permission denied.');
+      // Don't logout for profile fetch errors on initial load
+      if (error.config?.url?.includes('/profile') && !localStorage.getItem('token')) {
+        return Promise.reject(error);
+      }
+      
+      // Only logout if we have a token and it's an auth error
+      if (localStorage.getItem('token')) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('userId');
+        localStorage.removeItem('userRole');
+        if (!window.location.pathname.includes('/login')) {
+          window.location.href = '/login';
+          toast.error(error.response?.status === 401 ? 'Session expired. Please log in again.' : 'Permission denied.');
+        }
       }
     }
     return Promise.reject(error);
