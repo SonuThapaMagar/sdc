@@ -12,24 +12,35 @@ const PetMgmt = () => {
   const [statusData, setStatusData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deletePetId, setDeletePetId] = useState(null);
+  const [currentPage, setCurrentPage] = useState(0); // zero-based
+  const [totalPages, setTotalPages] = useState(1);
+  const petsPerPage = 5;
 
   useEffect(() => {
-    const token = localStorage.getItem('superadminToken');
-    if (!token) {
+    const token = localStorage.getItem('token');
+    const userRole = localStorage.getItem('userRole');
+    if (!token || userRole !== 'SUPERADMIN') {
       toast.error('Please log in to access pet management');
       navigate('/superadmin/login');
       return;
     }
-    fetchData();
-  }, [navigate]);
+    fetchData(currentPage);
+  }, [navigate, currentPage]);
 
-  const fetchData = async () => {
+  const fetchData = async (page = 0) => {
     try {
       setLoading(true);
 
-      // Fetch pets
-      const petsResponse = await api.get('/api/superadmin/pets');
-      setPets(petsResponse.data);
+      // Fetch pets with pagination
+      const petsResponse = await api.get(`/api/superadmin/pets?page=${page}&size=${petsPerPage}`);
+      const data = petsResponse.data;
+      if (data && typeof data === 'object') {
+        setPets(data.content || data);
+        setTotalPages(Math.ceil((data.totalElements || data.length || 1) / petsPerPage));
+      } else {
+        setPets([]);
+        setTotalPages(1);
+      }
 
       // Fetch monthly stats
       const monthlyStatsResponse = await api.get('/api/superadmin/dashboard/monthly-stats');
@@ -231,6 +242,24 @@ const PetMgmt = () => {
               )}
             </tbody>
           </table>
+        </div>
+        {/* Pagination Controls */}
+        <div className="flex justify-center items-center py-4">
+          <button
+            className="px-3 py-1 mx-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
+            disabled={currentPage === 0}
+          >
+            Prev
+          </button>
+          <span className="mx-2">Page {currentPage + 1} of {totalPages}</span>
+          <button
+            className="px-3 py-1 mx-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))}
+            disabled={currentPage >= totalPages - 1}
+          >
+            Next
+          </button>
         </div>
       </div>
 

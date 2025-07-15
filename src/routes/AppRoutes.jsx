@@ -1,5 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import Login from "../pages/user/auth/Login";
+import { useAuth } from "../pages/user/pages/auth-provider";
+import UserLogin from "../pages/user/auth/Login";
+import AdminLogin from "../pages/auth/Login";
 import SuperadminLayout from "../pages/superadmin/layout/SuperadminLayout";
 import Dashboard from "../pages/superadmin/Dashboard";
 import UserManagement from "../pages/superadmin/pages/UserManagement";
@@ -28,15 +30,84 @@ import LandingPage from "../pages/user/LandingPage";
 import UserLayout from "../pages/user/layout/UserLayout";
 import Profile from "../pages/user/pages/Profile";
 import UserDashboard from "../pages/user/pages/UserDashboard";
+import ChangePassword from "../pages/user/pages/ChangePassword";
 
+// Route Guard Components
 const ProtectedRoute = ({ children, requiredRole }) => {
-  const token = localStorage.getItem('token');
-  const userRole = localStorage.getItem('userRole');
-
-  if (!token) {
-    return <Navigate to="/login" replace />;
+  const { user, isAuthenticated, isLoading } = useAuth();
+  
+  if (isLoading) {
+    return <div className="min-h-screen flex items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+    </div>;
   }
-  if (requiredRole && userRole !== requiredRole) {
+
+  if (!isAuthenticated) {
+    // Redirect to appropriate login page based on role
+    if (requiredRole === 'ADMIN' || requiredRole === 'SUPERADMIN') {
+      return <Navigate to="/admin/login" replace />;
+    } else {
+      return <Navigate to="/login" replace />;
+    }
+  }
+
+  if (requiredRole && user?.role !== requiredRole) {
+    // Redirect to appropriate login page based on role
+    if (requiredRole === 'ADMIN' || requiredRole === 'SUPERADMIN') {
+      return <Navigate to="/admin/login" replace />;
+    } else {
+      return <Navigate to="/login" replace />;
+    }
+  }
+
+  return children;
+};
+
+const PublicRoute = ({ children, redirectTo = null }) => {
+  const { isAuthenticated, user, isLoading } = useAuth();
+  
+  if (isLoading) {
+    return <div className="min-h-screen flex items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+    </div>;
+  }
+
+  // If user is authenticated and redirectTo is specified, redirect them
+  if (isAuthenticated && redirectTo) {
+    // Redirect based on user role
+    if (user?.role === 'ADMIN') {
+      return <Navigate to="/admin/dashboard" replace />;
+    } else if (user?.role === 'SUPERADMIN') {
+      return <Navigate to="/superadmin/dashboard" replace />;
+    } else if (user?.role === 'USER') {
+      return <Navigate to={redirectTo} replace />;
+    }
+  }
+
+  return children;
+};
+
+const AuthRoute = ({ children }) => {
+  const { isLoading } = useAuth();
+  if (isLoading) {
+    return <div className="min-h-screen flex items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+    </div>;
+  }
+  return children;
+};
+
+const ConditionalRoute = ({ children, requireAuth = false }) => {
+  const { isAuthenticated, isLoading } = useAuth();
+  
+  if (isLoading) {
+    return <div className="min-h-screen flex items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+    </div>;
+  }
+
+  // If route requires auth but user is not authenticated
+  if (requireAuth && !isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
@@ -46,30 +117,65 @@ const ProtectedRoute = ({ children, requiredRole }) => {
 export default function AppRoutes() {
   return (
     <Routes>
-      {/* User routes */}
+      {/* Public routes - accessible to everyone */}
       <Route path="/" element={<LandingPage />} />
       <Route path="/faq" element={<FAQ />} />
       <Route path="/contact" element={<Contact />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<UserSignup />} />
-      <Route path="/category" element={<Category />} />
       <Route path="/learn-more" element={<LearnMore />} />
       <Route path="/about-us" element={<AboutUs />} />
       <Route path="/register-shelter" element={<ShelterRegistration />} />
-      <Route path="/adoptme/:petId?" element={<Adoptme />} />
-      <Route path="/adoption-success/:petId/:applicationId" element={<AdoptionSuccess />} />
       <Route path="/pets" element={<Category />} />
+      <Route path="/category" element={<Category />} />
 
+      {/* Authentication routes - redirect if already logged in */}
+      <Route path="/login" element={
+        <AuthRoute>
+          <UserLogin />
+        </AuthRoute>
+      } />
+      <Route path="/signup" element={
+        <AuthRoute>
+          <UserSignup />
+        </AuthRoute>
+      } />
+      <Route path="/admin/login" element={
+        <AuthRoute>
+          <AdminLogin />
+        </AuthRoute>
+      } />
 
-      {/* User routes */}
-      <Route path="/user" element={<ProtectedRoute requiredRole="USER"><UserLayout /></ProtectedRoute>}>
+      {/* Conditional routes - require authentication for certain actions */}
+      <Route path="/adoptme/:petId?" element={
+        <ConditionalRoute requireAuth={true}>
+          <Adoptme />
+        </ConditionalRoute>
+      } />
+      <Route path="/adoption-success/:petId/:applicationId" element={
+        <ConditionalRoute requireAuth={true}>
+          <AdoptionSuccess />
+        </ConditionalRoute>
+      } />
+
+      {/* Protected User routes */}
+      <Route path="/user" element={
+        <ProtectedRoute requiredRole="USER">
+          <UserLayout />
+        </ProtectedRoute>
+      }>
+        <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<UserDashboard />} />
         <Route path="profile" element={<Profile />} />
-        <Route path="pets" element={<Category />} /> {/* Reuse Category */}
+        <Route path="pets" element={<Category />} />
+        <Route path="change-password" element={<ChangePassword />} />
       </Route>
 
-      {/* Admin routes */}
-      <Route path="/admin" element={<ProtectedRoute requiredRole="ADMIN"><AdminLayout /></ProtectedRoute>}>
+      {/* Protected Admin routes */}
+      <Route path="/admin" element={
+        <ProtectedRoute requiredRole="ADMIN">
+          <AdminLayout />
+        </ProtectedRoute>
+      }>
+        <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<AdminDashboard />} />
         <Route path="users" element={<ViewUsers />} />
         <Route path="pets" element={<PetCRUD />} />
@@ -78,8 +184,13 @@ export default function AppRoutes() {
         <Route path="pet-centers/edit/:centerId" element={<EditPetCenter />} />
       </Route>
 
-      {/* Superadmin routes */}
-      <Route path="/superadmin" element={<ProtectedRoute requiredRole="SUPERADMIN"><SuperadminLayout /></ProtectedRoute>}>
+      {/* Protected Superadmin routes */}
+      <Route path="/superadmin" element={
+        <ProtectedRoute requiredRole="SUPERADMIN">
+          <SuperadminLayout />
+        </ProtectedRoute>
+      }>
+        <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="users" element={<UserManagement />} />
         <Route path="users/edit/:userId" element={<EditUserPage />} />

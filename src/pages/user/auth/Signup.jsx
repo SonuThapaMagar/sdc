@@ -1,10 +1,11 @@
 import { Link, useNavigate } from 'react-router-dom';
 import '../../../styles/signup.css';
 import img2 from '../../../images/login.png';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import api from '../../../api/api';
 import '../../../styles/global.css';
 import { toast } from 'react-toastify';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 function Signup() {
   const [formData, setFormData] = useState({
@@ -15,21 +16,34 @@ function Signup() {
     password: '',
     confirmPassword: '',
   });
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState({});
   const [success, setSuccess] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (Object.keys(errors).length > 0) {
+      const timer = setTimeout(() => {
+        setErrors({});
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [errors]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
+    // Clear error for the field being edited
+    setErrors((prev) => ({ ...prev, [e.target.id]: '' }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setErrors({});
     setSuccess('');
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      setErrors({ confirmPassword: 'Passwords do not match' });
       toast.error('Passwords do not match');
       return;
     }
@@ -51,15 +65,16 @@ function Signup() {
       localStorage.removeItem('token');
       localStorage.removeItem('userId');
       localStorage.removeItem('userRole');
+      localStorage.removeItem('adminToken');
+      localStorage.removeItem('superadminToken');
 
       toast.success('Signup successful! Please log in.');
       setTimeout(() => navigate('/login'), 2000);
     } catch (error) {
-      const errorMessage =
-        error.response?.data?.message || error.message || 'An error occurred during signup';
-      setError(errorMessage);
-      console.error('Error:', errorMessage);
-      toast.error(errorMessage);
+      const errorData = error.response?.data?.errors || { general: error.message || 'An error occurred during signup' };
+      setErrors(errorData);
+      Object.values(errorData).forEach((msg) => toast.error(msg));
+      console.error('Error:', errorData);
     }
   };
 
@@ -72,8 +87,6 @@ function Signup() {
         <div className="form-container">
           <div className="form-card">
             <h2 className="form-title">Sign up</h2>
-            {error && <p className="text-red-500 text-center mb-4">{error}</p>}
-            {success && <p className="text-green-500 text-center mb-4">{success}</p>}
             <form className="signup-form" onSubmit={handleSubmit}>
               <div className="form-row">
                 <div className="form-group">
@@ -98,11 +111,61 @@ function Signup() {
               <div className="form-row">
                 <div className="form-group">
                   <label htmlFor="password">Password*</label>
-                  <input type="password" id="password" value={formData.password} onChange={handleChange} placeholder="Enter Your Password" required />
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      id="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      placeholder="Enter Your Password"
+                      required
+                      style={{ paddingRight: '2rem' }}
+                    />
+                    <span
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      style={{
+                        position: 'absolute',
+                        right: '0.5rem',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        cursor: 'pointer',
+                        userSelect: 'none',
+                        fontSize: '1.2rem',
+                      }}
+                      title={showPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showPassword ? <FaEye /> : <FaEyeSlash />}
+                    </span>
+                  </div>
                 </div>
                 <div className="form-group">
                   <label htmlFor="confirmPassword">Confirm Password*</label>
-                  <input type="password" id="confirmPassword" value={formData.confirmPassword} onChange={handleChange} placeholder="Enter Your Confirm Password" required />
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      id="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      placeholder="Enter Your Confirm Password"
+                      required
+                      style={{ paddingRight: '2rem' }}
+                    />
+                    <span
+                      onClick={() => setShowConfirmPassword((prev) => !prev)}
+                      style={{
+                        position: 'absolute',
+                        right: '0.5rem',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        cursor: 'pointer',
+                        userSelect: 'none',
+                        fontSize: '1.2rem',
+                      }}
+                      title={showConfirmPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                    </span>
+                  </div>
                 </div>
               </div>
               <button type="submit" className="submit-button">Sign Up</button>

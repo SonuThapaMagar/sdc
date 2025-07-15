@@ -9,13 +9,24 @@ const api = axios.create({
   withCredentials: false,
 });
 
-// Request interceptor
 api.interceptors.request.use(
   (config) => {
+    const isLoginEndpoint = [
+      '/api/auth/login',
+      '/api/admin/auth/login',
+      '/api/superadmin/auth/login',
+    ].some((path) => config.url.endsWith(path));
     const token = localStorage.getItem('token');
-    if (token) {
+    if (token && !isLoginEndpoint) {
       config.headers.Authorization = `Bearer ${token}`;
+      console.log('Sending request with token:', token);
+    } else if (!token && !isLoginEndpoint) {
+      console.log('No token found in localStorage for protected route');
+    } else {
+      console.log('Skipping token for login endpoint:', config.url);
+      delete config.headers.Authorization; // Explicitly remove any existing Authorization header
     }
+    console.log('Request config:', config); // Log full config for debugging
     return config;
   },
   (error) => {
@@ -24,7 +35,6 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -35,20 +45,28 @@ api.interceptors.response.use(
       data: error.response?.data,
     });
 
-    // Only handle 401/403 errors for authenticated routes
     if (error.response?.status === 401 || error.response?.status === 403) {
-      // Don't logout for profile fetch errors on initial load
-      if (error.config?.url?.includes('/profile') && !localStorage.getItem('token')) {
+      if (
+        error.config?.url?.includes('/pets') ||
+        error.config?.url?.includes('/adoption-request') ||
+        (error.config?.url?.includes('/profile') && !localStorage.getItem('token'))
+      ) {
         return Promise.reject(error);
       }
-      
-      // Only logout if we have a token and it's an auth error
+
       if (localStorage.getItem('token')) {
+        const userRole = localStorage.getItem('userRole');
         localStorage.removeItem('token');
         localStorage.removeItem('userId');
         localStorage.removeItem('userRole');
+        let redirectPath = '/login';
+        if (userRole === 'SUPERADMIN') {
+          redirectPath = '/admin/login';
+        } else if (userRole === 'ADMIN') {
+          redirectPath = '/admin/login';
+        }
         if (!window.location.pathname.includes('/login')) {
-          window.location.href = '/login';
+          window.location.href = redirectPath;
           toast.error(error.response?.status === 401 ? 'Session expired. Please log in again.' : 'Permission denied.');
         }
       }

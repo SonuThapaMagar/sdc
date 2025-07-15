@@ -12,43 +12,50 @@ export default function PetCenterMgmt() {
   const [deletePetCenterId, setDeletePetCenterId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(0); // zero-based
+  const [totalPages, setTotalPages] = useState(1);
+  const centersPerPage = 5;
 
   useEffect(() => {
-    const token = localStorage.getItem('superadminToken');
-    if (!token) {
+    const token = localStorage.getItem('token');
+    const userRole = localStorage.getItem('userRole');
+    if (!token || userRole !== 'SUPERADMIN') {
       toast.error('Please log in to access pet center management');
       navigate('/superadmin/login');
       return;
     }
-    fetchPetCenters();
-  }, [navigate]);
+    fetchPetCenters(token, currentPage);
+  }, [navigate, currentPage]);
 
-  const fetchPetCenters = async () => {
+  const fetchPetCenters = async (token, page = 0) => {
     try {
       setIsLoading(true);
       setError(null);
-
-      const token = localStorage.getItem('superadminToken');
-      const response = await api.get('/api/superadmin/pet-centers', {
+      const userRole = localStorage.getItem('userRole');
+      console.log('Fetching pet centers with token:', token, 'and role:', userRole);
+      const response = await api.get(`/api/superadmin/pet-centers?page=${page}&size=${centersPerPage}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-
-      // Map backend response to match PetCenterList props
-      const mappedCenters = response.data.map(center => ({
+      const data = response.data;
+      let centersArr = Array.isArray(data) ? data : (data.content || []);
+      setPetCenters(centersArr.map(center => ({
         id: center.id,
-        name: center.shelterName,
-        location: center.address,
-        contact: center.phone,
-        status: 'active', // Assume active unless backend provides status
-      }));
-
-      setPetCenters(mappedCenters);
+        name: center.shelterName || 'Unnamed Center',
+        location: center.address || 'Unknown',
+        contact: center.phone || 'N/A',
+        status: center.status || 'active', // Use backend status if available
+      })));
+      setTotalPages(Math.ceil((data.totalElements || centersArr.length || 1) / centersPerPage));
     } catch (error) {
       console.error('Failed to fetch pet centers:', error);
+      if (error.response) {
+        console.error('API error response:', error.response.status, error.response.data);
+      } else {
+        console.error('Network or other error:', error.message);
+      }
       setError('Failed to load pet centers');
-
       if (error.response?.status === 403) {
         toast.error('Permission denied. Ensure you have SUPERADMIN role.');
         navigate('/superadmin/login');
@@ -65,7 +72,13 @@ export default function PetCenterMgmt() {
 
   const handleDelete = async (petCenterId) => {
     try {
-      const token = localStorage.getItem('superadminToken');
+      const token = localStorage.getItem('token');
+      const userRole = localStorage.getItem('userRole');
+      if (!token || userRole !== 'SUPERADMIN') {
+        toast.error('Please log in to delete pet centers');
+        navigate('/superadmin/login');
+        return;
+      }
       await api.delete(`/api/superadmin/pet-centers/${petCenterId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -78,6 +91,7 @@ export default function PetCenterMgmt() {
       console.error('Delete error:', error);
       if (error.response?.status === 403) {
         toast.error('Permission denied. Ensure you have SUPERADMIN role.');
+        navigate('/superadmin/login');
       } else if (error.response?.status === 401) {
         toast.error('Please log in to delete pet centers');
         navigate('/superadmin/login');
@@ -88,8 +102,9 @@ export default function PetCenterMgmt() {
   };
 
   const handleEdit = (petCenterId) => {
-    const token = localStorage.getItem('superadminToken');
-    if (!token) {
+    const token = localStorage.getItem('token');
+    const userRole = localStorage.getItem('userRole');
+    if (!token || userRole !== 'SUPERADMIN') {
       toast.error('Please log in to edit pet centers');
       navigate('/superadmin/login');
       return;
@@ -126,6 +141,24 @@ export default function PetCenterMgmt() {
         onEdit={handleEdit}
         onDelete={petCenterId => setDeletePetCenterId(petCenterId)}
       />
+      {/* Pagination Controls */}
+      <div className="flex justify-center items-center py-4">
+        <button
+          className="px-3 py-1 mx-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
+          disabled={currentPage === 0}
+        >
+          Prev
+        </button>
+        <span className="mx-2">Page {currentPage + 1} of {totalPages}</span>
+        <button
+          className="px-3 py-1 mx-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))}
+          disabled={currentPage >= totalPages - 1}
+        >
+          Next
+        </button>
+      </div>
       <PetCenterDeleteDialog
         open={!!deletePetCenterId}
         onCancel={() => setDeletePetCenterId(null)}

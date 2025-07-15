@@ -25,6 +25,9 @@ export default function SuperadminDashboard() {
   const [monthlyStats, setMonthlyStats] = useState([]);
   const [petStatusData, setPetStatusData] = useState([]);
   const [recentActivities, setRecentActivities] = useState([]);
+  const [activityPage, setActivityPage] = useState(0); // zero-based
+  const [activityTotalPages, setActivityTotalPages] = useState(1);
+  const activitiesPerPage = 5;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -45,9 +48,16 @@ export default function SuperadminDashboard() {
       const petStatusResponse = await api.get('/api/superadmin/dashboard/pet-status');
       setPetStatusData(petStatusResponse.data);
 
-      // Fetch recent activities
-      const activitiesResponse = await api.get('/api/superadmin/dashboard/recent-activities');
-      setRecentActivities(activitiesResponse.data);
+      // Fetch recent activities with pagination
+      const activitiesResponse = await api.get(`/api/superadmin/dashboard/recent-activities?page=${activityPage}&size=${activitiesPerPage}`);
+      const data = activitiesResponse.data;
+      if (data && typeof data === 'object') {
+        setRecentActivities(data.content || data);
+        setActivityTotalPages(Math.ceil((data.totalElements || data.length || 1) / activitiesPerPage));
+      } else {
+        setRecentActivities([]);
+        setActivityTotalPages(1);
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to fetch dashboard data.');
       console.error('Fetch dashboard error:', err);
@@ -59,7 +69,7 @@ export default function SuperadminDashboard() {
 
   useEffect(() => {
     fetchDashboardData();
-  }, []);
+  }, [activityPage]);
 
   const calculatePercentageChange = (current, previous) => {
     if (previous === 0) return current > 0 ? '+100%' : '0%';
@@ -255,6 +265,24 @@ export default function SuperadminDashboard() {
               {recentActivities.length === 0 && (
                 <p className="text-center text-gray-600">No recent activities.</p>
               )}
+            </div>
+            {/* Pagination Controls */}
+            <div className="flex justify-center items-center py-4">
+              <button
+                className="px-3 py-1 mx-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+                onClick={() => setActivityPage((prev) => Math.max(prev - 1, 0))}
+                disabled={activityPage === 0}
+              >
+                Prev
+              </button>
+              <span className="mx-2">Page {activityPage + 1} of {activityTotalPages}</span>
+              <button
+                className="px-3 py-1 mx-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+                onClick={() => setActivityPage((prev) => Math.min(prev + 1, activityTotalPages - 1))}
+                disabled={activityPage >= activityTotalPages - 1}
+              >
+                Next
+              </button>
             </div>
           </CardContent>
         </Card>

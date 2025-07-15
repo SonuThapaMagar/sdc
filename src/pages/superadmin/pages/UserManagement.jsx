@@ -9,28 +9,58 @@ import api from '../../../api/api';
 export default function UserManagement() {
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [monthlyStats, setMonthlyStats] = useState([]); // New state for monthly stats
+  const [currentPage, setCurrentPage] = useState(0); // zero-based
   const [deleteUserId, setDeleteUserId] = useState(null);
+  const usersPerPage = 5;
 
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    fetchUsers(currentPage);
+    fetchMonthlyStats(); // Fetch monthly stats on mount
+  }, [currentPage]);
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (page) => {
     try {
-      // Fetch users from API
-      const res = await api.get('/api/superadmin/users');
-      setUsers(res.data);
+      const res = await api.get(`/api/superadmin/users?page=${page}&size=${usersPerPage}`);
+      const data = res.data;
+      if (data && typeof data === 'object') {
+        setUsers(data.content || data);
+        setTotalUsers(data.totalElements || data.length || 0);
+      } else {
+        setUsers([]);
+        setTotalUsers(0);
+      }
     } catch (error) {
       toast.error('Failed to fetch users');
+      setUsers([]);
+      setTotalUsers(0);
+    }
+  };
+
+  const fetchMonthlyStats = async () => {
+    try {
+      const res = await api.get('/api/superadmin/dashboard/monthly-stats');
+      setMonthlyStats(res.data || []);
+    } catch (error) {
+      toast.error('Failed to fetch monthly stats');
+      setMonthlyStats([]);
     }
   };
 
   const handleDelete = async (userId) => {
     try {
       await api.delete(`/api/superadmin/users/${userId}`);
-      setUsers(users.filter(u => u.id !== userId));
       toast.success('User deleted successfully!');
       setDeleteUserId(null);
+      const remainingUsers = users.filter(u => u.id !== userId).length;
+      if (remainingUsers === 0 && currentPage > 0) {
+        setCurrentPage(prevPage => prevPage - 1);
+      } else {
+        fetchUsers(currentPage);
+      }
+      setTotalUsers(prevTotal => prevTotal - 1);
+      fetchMonthlyStats(); // Refresh monthly stats after deletion
     } catch (error) {
       toast.error('Failed to delete user');
     }
@@ -40,10 +70,12 @@ export default function UserManagement() {
     navigate(`/superadmin/users/edit/${userId}`);
   };
 
+  const totalPages = Math.ceil(totalUsers / usersPerPage);
+
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
       <h1 className="text-2xl font-bold text-gray-800 mb-8">User Management</h1>
-      <UserBarChart />
+      <UserBarChart monthlyStats={monthlyStats} />
       <UserList
         users={users}
         onEdit={handleEdit}
@@ -54,6 +86,25 @@ export default function UserManagement() {
         onCancel={() => setDeleteUserId(null)}
         onConfirm={() => handleDelete(deleteUserId)}
       />
+      <div className="mt-4 flex justify-center items-center gap-4">
+        <button
+          onClick={() => setCurrentPage(prev => Math.max(prev - 1, 0))}
+          disabled={currentPage === 0}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
+        >
+          Previous
+        </button>
+        <span className="text-gray-700">
+          Page {currentPage + 1} of {totalPages || 1}
+        </span>
+        <button
+          onClick={() => setCurrentPage(prev => Math.min(prev + 1, (totalPages || 1) - 1))}
+          disabled={currentPage + 1 >= (totalPages || 1)}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 }

@@ -19,8 +19,10 @@ const EditUserPage = () => {
 
     useEffect(() => {
         const fetchUser = async () => {
-            const token = localStorage.getItem('superadminToken');
-            if (!token) {
+            // Use generic token and userRole
+            const token = localStorage.getItem('token');
+            const userRole = localStorage.getItem('userRole');
+            if (!token || userRole !== 'SUPERADMIN') {
                 setToastMsg({ type: 'error', text: 'No superadmin token found. Please log in.' });
                 setLoading(false);
                 navigate('/superadmin/login');

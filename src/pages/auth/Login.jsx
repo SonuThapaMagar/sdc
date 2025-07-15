@@ -2,47 +2,75 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api/api';
 import { toast } from 'react-toastify';
+import { useAuth } from '../../pages/user/pages/auth-provider';
+import logo from '../../images/logo.png';
+import { jwtDecode } from 'jwt-decode';
 
-export default function Login() {
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function Login() {
   const [credentials, setCredentials] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    if (!credentials.email || !isValidEmail(credentials.email)) {
+      toast.error('Please enter a valid email address.');
+      return;
+    }
+    if (!credentials.password) {
+      toast.error('Please enter your password.');
+      return;
+    }
     setLoading(true);
 
     try {
       console.log('Attempting login with:', credentials);
-      const response = await api.post('/api/auth/login', credentials);
+      let response;
+      let url = '/api/admin/auth/login';
+      let body = credentials;
+
+      if (credentials.email.toLowerCase() === 'superadmin@gmail.com') {
+        url = '/api/superadmin/auth/login';
+        body = { email: credentials.email, password: credentials.password };
+      }
+
+      response = await api.post(url, body);
+
       console.log('Login response:', response.data);
 
-      const { message, token, id, role } = response.data;
-
-      if (!token || !role) {
-        console.error('Invalid response: missing token or role');
+      const { message, token, id } = response.data;
+      if (!token) {
+        console.error('Invalid response: missing token');
         toast.error('Login failed: Invalid server response');
         return;
       }
 
-      // Store the token and role based on user type
-      if (role === 'SUPERADMIN') {
-        localStorage.setItem('superadminToken', token);
-        localStorage.setItem('superadminId', id);
-        localStorage.setItem('userRole', 'SUPERADMIN');
-        toast.success(message || 'Logged in successfully as Superadmin!');
-        navigate('/superadmin/dashboard');
-      } else if (role === 'ADMIN') {
-        localStorage.setItem('adminToken', token);
-        localStorage.setItem('adminId', id);
-        localStorage.setItem('userRole', 'ADMIN');
-        toast.success(message || 'Logged in successfully as Admin!');
-        navigate('/admin/dashboard');
-      } else {
-        toast.error('Invalid user role. Only Superadmin or Admin can log in here.');
+      const decodedToken = jwtDecode(token);
+      const role = decodedToken.role.replace('ROLE_', '');
+
+      if (!role) {
+        console.error('Invalid token: missing role');
+        toast.error('Login failed: Invalid token');
+        return;
       }
 
+      const userData = {
+        id,
+        role,
+        fullName: role === 'SUPERADMIN' ? 'Superadmin' : 'Admin',
+        email: credentials.email,
+        profileImage: '/placeholder.svg?height=40&width=40',
+      };
+
+      login(userData, token); // Update auth state
+      toast.success(message || `Logged in successfully as ${role}!`);
+      navigate(`/${role.toLowerCase()}/dashboard`, { replace: true }); // Force replace to avoid back navigation
     } catch (error) {
       console.error('Login error:', error);
       console.error('Error details:', {
@@ -58,11 +86,11 @@ export default function Login() {
     }
   };
 
-  // JSX form remains unchanged
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
       <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
         <div className="text-center mb-8">
+          <img src={logo} alt="Furever Home Logo" className="mx-auto mb-4 w-20 h-20 object-contain" />
           <h1 className="text-2xl font-bold text-gray-900">Welcome</h1>
           <p className="text-gray-600 mt-2">Enter your credentials to access your account</p>
         </div>
@@ -99,12 +127,12 @@ export default function Login() {
               >
                 {showPassword ? (
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 2.25 12c2.036 3.845 6.07 6.75 9.75 6.75 1.563 0 3.06-.362 4.396-1.01M6.53 6.53A6.75 6.75 0 0 1 12 5.25c3.68 0 7.714 2.905 9.75 6.75a10.478 10.478 0 0 1-2.042 2.727M6.53 6.53l10.94 10.94M6.53 6.53l-2.55 2.55m13.49 8.39l2.55-2.55" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12C3.285 7.943 7.11 5.25 12 5.25c4.89 0 8.715 2.693 9.75 6.75-1.035 4.057-4.86 6.75-9.75 6.75-4.89 0-8.715-2.693-9.75-6.75z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0z" />
                   </svg>
                 ) : (
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12C3.285 7.943 7.11 5.25 12 5.25c4.89 0 8.715 2.693 9.75 6.75-1.035 4.057-4.86 6.75-9.75 6.75-4.89 0-8.715-2.693-9.75-6.75z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 2.25 12c2.036 3.845 6.07 6.75 9.75 6.75 1.563 0 3.06-.362 4.396-1.01M6.53 6.53A6.75 6.75 0 0 1 12 5.25c3.68 0 7.714 2.905 9.75 6.75a10.478 10.478 0 0 1-2.042 2.727M6.53 6.53l10.94 10.94M6.53 6.53l-2.55 2.55m13.49 8.39l2.55-2.55" />
                   </svg>
                 )}
               </button>
@@ -113,7 +141,7 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-[#816ec7] text-white py-2 px-4 rounded-md hover:bg-[#6504b5] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Logging in...' : 'Login'}
           </button>
@@ -122,3 +150,5 @@ export default function Login() {
     </div>
   );
 }
+
+export default Login;

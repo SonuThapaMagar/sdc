@@ -18,8 +18,9 @@ const EditPetCenter = () => {
 
     useEffect(() => {
         const fetchCenter = async () => {
-            const token = localStorage.getItem('superadminToken');
-            if (!token) {
+            const token = localStorage.getItem('token');
+            const userRole = localStorage.getItem('userRole');
+            if (!token || userRole !== 'SUPERADMIN') {
                 setToastMsg({ type: 'error', text: 'No superadmin token found. Please log in.' });
                 navigate('/superadmin/login');
                 return;
@@ -63,7 +64,14 @@ const EditPetCenter = () => {
             return;
         }
         setLoading(true);
-        const token = localStorage.getItem('superadminToken');
+        const token = localStorage.getItem('token');
+        const userRole = localStorage.getItem('userRole');
+        if (!token || userRole !== 'SUPERADMIN') {
+            setToastMsg({ type: 'error', text: 'No superadmin token found. Please log in.' });
+            navigate('/superadmin/login');
+            setLoading(false);
+            return;
+        }
         try {
             await axios.put(`http://localhost:8080/api/superadmin/pet-centers/${centerId}`, center, {
                 headers: {

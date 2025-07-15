@@ -1,10 +1,93 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useRef, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
-import { Search, Menu, X, Heart } from "lucide-react"
+import { Search, Menu, X } from "lucide-react"
 import ProfileModal from "./ProfileModal"
 import logo from "../../../images/logo.png"
 import "../../../styles/Navbar.css"
 import { useAuth } from "./auth-provider"
+
+// Debounce hook
+function useDebounce(callback, delay) {
+  const timeoutRef = useRef()
+  const debouncedFn = useCallback((...args) => {
+    clearTimeout(timeoutRef.current)
+    timeoutRef.current = setTimeout(() => {
+      callback(...args)
+    }, delay)
+  }, [callback, delay])
+  return debouncedFn
+}
+
+function NavigationLinks({ links, onNavigate, className = "" }) {
+  return (
+    <div className={className}>
+      {links.map((link) => (
+        <a
+          key={link.name}
+          href={link.href}
+          onClick={e => {
+            if (link.href.startsWith("/")) {
+              e.preventDefault()
+              onNavigate(link.href)
+            }
+          }}
+          className="navbar-nav-link"
+        >
+          {link.name}
+        </a>
+      ))}
+    </div>
+  )
+}
+
+function AuthButtons({ onLogin, onSignup }) {
+  return (
+    <div className="navbar-auth-buttons">
+      <button onClick={onLogin} className="navbar-signin-btn" aria-label="Sign In">
+        Sign In
+      </button>
+      <button onClick={onSignup} className="navbar-signup-btn" aria-label="Sign Up">
+        Sign Up
+      </button>
+    </div>
+  )
+}
+
+function ProfileDropdown({ onProfile, onChangePassword, onLogout, onClose }) {
+  // Close on Escape
+  useEffect(() => {
+    function handleKey(e) {
+      if (e.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [onClose]);
+
+  return (
+    <div className="navbar-profile-dropdown" style={{ position: "absolute", top: "100%", right: 0, background: "white", border: "1px solid #eee", borderRadius: "6px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", minWidth: "160px", zIndex: 100, display: "flex", flexDirection: "column" }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <button onClick={(e) => {
+        e.stopPropagation();
+        onProfile();
+      }} style={{ background: "none", border: "none", padding: "10px 16px", textAlign: "left", cursor: "pointer", fontSize: "1rem", color: "#333", transition: "background 0.2s" }}>
+        My Profile
+      </button>
+      <button onClick={(e) => {
+        e.stopPropagation();
+        onChangePassword();
+      }} style={{ background: "none", border: "none", padding: "10px 16px", textAlign: "left", cursor: "pointer", fontSize: "1rem", color: "#333", transition: "background 0.2s" }}>
+        Change Password
+      </button>
+      <button onClick={(e) => {
+        e.stopPropagation();
+        onLogout();
+      }} style={{ background: "none", border: "none", padding: "10px 16px", textAlign: "left", cursor: "pointer", fontSize: "1rem", color: "#e53e3e", transition: "background 0.2s" }}>
+        Logout
+      </button>
+    </div>
+  )
+}
 
 export default function Navbar({
   showSearch = true,
@@ -21,9 +104,36 @@ export default function Navbar({
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
+  const profileDropdownRef = useRef(null)
 
-  // Check if user is authenticated and has USER role
-  const showProfile = isAuthenticated && user?.role === 'USER' && !forceAuthButtons;
+  // Lock scroll when mobile menu is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = "hidden"
+    } else {
+      document.body.style.overflow = ""
+    }
+    return () => { document.body.style.overflow = "" }
+  }, [isMobileMenuOpen])
+
+  // Click outside to close profile dropdown
+  useEffect(() => {
+    if (!isProfileDropdownOpen) return
+    function handleClick(e) {
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(e.target)) {
+        setIsProfileDropdownOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClick)
+    return () => document.removeEventListener("mousedown", handleClick)
+  }, [isProfileDropdownOpen])
+
+  // Debounced search
+  const debouncedSearchChange = useDebounce((value) => {
+    if (onSearchChange) onSearchChange(value)
+  }, 300)
+
+  const showProfile = isAuthenticated && user?.role === 'USER' && !forceAuthButtons
 
   const navigationLinks = [
     { name: "Home", href: "/" },
@@ -33,35 +143,17 @@ export default function Navbar({
     { name: "Contact", href: "#contact" },
   ]
 
-  const handleSearchChange = (value) => {
-    if (onSearchChange) {
-      onSearchChange(value)
-    }
-  }
-
-  const handleSearchResultClick = () => {
-    setIsSearchOpen(false)
-    if (onSearchResultClick) {
-      onSearchResultClick()
-    }
-  }
-
-  const handleLogout = () => {
-    logout();
-    setIsProfileDropdownOpen(false);
-  }
-
   return (
     <>
-      <nav className={`navbar ${className}`}>
+      <nav className={`navbar ${className}`} aria-label="Main Navigation">
         <div className="navbar-container">
           <div className="navbar-content">
             {/* Logo */}
-            <div className="navbar-logo" onClick={() => navigate("/")}>
+            <div className="navbar-logo" onClick={() => navigate("/")} tabIndex={0} aria-label="Go to Home" role="button">
               <div className="navbar-logo-icon">
-              <img
+                <img
                   src={logo || "/logo.png"}
-                  alt="logo"/*  */
+                  alt="logo"
                   width="48"
                   height="48"
                 />
@@ -69,31 +161,13 @@ export default function Navbar({
               <span className="navbar-logo-text">FurEverHome</span>
             </div>
 
-            
-
             {/* Desktop Navigation */}
-            <div className="navbar-nav">
-              {navigationLinks.map((link) => (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  onClick={(e) => {
-                    if (link.href.startsWith("/")) {
-                      e.preventDefault()
-                      navigate(link.href)
-                    }
-                  }}
-                  className="navbar-nav-link"
-                >
-                  {link.name}
-                </a>
-              ))}
-            </div>
+            <NavigationLinks links={navigationLinks} onNavigate={navigate} className="navbar-nav" />
 
             {/* Desktop Actions */}
             <div className="navbar-actions">
               {showSearch && (
-                <button className="navbar-search-btn" onClick={() => setIsSearchOpen(!isSearchOpen)}>
+                <button className="navbar-search-btn" aria-label="Open search" onClick={() => setIsSearchOpen(!isSearchOpen)}>
                   <Search size={20} />
                 </button>
               )}
@@ -103,55 +177,50 @@ export default function Navbar({
                   className="navbar-profile"
                   tabIndex={0}
                   style={{ position: "relative" }}
+                  ref={profileDropdownRef}
+                  aria-haspopup="true"
+                  aria-expanded={isProfileDropdownOpen}
                 >
                   <div
                     className="navbar-profile-image"
                     onClick={() => setIsProfileDropdownOpen((prev) => !prev)}
                     style={{ cursor: "pointer" }}
+                    aria-label="Open profile menu"
+                    tabIndex={0}
                   >
                     <img
                       src={user?.profileImage || "/placeholder.svg?height=40&width=40"}
                       alt={user?.fullName || "Profile"}
                     />
                   </div>
-                  <div className="navbar-profile-info" onClick={() => setIsProfileDropdownOpen((prev) => !prev)} style={{ cursor: "pointer" }}>
+                  <div className="navbar-profile-info" onClick={() => setIsProfileDropdownOpen((prev) => !prev)} style={{ cursor: "pointer" }} tabIndex={0}>
                     <div className="navbar-profile-name">{user?.fullName || "User"}</div>
                   </div>
                   {isProfileDropdownOpen && (
-                    <div className="navbar-profile-dropdown" style={{ position: "absolute", top: "100%", right: 0, background: "white", border: "1px solid #eee", borderRadius: "6px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", minWidth: "160px", zIndex: 100, display: "flex", flexDirection: "column" }}>
-                      <button onClick={() => { navigate("/user/profile"); setIsProfileDropdownOpen(false); }} style={{ background: "none", border: "none", padding: "10px 16px", textAlign: "left", cursor: "pointer", fontSize: "1rem", color: "#333", transition: "background 0.2s" }}>
-                        My Profile
-                      </button>
-                      <button onClick={() => { navigate("/user/change-password"); setIsProfileDropdownOpen(false); }} style={{ background: "none", border: "none", padding: "10px 16px", textAlign: "left", cursor: "pointer", fontSize: "1rem", color: "#333", transition: "background 0.2s" }}>
-                        Change Password
-                      </button>
-                      <button onClick={handleLogout} style={{ background: "none", border: "none", padding: "10px 16px", textAlign: "left", cursor: "pointer", fontSize: "1rem", color: "#e53e3e", transition: "background 0.2s" }}>
-                        Logout
-                      </button>
-                    </div>
-                  )}
-                  {/* Click outside to close dropdown */}
-                  {isProfileDropdownOpen && (
-                    <div
-                      style={{ position: "fixed", inset: 0, zIndex: 99 }}
-                      onClick={() => setIsProfileDropdownOpen(false)}
-                    />
+                    <>
+                      <ProfileDropdown
+                        onProfile={() => { navigate("/user/profile"); setIsProfileDropdownOpen(false) }}
+                        onChangePassword={() => { navigate("/user/change-password"); setIsProfileDropdownOpen(false) }}
+                        onLogout={() => { logout(); setIsProfileDropdownOpen(false) }}
+                        onClose={() => setIsProfileDropdownOpen(false)}
+                      />
+                      {/* Overlay for click outside */}
+                      <div
+                        style={{ position: "fixed", inset: 0, zIndex: 99 }}
+                        onClick={() => setIsProfileDropdownOpen(false)}
+                        aria-label="Close profile menu"
+                        tabIndex={-1}
+                      />
+                    </>
                   )}
                 </div>
               ) : (
-                <div className="navbar-auth-buttons">
-                  <button onClick={() => navigate("/login")} className="navbar-signin-btn">
-                    Sign In
-                  </button>
-                  <button onClick={() => navigate("/signup")} className="navbar-signup-btn">
-                    Sign Up
-                  </button>
-                </div>
+                <AuthButtons onLogin={() => navigate("/login")} onSignup={() => navigate("/signup")} />
               )}
             </div>
 
             {/* Mobile Menu Button */}
-            <button className="navbar-mobile-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+            <button className="navbar-mobile-btn" aria-label="Open mobile menu" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
               {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
@@ -165,8 +234,10 @@ export default function Navbar({
                 type="text"
                 placeholder="Search for pets by name, breed, or type..."
                 value={searchQuery}
-                onChange={(e) => handleSearchChange(e.target.value)}
+                onChange={e => debouncedSearchChange(e.target.value)}
                 className="navbar-search-input"
+                aria-label="Search for pets"
+                autoFocus
               />
               <Search size={20} className="navbar-search-icon" />
             </div>
@@ -176,7 +247,7 @@ export default function Navbar({
               <div className="navbar-search-results">
                 {searchResults.length > 0 ? (
                   searchResults.slice(0, 5).map((pet) => (
-                    <div key={pet.id} className="navbar-search-result" onClick={handleSearchResultClick}>
+                    <div key={pet.id} className="navbar-search-result" onClick={onSearchResultClick} tabIndex={0} role="button" aria-label={`View ${pet.name}`}>
                       <img
                         src={pet.imageUrl || "/placeholder.svg"}
                         alt={pet.name}
@@ -203,22 +274,7 @@ export default function Navbar({
         {/* Mobile Menu */}
         <div className={`navbar-mobile-menu ${isMobileMenuOpen ? "" : "hidden"}`}>
           <div className="navbar-mobile-menu-content">
-            {navigationLinks.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                onClick={(e) => {
-                  if (link.href.startsWith("/")) {
-                    e.preventDefault()
-                    navigate(link.href)
-                  }
-                  setIsMobileMenuOpen(false)
-                }}
-                className="navbar-mobile-menu-link"
-              >
-                {link.name}
-              </a>
-            ))}
+            <NavigationLinks links={navigationLinks} onNavigate={href => { navigate(href); setIsMobileMenuOpen(false) }} className="" />
 
             {showProfile ? (
               <div className="navbar-mobile-profile">
@@ -228,6 +284,9 @@ export default function Navbar({
                     setIsProfileOpen(true)
                     setIsMobileMenuOpen(false)
                   }}
+                  tabIndex={0}
+                  aria-label="Open profile modal"
+                  role="button"
                 >
                   <div className="navbar-mobile-profile-image">
                     <img
@@ -246,6 +305,7 @@ export default function Navbar({
                     setIsMobileMenuOpen(false)
                   }}
                   className="navbar-mobile-browse-btn"
+                  aria-label="Browse Pets"
                 >
                   Browse Pets
                 </button>
@@ -258,6 +318,7 @@ export default function Navbar({
                     setIsMobileMenuOpen(false)
                   }}
                   className="navbar-mobile-signin-btn"
+                  aria-label="Sign In"
                 >
                   Sign In
                 </button>
@@ -267,6 +328,7 @@ export default function Navbar({
                     setIsMobileMenuOpen(false)
                   }}
                   className="navbar-mobile-signup-btn"
+                  aria-label="Sign Up"
                 >
                   Sign Up
                 </button>

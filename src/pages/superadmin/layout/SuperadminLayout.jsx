@@ -51,16 +51,6 @@ const SuperadminLayout = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
-    useEffect(() => {
-        const token = localStorage.getItem('superadminToken');
-        const userRole = localStorage.getItem('userRole');
-        if (!token || userRole !== 'SUPERADMIN') {
-            toast.error('Please log in to access superadmin features');
-            navigate('/login');
-            return;
-        }
-    }, [navigate]);
-
     const handleMenuClick = (item) => {
         if (item.key === 'logout') {
             setShowLogoutDialog(true);
@@ -75,7 +65,7 @@ const SuperadminLayout = () => {
         localStorage.removeItem('superadminId');
         localStorage.removeItem('userRole');
         setShowLogoutDialog(false);
-        navigate('/login');
+        navigate('/admin/login');
     };
 
     return (

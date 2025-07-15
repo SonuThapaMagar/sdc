@@ -1,92 +1,106 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useParams, useNavigate } from "react-router-dom"
-import { useAuth } from "./auth-provider"
-import { petsData } from "../../../data/petsData"
-import "../../../styles/Adoptme.css"
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import api from "../../../api/api"; // Updated API instance
+import { useAuth } from "./auth-provider";
+import "../../../styles/Adoptme.css";
 
 export default function AdoptMe() {
-  const { petId } = useParams()
-  const navigate = useNavigate()
-  const { user } = useAuth()
-  const [pet, setPet] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const { petId } = useParams();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [pet, setPet] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const [formData, setFormData] = useState({
-    fullName: user?.fullName || "",
-    email: user?.email || "",
-    phone: "",
-    address: "",
-    city: "",
-    state: "",
-    zipCode: "",
+    petId: petId ? petId : "",
+    motivation: "",
+    livingSituation: "",
+    experience: "",
     housingType: "",
     ownRent: "",
     hasYard: false,
     hasPets: false,
-    petExperience: "",
-    whyAdopt: "",
     agreement: false,
-  })
+  });
 
-  const [applicationId, setApplicationId] = useState("")
+  const [applicationId, setApplicationId] = useState("");
 
   useEffect(() => {
     const fetchPetData = async () => {
       try {
-        const foundPet = petsData.find((p) => p.id === Number.parseInt(petId))
-        if (foundPet) {
-          setPet(foundPet)
-        } else {
-          console.error("Pet not found")
-          navigate("/category")
-        }
+        const response = await api.get(`/api/user/pets/${petId}`);
+        setPet(response.data);
       } catch (error) {
-        console.error("Error fetching pet data:", error)
-        navigate("/category")
+        console.error('Pet fetch error:', error.response?.data || error.message);
+        toast.error("Failed to fetch pet data");
+        navigate("/category");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    if (petId) {
-      fetchPetData()
-    } else {
-      setLoading(false)
-    }
-  }, [petId, navigate])
+    if (petId) fetchPetData();
+    else setLoading(false);
+  }, [petId, navigate]);
 
   const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target
+    const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
-    }))
-  }
+    }));
+  };
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    const appId = `APP${Date.now().toString().slice(-6)}`
-    setApplicationId(appId)
-    console.log("Adoption form submitted:", { pet, formData })
-    
-    // Navigate to success page with pet data and application ID
-    navigate(`/adoption-success/${petId}/${appId}`, {
-      state: { pet, formData, applicationId: appId }
-    })
-  }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.agreement) {
+      toast.error("Please agree to the terms and conditions");
+      return;
+    }
+
+    // Construct livingSituation from form fields and user address
+    const livingSituation = `${formData.housingType} (${formData.ownRent}), ${
+      formData.hasYard ? "with yard" : "no yard"
+    }, ${formData.hasPets ? "with pets" : "no pets"}, ${user?.address || "unknown address"}`;
+
+    const submissionData = {
+      petId: formData.petId,
+      motivation: formData.motivation,
+      livingSituation: livingSituation,
+      experience: formData.experience,
+      housingType: formData.housingType,
+      ownRent: formData.ownRent,
+      hasYard: formData.hasYard,
+      hasPets: formData.hasPets,
+      agreement: formData.agreement,
+    };
+
+    try {
+      const response = await api.post("/api/user/adoption-request", submissionData);
+      const appId = response.data.data?.id || `APP${Date.now().toString().slice(-6)}`;
+      setApplicationId(appId);
+      toast.success("Application submitted successfully!");
+      navigate(`/adoption-success/${petId}/${appId}`, {
+        state: { pet, formData: submissionData, applicationId: appId },
+      });
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to submit application");
+    }
+  };
 
   const handleClose = () => {
-    navigate("/category")
-  }
+    navigate("/category");
+  };
 
   if (loading) {
-    return <div className="adoption-loading">Loading...</div>
+    return <div className="adoption-loading">Loading...</div>;
   }
 
   if (!pet) {
-    return <div className="error">Pet not found</div>
+    return <div className="error">Pet not found</div>;
   }
 
   return (
@@ -142,80 +156,6 @@ export default function AdoptMe() {
       </div>
 
       <form className="adoption-form" onSubmit={handleSubmit}>
-        <div className="adoption-form-row">
-          <div className="adoption-form-group">
-            <label className="adoption-form-label">Full Name *</label>
-            <input
-              type="text"
-              name="fullName"
-              value={formData.fullName}
-              onChange={handleInputChange}
-              className="adoption-form-input"
-              required
-            />
-          </div>
-          <div className="adoption-form-group">
-            <label className="adoption-form-label">Email *</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              className="adoption-form-input"
-              required
-            />
-          </div>
-        </div>
-
-        <div className="adoption-form-group">
-          <label className="adoption-form-label">Phone Number *</label>
-          <input
-            type="tel"
-            name="phone"
-            value={formData.phone}
-            onChange={handleInputChange}
-            className="adoption-form-input"
-            required
-          />
-        </div>
-
-        <div className="adoption-form-group">
-          <label className="adoption-form-label">Address *</label>
-          <input
-            type="text"
-            name="address"
-            value={formData.address}
-            onChange={handleInputChange}
-            className="adoption-form-input"
-            required
-          />
-        </div>
-
-        <div className="adoption-form-row">
-          <div className="adoption-form-group">
-            <label className="adoption-form-label">City *</label>
-            <input
-              type="text"
-              name="city"
-              value={formData.city}
-              onChange={handleInputChange}
-              className="adoption-form-input"
-              required
-            />
-          </div>
-          <div className="adoption-form-group">
-            <label className="adoption-form-label">State *</label>
-            <input
-              type="text"
-              name="state"
-              value={formData.state}
-              onChange={handleInputChange}
-              className="adoption-form-input"
-              required
-            />
-          </div>
-        </div>
-
         <div className="adoption-form-group">
           <label className="adoption-form-label">Housing Type *</label>
           <select
@@ -273,8 +213,8 @@ export default function AdoptMe() {
         <div className="adoption-form-group">
           <label className="adoption-form-label">Pet Experience</label>
           <textarea
-            name="petExperience"
-            value={formData.petExperience}
+            name="experience"
+            value={formData.experience}
             onChange={handleInputChange}
             className="adoption-form-textarea"
             placeholder="Tell us about your experience with pets..."
@@ -284,8 +224,8 @@ export default function AdoptMe() {
         <div className="adoption-form-group">
           <label className="adoption-form-label">Why do you want to adopt {pet.name}? *</label>
           <textarea
-            name="whyAdopt"
-            value={formData.whyAdopt}
+            name="motivation"
+            value={formData.motivation}
             onChange={handleInputChange}
             className="adoption-form-textarea"
             placeholder="Tell us why you'd like to adopt this pet..."
@@ -303,8 +243,7 @@ export default function AdoptMe() {
             required
           />
           <label className="adoption-form-label">
-            I agree to the terms and conditions and understand that this is an application, not a guarantee of adoption
-            *
+            I agree to the terms and conditions and understand that this is an application, not a guarantee of adoption *
           </label>
         </div>
 
@@ -313,5 +252,5 @@ export default function AdoptMe() {
         </button>
       </form>
     </div>
-  )
+  );
 }

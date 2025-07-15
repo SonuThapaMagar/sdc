@@ -62,7 +62,7 @@ const AdminLayout = () => {
         const userRole = localStorage.getItem('userRole');
         if (!token || userRole !== 'ADMIN') {
             toast.error('Please log in to access admin features');
-            navigate('/login');
+            navigate('/admin/login');
             return;
         }
     }, [navigate]);
@@ -81,7 +81,7 @@ const AdminLayout = () => {
         localStorage.removeItem('adminId');
         localStorage.removeItem('userRole');
         setShowLogoutDialog(false);
-        navigate('/login');
+        navigate('/admin/login');
     };
 
     return (

@@ -2,11 +2,21 @@ import { useState, useEffect } from 'react';
 import ProfileModal from './ProfileModal';
 import { getUserProfile, updateUserProfile } from '../../../services/userService';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from './auth-provider'; // adjust path as needed
 
 function Profile() {
+  const { isAuthenticated, isLoading } = useAuth();
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(true);
   const [userProfile, setUserProfile] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isProfileLoading, setIsProfileLoading] = useState(true);
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      navigate('/login');
+    }
+  }, [isAuthenticated, isLoading, navigate]);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -20,14 +30,18 @@ function Profile() {
           memberSince: new Date(profile.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }), // Adjust based on backend field
           accountStatus: profile.status || 'Active',
         });
-        setIsLoading(false);
+        setIsProfileLoading(false);
       } catch (error) {
-        toast.error(error.message);
-        setIsLoading(false);
+        toast.error(error.message || 'Failed to fetch profile');
+        // Optionally, redirect to login if error is 401
+        if (error.response && error.response.status === 401) {
+          navigate('/login');
+        }
+        setIsProfileLoading(false);
       }
     };
     fetchProfile();
-  }, []);
+  }, [navigate]);
 
   const handleUpdateProfile = async (updatedProfile) => {
     try {
@@ -50,7 +64,7 @@ function Profile() {
 
   const handleCloseModal = () => setIsModalOpen(false);
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isProfileLoading) return <div>Loading...</div>;
 
   return (
     <ProfileModal

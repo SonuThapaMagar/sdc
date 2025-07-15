@@ -45,12 +45,10 @@ const AdoptionRequests = () => {
 
   const handleApprove = async (requestId) => {
     try {
-      await api.put(`/api/admin/adoption-requests/${requestId}/approve`);
-      setAdoptionRequests(prev => 
-        prev.map(req => 
-          req.id === requestId 
-            ? { ...req, status: 'APPROVED' }
-            : req
+      await api.post(`/api/admin/adoption-requests/${requestId}/approve`);
+      setAdoptionRequests(prev =>
+        prev.map(req =>
+          req.id === requestId ? { ...req, status: 'APPROVED' } : req
         )
       );
       toast.success('Adoption request approved successfully!');
@@ -65,9 +63,7 @@ const AdoptionRequests = () => {
       await api.put(`/api/admin/adoption-requests/${requestId}/reject`);
       setAdoptionRequests(prev => 
         prev.map(req => 
-          req.id === requestId 
-            ? { ...req, status: 'REJECTED' }
-            : req
+          req.id === requestId ? { ...req, status: 'REJECTED' } : req
         )
       );
       toast.success('Adoption request rejected successfully!');
@@ -89,7 +85,7 @@ const AdoptionRequests = () => {
       'REJECTED': 'bg-red-100 text-red-800',
       'COMPLETED': 'bg-blue-100 text-blue-800'
     };
-    
+
     return (
       <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusConfig[status] || 'bg-gray-100 text-gray-800'}`}>
         {status}
@@ -129,7 +125,7 @@ const AdoptionRequests = () => {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white rounded-lg shadow p-4">
           <div className="flex items-center">
             <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
@@ -145,7 +141,7 @@ const AdoptionRequests = () => {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white rounded-lg shadow p-4">
           <div className="flex items-center">
             <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
@@ -161,7 +157,7 @@ const AdoptionRequests = () => {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white rounded-lg shadow p-4">
           <div className="flex items-center">
             <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
@@ -286,7 +282,7 @@ const AdoptionRequests = () => {
                 <RiCloseLine className="text-xl" />
               </button>
             </div>
-            
+
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -298,7 +294,7 @@ const AdoptionRequests = () => {
                     <p><strong>Address:</strong> {selectedRequest.requesterAddress}</p>
                   </div>
                 </div>
-                
+
                 <div>
                   <h3 className="font-medium text-gray-800 mb-2">Pet Information</h3>
                   <div className="bg-gray-50 p-3 rounded">
@@ -309,7 +305,7 @@ const AdoptionRequests = () => {
                   </div>
                 </div>
               </div>
-              
+
               <div>
                 <h3 className="font-medium text-gray-800 mb-2">Request Details</h3>
                 <div className="bg-gray-50 p-3 rounded">
@@ -320,7 +316,7 @@ const AdoptionRequests = () => {
                   )}
                 </div>
               </div>
-              
+
               {selectedRequest.status === 'PENDING' && (
                 <div className="flex justify-end gap-3 pt-4 border-t">
                   <button
