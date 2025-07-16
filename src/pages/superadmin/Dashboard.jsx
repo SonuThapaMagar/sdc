@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaUsers, FaPaw, FaStore, FaHeart } from 'react-icons/fa';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend } from 'recharts';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api/api';
 import { toast } from 'react-toastify';
@@ -25,7 +25,11 @@ export default function Dashboard() {
       return;
     }
     fetchDashboardData();
-  }, [navigate, activityPage]);
+  }, [navigate]);
+
+  useEffect(() => {
+    console.log('barData updated:', barData);
+  }, [barData]);
 
   const fetchDashboardData = async () => {
     try {
@@ -33,42 +37,45 @@ export default function Dashboard() {
 
       // Fetch dashboard stats
       const statsResponse = await api.get('/api/superadmin/dashboard/stats');
-      console.log('Stats Response:', statsResponse.data); // Debug log
+      console.log('Stats Response:', statsResponse.data);
       const statsData = statsResponse.data
         ? [
-            { title: 'Total Users', value: statsResponse.data.totalUsers || 0, icon: <FaUsers className="text-blue-500 text-2xl" /> },
-            { title: 'Total Pets', value: statsResponse.data.totalPets || 0, icon: <FaPaw className="text-pink-500 text-2xl" /> },
-            { title: 'Total Pet Centers', value: statsResponse.data.totalCenters || 0, icon: <FaStore className="text-green-500 text-2xl" /> },
-            { title: 'Total Adoptions', value: statsResponse.data.totalAdoptions || 0, icon: <FaHeart className="text-red-500 text-2xl" /> },
-          ]
+          { title: 'Total Users', value: statsResponse.data.totalUsers || 0, icon: <FaUsers className="text-blue-500 text-2xl" /> },
+          { title: 'Total Pets', value: statsResponse.data.totalPets || 0, icon: <FaPaw className="text-pink-500 text-2xl" /> },
+          { title: 'Total Pet Centers', value: statsResponse.data.totalCenters || 0, icon: <FaStore className="text-green-500 text-2xl" /> },
+          { title: 'Total Adoptions', value: statsResponse.data.totalAdoptions || 0, icon: <FaHeart className="text-red-500 text-2xl" /> },
+        ]
         : [];
       setStats(statsData);
 
       // Fetch monthly stats
       const monthlyStatsResponse = await api.get('/api/superadmin/dashboard/monthly-stats');
-      console.log('Monthly Stats Response:', monthlyStatsResponse.data); // Debug log
-      const mappedBarData = monthlyStatsResponse.data && monthlyStatsResponse.data.length > 0
+      console.log('Monthly Stats Response:', monthlyStatsResponse.data);
+      const mappedBarData = monthlyStatsResponse.data && Array.isArray(monthlyStatsResponse.data) && monthlyStatsResponse.data.length > 0
         ? monthlyStatsResponse.data.map(stat => ({
-            month: stat.month || 'N/A',
-            users: stat.userCount || 0,
-            pets: stat.petCount || 0,
-            centers: stat.centerCount || 0,
-            adoptions: stat.adoptionCount || 0,
-          }))
-        : generateDummyMonthlyData(); // Always generate dummy data if no data
+          month: stat.month || 'N/A',
+          users: stat.users || 0,
+          pets: stat.pets || 0,
+          centers: stat.centers || 0,
+          adoptions: stat.adoptions || 0,
+        }))
+        : [];
+      console.log('Mapped Bar Data (before set):', mappedBarData);
       setBarData(mappedBarData);
 
       // Fetch pet status
       const petStatusResponse = await api.get('/api/superadmin/dashboard/pet-status');
-      console.log('Pet Status Response:', petStatusResponse.data); // Debug log
-      const mappedPieData = petStatusResponse.data && petStatusResponse.data.length > 0
+      console.log('Raw Pet Status Response:', petStatusResponse);
+      const mappedPieData = petStatusResponse.data && Array.isArray(petStatusResponse.data) && petStatusResponse.data.length > 0
         ? petStatusResponse.data.map(stat => ({
-            name: stat.status || 'Unknown',
-            value: stat.count || 0,
-            color: stat.color || '#757FF6',
-          }))
+          name: stat.name || 'Unknown',
+          value: stat.value || 0,
+          color: stat.color || '#757FF6',
+        }))
         : [];
+      console.log('Mapped Pie Data:', mappedPieData);
       setPieData(mappedPieData);
+
 
       // Fetch recent activities with pagination
       const activitiesResponse = await api.get(`/api/superadmin/dashboard/recent-activities?page=${activityPage}&size=${activitiesPerPage}`);
@@ -104,18 +111,6 @@ export default function Dashboard() {
     }
   };
 
-  // Generate dummy monthly data for bar chart up to current month (July 2025)
-  const generateDummyMonthlyData = () => {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'];
-    return months.map(month => ({
-      month,
-      users: 0,
-      pets: 0,
-      centers: 0,
-      adoptions: 0,
-    }));
-  };
-
   if (loading) {
     return (
       <div className="p-6 bg-gray-100 min-h-screen flex items-center justify-center">
@@ -145,20 +140,21 @@ export default function Dashboard() {
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
-        {/* Bar Chart - Monthly Stats */}
+        {/* Line Chart - Monthly Stats */}
         <div className="bg-white rounded-lg shadow p-6">
-          <div className="text-lg font-semibold text-gray-800 mb-4">Monthly Statistics</div>
+          <div className="text-lg font-semibold text-gray-800 mb-4">Monthly Statistics (Line Graph)</div>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={barData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+              <LineChart data={barData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
                 <XAxis dataKey="month" />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="users" fill="#3b82f6" name="Users" />
-                <Bar dataKey="pets" fill="#f472b6" name="Pets" />
-                <Bar dataKey="centers" fill="#34d399" name="Centers" />
-                <Bar dataKey="adoptions" fill="#ef4444" name="Adoptions" />
-              </BarChart>
+                <Legend />
+                <Line type="monotone" dataKey="users" stroke="#3b82f6" name="Users" />
+                <Line type="monotone" dataKey="pets" stroke="#f472b6" name="Pets" />
+                <Line type="monotone" dataKey="centers" stroke="#34d399" name="Centers" />
+                <Line type="monotone" dataKey="adoptions" stroke="#ef4444" name="Adoptions" />
+              </LineChart>
             </ResponsiveContainer>
           </div>
         </div>
