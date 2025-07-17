@@ -35,6 +35,7 @@ import ChangePassword from "../pages/user/pages/ChangePassword";
 // Route Guard Components
 const ProtectedRoute = ({ children, requiredRole }) => {
   const { user, isAuthenticated, isLoading } = useAuth();
+  console.log("ProtectedRoute: user", user, "isAuthenticated", isAuthenticated, "requiredRole", requiredRole);
   
   if (isLoading) {
     return <div className="min-h-screen flex items-center justify-center">
@@ -110,6 +111,7 @@ const ConditionalRoute = ({ children, requireAuth = false }) => {
   if (requireAuth && !isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
+  
 
   return children;
 };

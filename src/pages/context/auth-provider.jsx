@@ -8,21 +8,32 @@ export function AuthProvider({ children }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check localStorage on mount
-    const token = localStorage.getItem('token'); // Use a consistent key
+    const token = localStorage.getItem('token');
     const userRole = localStorage.getItem('userRole');
     if (token && userRole) {
-      setUser({ role: userRole }); // Add more user data as needed
+      setUser({ role: userRole });
       setIsAuthenticated(true);
     }
     setIsLoading(false);
   }, []);
 
   const login = (userData, token) => {
+    const decodedToken = jwtDecode(token);
+    let role = decodedToken.role || ''; // Fallback to empty string if role is missing
+    if (role.startsWith('ROLE_')) {
+      role = role.replace('ROLE_', ''); // Transform ROLE_ADMIN or ROLE_SUPERADMIN
+    } else {
+      console.warn('Unexpected role format in token:', decodedToken.role);
+    }
+    if (!['ADMIN', 'SUPERADMIN'].includes(role)) {
+      console.error('Invalid role detected:', role);
+      return; // Prevent login with invalid role
+    }
+
     localStorage.setItem('token', token);
-    localStorage.setItem('userRole', userData.role);
-    localStorage.setItem('userId', userData.id); // Store ID if needed
-    setUser(userData);
+    localStorage.setItem('userRole', role);
+    localStorage.setItem('userId', userData.id);
+    setUser({ ...userData, role });
     setIsAuthenticated(true);
   };
 

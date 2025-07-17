@@ -48,6 +48,7 @@ export function AuthProvider({ children }) {
     if (userData.profileImage) localStorage.setItem("userProfileImage", userData.profileImage);
     
     setUser(userData);
+    console.log("AuthProvider login: user set to", userData);
   };
 
   const logout = () => {

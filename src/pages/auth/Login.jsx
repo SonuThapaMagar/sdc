@@ -30,35 +30,24 @@ function Login() {
     setLoading(true);
 
     try {
-      console.log('Attempting login with:', credentials);
       let response;
       let url = '/api/admin/auth/login';
-      let body = credentials;
+      let body = { email: credentials.email, password: credentials.password };
 
       if (credentials.email.toLowerCase() === 'superadmin@gmail.com') {
         url = '/api/superadmin/auth/login';
-        body = { email: credentials.email, password: credentials.password };
       }
 
       response = await api.post(url, body);
 
-      console.log('Login response:', response.data);
-
       const { message, token, id } = response.data;
       if (!token) {
-        console.error('Invalid response: missing token');
         toast.error('Login failed: Invalid server response');
         return;
       }
 
       const decodedToken = jwtDecode(token);
-      const role = decodedToken.role.replace('ROLE_', '');
-
-      if (!role) {
-        console.error('Invalid token: missing role');
-        toast.error('Login failed: Invalid token');
-        return;
-      }
+      const role = decodedToken.role.replace('ROLE_', ''); // Transform role
 
       const userData = {
         id,
@@ -68,17 +57,11 @@ function Login() {
         profileImage: '/placeholder.svg?height=40&width=40',
       };
 
-      login(userData, token); // Update auth state
+      login(userData, token);
       toast.success(message || `Logged in successfully as ${role}!`);
-      navigate(`/${role.toLowerCase()}/dashboard`, { replace: true }); // Force replace to avoid back navigation
+      navigate(`/${role.toLowerCase()}/dashboard`, { replace: true });
     } catch (error) {
       console.error('Login error:', error);
-      console.error('Error details:', {
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        data: error.response?.data,
-      });
-
       const errorMessage = error.response?.data?.message || 'Login failed. Please check your credentials.';
       toast.error(errorMessage);
     } finally {

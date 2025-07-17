@@ -14,7 +14,6 @@ api.interceptors.request.use(
     const isLoginEndpoint = [
       '/api/auth/login',
       '/api/admin/auth/login',
-      '/api/superadmin/auth/login',
     ].some((path) => config.url.endsWith(path));
     const token = localStorage.getItem('token');
     if (token && !isLoginEndpoint) {
