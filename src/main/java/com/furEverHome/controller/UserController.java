@@ -1,11 +1,15 @@
 package com.furEverHome.controller;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.furEverHome.dto.AdoptionRequestResponse;
 import com.furEverHome.dto.AdoptionRequestSubmission;
@@ -23,6 +28,8 @@ import com.furEverHome.entity.Pet;
 import com.furEverHome.entity.Role;
 import com.furEverHome.repository.PetRepository;
 import com.furEverHome.service.AdoptionRequestService;
+import com.furEverHome.service.FileStorageService;
+import com.furEverHome.service.PetService;
 import com.furEverHome.service.UserService;
 import com.furEverHome.util.JwtUtil;
 
@@ -34,32 +41,81 @@ public class UserController {
 	private final JwtUtil jwtUtil;
 	private final AdoptionRequestService adoptionRequestService;
 	private final UserService userService;
+	private final PetService petService;
 
 	@Autowired
+    private FileStorageService fileStorageService;
+    
+	@Autowired
 	public UserController(PetRepository petRepository, JwtUtil jwtUtil, AdoptionRequestService adoptionRequestService,
-			UserService userService) {
+			UserService userService,PetService petService) {
 		this.petRepository = petRepository;
 		this.jwtUtil = jwtUtil;
 		this.adoptionRequestService = adoptionRequestService;
 		this.userService = userService;
+		this.petService=petService;
 	}
 
-	@GetMapping("/pets")
-	public ResponseEntity<?> viewPets(@RequestHeader("Authorization") String token) {
-
+	@PostMapping("/pets")
+	public ResponseEntity<?> createPet(@RequestHeader("Authorization") String token, @RequestParam("name") String name,
+			@RequestParam("breed") String breed, @RequestParam("age") int age, @RequestParam("gender") String gender,
+			@RequestParam("description") String description, @RequestParam("location") String location,
+			@RequestParam("status") String status, @RequestParam("centerId") UUID centerId,
+			@RequestParam(value = "image", required = false) MultipartFile image) {
 		String email = jwtUtil.getEmailFromToken(token.substring(7));
 		if (!jwtUtil.getRoleFromToken(token.substring(7)).equals(Role.USER)) {
 			return ResponseEntity.status(403)
-					.body(new AuthController.ErrorResponse("User must have USER role to view pets"));
+					.body(new AuthController.ErrorResponse("User must have USER role to create a pet"));
 		}
 
-		List<Pet> pets = petRepository.findAll().stream().filter(pet -> pet.getStatus().equals("AVAILABLE"))
-				.collect(Collectors.toList());
-		List<PetResponse> petResponses = pets.stream()
-				.map(pet -> new PetResponse(pet.getId(), pet.getName(), pet.getBreed(), pet.getAge(), pet.getGender(),
-						pet.getDescription(), pet.getLocation(), pet.getStatus(), pet.getCenterId()))
-				.collect(Collectors.toList());
-		return ResponseEntity.ok(petResponses);
+		try {
+			String imageUrl = null;
+			if (image != null && !image.isEmpty()) {
+				imageUrl = fileStorageService.storeFile(image, centerId.toString(), "pet");
+			}
+
+			Pet pet = new Pet(name, breed, age, gender, description, location, status, centerId, imageUrl);
+			pet = petRepository.save(pet);
+			return ResponseEntity.status(201)
+					.body(new SuccessResponse("Pet created successfully",
+							new PetResponse(pet.getId(), pet.getName(), pet.getBreed(), pet.getAge(), pet.getGender(),
+									pet.getDescription(), pet.getLocation(), pet.getStatus(), pet.getCenterId(),
+									pet.getImageUrl())));
+		} catch (IOException e) {
+			return ResponseEntity.status(500)
+					.body(new AuthController.ErrorResponse("Failed to upload image: " + e.getMessage()));
+		}
+	}
+
+	@GetMapping("/pets/{id}")
+	public ResponseEntity<?> getPetById(@RequestHeader("Authorization") String token, @PathVariable UUID id) {
+		String email = jwtUtil.getEmailFromToken(token.substring(7));
+		if (!jwtUtil.getRoleFromToken(token.substring(7)).equals(Role.USER)) {
+			return ResponseEntity.status(403)
+					.body(new AuthController.ErrorResponse("User must have USER role to view pet details"));
+		}
+
+		Optional<Pet> pet = petRepository.findById(id);
+		if (!pet.isPresent() || !pet.get().getStatus().equals("AVAILABLE")) {
+			return ResponseEntity.status(404).body(new AuthController.ErrorResponse("Pet not found or not available"));
+		}
+
+		PetResponse petResponse = new PetResponse(pet.get().getId(), pet.get().getName(), pet.get().getBreed(),
+				pet.get().getAge(), pet.get().getGender(), pet.get().getDescription(), pet.get().getLocation(),
+				pet.get().getStatus(), pet.get().getCenterId());
+		return ResponseEntity.ok(petResponse);
+	}
+	
+	@GetMapping("/pets")
+	public ResponseEntity<?> viewPets() {
+	    List<Pet> pets = petRepository.findAll().stream()
+	            .filter(pet -> pet.getStatus().equals("AVAILABLE"))
+	            .collect(Collectors.toList());
+	    List<PetResponse> petResponses = pets.stream()
+	            .map(pet -> new PetResponse(pet.getId(), pet.getName(), pet.getBreed(), pet.getAge(), pet.getGender(),
+	                    pet.getDescription(), pet.getLocation(), pet.getStatus(), pet.getCenterId(), pet.getImageUrl()))
+	            .collect(Collectors.toList());
+	    return ResponseEntity.ok(petResponses);
 	}
 
 	@GetMapping("/pets/search")

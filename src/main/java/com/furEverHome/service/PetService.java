@@ -80,8 +80,8 @@ public class PetService {
 		petRepository.delete(pet);
 	}
 
-	private PetResponse mapToPetResponse(Pet pet) {
+	public PetResponse mapToPetResponse(Pet pet) {
 		return new PetResponse(pet.getId(), pet.getName(), pet.getBreed(), pet.getAge(), pet.getGender(),
-				pet.getDescription(), pet.getLocation(), pet.getStatus(), pet.getCenterId());
+				pet.getDescription(), pet.getLocation(), pet.getStatus(), pet.getCenterId(), pet.getImageUrl());
 	}
 }
