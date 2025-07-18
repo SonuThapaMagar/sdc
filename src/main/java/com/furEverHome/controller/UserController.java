@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,6 +28,7 @@ import com.furEverHome.dto.UserUpdateRequest;
 import com.furEverHome.entity.Pet;
 import com.furEverHome.entity.Role;
 import com.furEverHome.repository.PetRepository;
+import com.furEverHome.repository.UserRepository;
 import com.furEverHome.service.AdoptionRequestService;
 import com.furEverHome.service.FileStorageService;
 import com.furEverHome.service.PetService;
@@ -42,18 +44,20 @@ public class UserController {
 	private final AdoptionRequestService adoptionRequestService;
 	private final UserService userService;
 	private final PetService petService;
+	private final UserRepository userRepository;
 
 	@Autowired
     private FileStorageService fileStorageService;
     
 	@Autowired
 	public UserController(PetRepository petRepository, JwtUtil jwtUtil, AdoptionRequestService adoptionRequestService,
-			UserService userService,PetService petService) {
+			UserService userService,PetService petService,UserRepository userRepository) {
 		this.petRepository = petRepository;
 		this.jwtUtil = jwtUtil;
 		this.adoptionRequestService = adoptionRequestService;
 		this.userService = userService;
 		this.petService=petService;
+		this.userRepository = userRepository;
 	}
 
 	@PostMapping("/pets")
@@ -153,6 +157,29 @@ public class UserController {
 					.body(new AuthController.ErrorResponse("Failed to submit adoption request: " + e.getMessage()));
 		}
 	}
+	
+	@GetMapping("/profile")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> getUserProfile(@RequestHeader("Authorization") String token) {
+        String tokenValue = token.substring(7); // Remove "Bearer " prefix
+        String email = jwtUtil.getEmailFromToken(tokenValue);
+        if (email == null) {
+            return ResponseEntity.status(401).body(new AuthController.ErrorResponse("Invalid token"));
+        }
+
+        try {
+            UserResponse userProfile = userService.getUserById(
+                userRepository.findByEmail(email)
+                    .orElseThrow(() -> new IllegalArgumentException("User not found"))
+                    .getId()
+            );
+            return ResponseEntity.ok(new SuccessResponse("Profile fetched successfully", userProfile));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(404).body(new AuthController.ErrorResponse(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(new AuthController.ErrorResponse("Failed to fetch profile: " + e.getMessage()));
+        }
+    }
 
 	@PutMapping("/profile")
 	public ResponseEntity<?> updateProfile(@RequestHeader("Authorization") String token,
