@@ -140,7 +140,7 @@ export default function Navbar({
     { name: "Learn", href: "/learn-more" },
     { name: "About", href: "/about-us" },
     { name: "Pet Listing", href: "/category" },
-    { name: "Contact", href: "#contact" },
+    { name: "Contact", href: "/contact" },
   ]
 
   return (

@@ -35,3 +35,5 @@ export const searchPets = async (query) => {
     throw error.response?.data || { message: 'Failed to search pets' };
   }
 };
+
+export const getPetById = (id) => api.get(`/api/pets/${id}`);

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 const CategoriesSection = ({ pets }) => (
   <section className="categories">
@@ -9,10 +9,9 @@ const CategoriesSection = ({ pets }) => (
       </div>
       <div className="categories-grid">
         {[
-          { name: 'Dogs', icon: '🐕', count: pets.filter((pet) => pet.type === 'Dogs').length },
-          { name: 'Cats', icon: '🐱', count: pets.filter((pet) => pet.type === 'Cats').length },
-          { name: 'Others', icon: '🐰', count: '0' },
-          { name: 'Rescued', icon: '❤️', count: '0' },
+          { name: "Dogs", icon: "🐕", count: pets.length }, // Simplified to total pets for now
+          { name: "Others", icon: "🐰", count: "0" }, // Placeholder, adjust logic if needed
+          { name: "Rescued", icon: "❤️", count: "0" }, // Placeholder, adjust logic if needed
         ].map((category, index) => (
           <div key={category.name} className="category-card slide-up" style={{ animationDelay: `${index * 0.1}s` }}>
             <div className="category-icon">{category.icon}</div>
@@ -25,4 +24,4 @@ const CategoriesSection = ({ pets }) => (
   </section>
 );
 
-export default CategoriesSection; 
+export default CategoriesSection;

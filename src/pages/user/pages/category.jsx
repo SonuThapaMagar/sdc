@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useNavigate } from "react-router-dom"
 
 // Icons
-import { Heart, Filter, ChevronLeft, MapPin, ArrowLeft, ArrowRight } from "lucide-react"
+import { Heart, Filter } from "lucide-react"
 
 // Components
 import FilterModal from "./filtermodal"
@@ -14,9 +14,10 @@ import NotificationsPanel from "./notificationpanel"
 import SearchModal from "./searchmodal"
 import ProfileModal from "./ProfileModal"
 import Navbar from "./Navbar"
+import PetDetail from "../../user/pages/petdetail" // Assuming PetDetail is a separate file
+import api from '../../../api/api'
 
 // Data & Assets
-import { petsData } from "../../../data/petsData"
 import { profileImage } from "../../../data/petImages"
 import logo from "../../../images/logo.png"
 
@@ -28,17 +29,19 @@ import "../../../styles/petdetails.css"
 import "../../../styles/notification.css"
 
 export default function PetCategories() {
+  const navigate = useNavigate();
   // State management
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [activeFilters, setActiveFilters] = useState({})
-  const [activeCategory, setActiveCategory] = useState("Dogs")
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(true)
   const [selectedPetId, setSelectedPetId] = useState(null)
   const [favorites, setFavorites] = useState(new Set())
   const [searchQuery, setSearchQuery] = useState("")
+  const [pets, setPets] = useState([]) // Dynamic pet list from API
+  const [error, setError] = useState(null) // Error state
   const [userProfile, setUserProfile] = useState({
     fullName: "Stylish Boi",
     email: "stylishboi@gmail.com",
@@ -46,10 +49,56 @@ export default function PetCategories() {
     memberSince: "January 2024",
     accountStatus: "Active",
   })
+  const [expandedPetId, setExpandedPetId] = useState(null)
+
+  // Helper function to infer pet type from breed (optional, can be removed if not needed)
+  const inferPetType = (breed) => {
+    const dogBreeds = ["labrador", "poodle", "bulldog", "beagle", "retriever", "pug"]
+    const catBreeds = ["persian", "siamese", "maine coon", "ragdoll"]
+    const breedLower = breed.toLowerCase()
+
+    if (dogBreeds.some((dogBreed) => breedLower.includes(dogBreed))) return "Dogs"
+    if (catBreeds.some((catBreed) => breedLower.includes(catBreed))) return "Cats"
+    return "Others" // Default for unknown breeds
+  }
+
+  // Fetch pets from API on component mount
+  useEffect(() => {
+    const fetchPets = async () => {
+      try {
+        let config = {};
+        const token = localStorage.getItem("token");
+        if (token) {
+          config.headers = { Authorization: `Bearer ${token}` };
+        }
+        const response = await api.get('/api/user/pets', config);
+        const data = response.data;
+        const mappedPets = data.map((pet) => ({
+          id: pet.id,
+          name: pet.name,
+          breed: pet.breed,
+          age: pet.age.toString(),
+          gender: pet.gender,
+          location: pet.location || "Unknown",
+          imageUrl: pet.imageUrl || "/placeholder.svg",
+          description: pet.description || "No description available",
+          status: pet.status || "Unknown",
+        }));
+        setPets(mappedPets);
+        setError(null);
+      } catch (err) {
+        setError("Error fetching pets: " + (err.response?.data?.message || err.message));
+        if (err.response?.status === 403) {
+          navigate("/login"); // Redirect on 403 (e.g., invalid token)
+        }
+      }
+    };
+    fetchPets();
+  }, [navigate]);
 
   // Apply filters and search to pets
   const getFilteredPets = () => {
-    let filtered = petsData.filter((pet) => pet.type === activeCategory)
+    let filtered = pets
 
     // Apply search query
     if (searchQuery.trim()) {
@@ -57,56 +106,31 @@ export default function PetCategories() {
         (pet) =>
           pet.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           pet.breed.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          pet.color.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          pet.age.toLowerCase().includes(searchQuery.toLowerCase()),
+          pet.age.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          pet.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          pet.location.toLowerCase().includes(searchQuery.toLowerCase())
       )
     }
 
-    // Apply filters
+    // Apply filters from FilterModal
     if (Object.keys(activeFilters).length > 0) {
       filtered = filtered.filter((pet) => {
-        // Pet Type filter
-        if (activeFilters.petType && activeFilters.petType !== "Both") {
-          if (activeFilters.petType === "Dog" && pet.type !== "Dogs") return false
-          if (activeFilters.petType === "Cat" && pet.type !== "Cats") return false
-        }
-
-        // Breed filter
         if (activeFilters.breed && activeFilters.breed !== "") {
           if (!pet.breed.toLowerCase().includes(activeFilters.breed.toLowerCase())) return false
         }
-
-        // Gender filter
         if (activeFilters.gender && activeFilters.gender !== "Both") {
           if (activeFilters.gender.toLowerCase() !== pet.gender.toLowerCase()) return false
         }
-
-        // Age filter
         if (activeFilters.age && activeFilters.age.length > 0) {
           const petAge = pet.age.toLowerCase()
-          const matchesAge = activeFilters.age.some((ageFilter) => {
-            const filterAge = ageFilter.toLowerCase()
-            if (filterAge === "puppy" || filterAge === "kitten") {
-              return petAge.includes("puppy") || petAge.includes("kitten")
-            }
-            return petAge.includes(filterAge)
-          })
+          const matchesAge = activeFilters.age.some((ageFilter) =>
+            petAge.includes(ageFilter.toLowerCase())
+          )
           if (!matchesAge) return false
         }
-
-        // Good with filter
-        if (activeFilters.goodWith && activeFilters.goodWith.length > 0) {
-          const matchesGoodWith = activeFilters.goodWith.some((goodWithFilter) => {
-            return pet.characteristics.some((char) => char.toLowerCase().includes(goodWithFilter.toLowerCase()))
-          })
-          if (!matchesGoodWith) return false
-        }
-
-        // Location filter
         if (activeFilters.location && activeFilters.location !== "") {
           if (!pet.location.toLowerCase().includes(activeFilters.location.toLowerCase())) return false
         }
-
         return true
       })
     }
@@ -131,7 +155,7 @@ export default function PetCategories() {
   }
 
   const handlePetClick = (petId) => {
-    setSelectedPetId(petId)
+    setExpandedPetId(expandedPetId === petId ? null : petId)
   }
 
   const handleClosePetDetail = () => {
@@ -175,7 +199,19 @@ export default function PetCategories() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      {/* Modular Navbar */}
+      {error && (
+        <motion.div className="category-error-message" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          {error}
+          <motion.button
+            onClick={() => window.location.reload()}
+            className="category-retry-button"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            Retry
+          </motion.button>
+        </motion.div>
+      )}
       <Navbar
         showSearch={true}
         searchQuery={searchQuery}
@@ -191,11 +227,6 @@ export default function PetCategories() {
         transition={{ delay: 0.2, duration: 0.6 }}
       >
         <div className="category-main">
-          {/* Section Header Animation */}
-          <div className="section-header slide-up">
-            <h2 className="section-title">Categories</h2>
-          </div>
-
           <motion.div
             className="category-filter-section"
             initial={{ opacity: 0, y: 20 }}
@@ -222,7 +253,6 @@ export default function PetCategories() {
               )}
             </motion.button>
 
-            {/* Clear filters button */}
             {(Object.keys(activeFilters).length > 0 || searchQuery) && (
               <motion.button
                 className="category-clear-filters-button"
@@ -235,43 +265,8 @@ export default function PetCategories() {
                 Clear All
               </motion.button>
             )}
-
-            <div className="category-tabs">
-              <motion.button
-                className={`category-tab ${activeCategory === "Dogs" ? "active" : ""}`}
-                onClick={() => setActiveCategory("Dogs")}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                layout
-              >
-                <span className="category-tab-icon category-dogs-icon">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M4 10l8-7 8 7v10H4V10z" fill="currentColor" />
-                  </svg>
-                </span>
-                Dogs
-              </motion.button>
-              <motion.button
-                className={`category-tab ${activeCategory === "Cats" ? "active" : ""}`}
-                onClick={() => setActiveCategory("Cats")}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                layout
-              >
-                <span className="category-tab-icon category-cats-icon">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path
-                      d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"
-                      fill="currentColor"
-                    />
-                  </svg>
-                </span>
-                Cats
-              </motion.button>
-            </div>
           </motion.div>
 
-          {/* Results info */}
           <motion.div
             className="category-results-info"
             initial={{ opacity: 0 }}
@@ -287,9 +282,7 @@ export default function PetCategories() {
               <span>Filtered results • {filteredPets.length} pets found</span>
             )}
             {!searchQuery && Object.keys(activeFilters).length === 0 && (
-              <span>
-                Showing all {activeCategory.toLowerCase()} • {filteredPets.length} pets
-              </span>
+              <span>Showing all pets • {filteredPets.length} pets</span>
             )}
           </motion.div>
 
@@ -297,33 +290,55 @@ export default function PetCategories() {
             <AnimatePresence>
               {filteredPets.length > 0 ? (
                 filteredPets.map((pet, index) => (
-                  <motion.div
-                    key={pet.id}
-                    onClick={() => handlePetClick(pet.id)}
-                    initial={{ opacity: 0, y: 50, scale: 0.9 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -50, scale: 0.9 }}
-                    transition={{
-                      delay: index * 0.1,
-                      duration: 0.5,
-                      type: "spring",
-                      stiffness: 100,
-                    }}
-                    whileHover={{
-                      y: -8,
-                      transition: { duration: 0.2 },
-                    }}
-                    layout
-                  >
-                    <PetCard
-                      name={pet.name}
-                      gender={pet.gender}
-                      info={`${pet.age} | ${pet.breed}`}
-                      imageUrl={pet.imageUrl}
-                      isFavorite={favorites.has(pet.id)}
-                      onToggleFavorite={(event) => toggleFavorite(pet.id, event)}
-                    />
-                  </motion.div>
+                  <div key={pet.id}>
+                    <motion.div
+                      onClick={() => handlePetClick(pet.id)}
+                      initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -50, scale: 0.9 }}
+                      transition={{ delay: index * 0.1, duration: 0.5, type: "spring", stiffness: 100 }}
+                      whileHover={{ y: -8, transition: { duration: 0.2 } }}
+                      layout
+                    >
+                      <PetCard
+                        name={pet.name}
+                        gender={pet.gender}
+                        info={`${pet.age} | ${pet.breed}`}
+                        imageUrl={pet.imageUrl}
+                        isFavorite={favorites.has(pet.id)}
+                        onToggleFavorite={(event) => toggleFavorite(pet.id, event)}
+                      />
+                    </motion.div>
+                    {expandedPetId === pet.id && (
+                      <motion.div
+                        className="pet-details-inline bg-white rounded-xl shadow p-6 mt-2 mb-6 border border-gray-100"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 20 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <div className="flex flex-col md:flex-row gap-6 items-center">
+                          <img src={pet.imageUrl} alt={pet.name} className="w-32 h-32 object-cover rounded-lg border" />
+                          <div className="flex-1">
+                            <h3 className="text-2xl font-bold mb-2">{pet.name}</h3>
+                            <div className="mb-1 text-gray-700"><b>Breed:</b> {pet.breed}</div>
+                            <div className="mb-1 text-gray-700"><b>Age:</b> {pet.age}</div>
+                            <div className="mb-1 text-gray-700"><b>Gender:</b> {pet.gender}</div>
+                            <div className="mb-1 text-gray-700"><b>Location:</b> {pet.location}</div>
+                            <div className="mb-1 text-gray-700"><b>Status:</b> <span className="inline-block px-2 py-1 rounded text-xs font-semibold bg-blue-100 text-blue-700">{pet.status}</span></div>
+                            <div className="mb-2 text-gray-700"><b>Description:</b></div>
+                            <div className="text-gray-600 whitespace-pre-line mb-4">{pet.description}</div>
+                            <button
+                              className="px-5 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold"
+                              onClick={(e) => { e.stopPropagation(); window.location.href = `/adoptme/${pet.id}`; }}
+                            >
+                              Adopt Me
+                            </button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </div>
                 ))
               ) : (
                 <motion.div
@@ -349,7 +364,6 @@ export default function PetCategories() {
         </div>
       </motion.main>
 
-      {/* Modals */}
       <AnimatePresence>
         {isFilterOpen && (
           <FilterModal
@@ -369,7 +383,7 @@ export default function PetCategories() {
             onSearch={handleSearch}
             onClearSearch={handleClearSearch}
             currentQuery={searchQuery}
-            pets={petsData}
+            pets={pets}
             onPetClick={handleResultClick}
           />
         )}
@@ -403,7 +417,6 @@ export default function PetCategories() {
           <PetDetail
             petId={selectedPetId}
             onClose={handleClosePetDetail}
-            pets={petsData}
             favorites={favorites}
             onToggleFavorite={(event) => toggleFavorite(selectedPetId, event)}
           />
@@ -487,269 +500,6 @@ function PetCard({ name, gender, info, imageUrl, isFavorite, onToggleFavorite })
           </motion.div>
         </motion.button>
       </div>
-    </motion.div>
-  )
-}
-
-// Pet Detail Component
-function PetDetail({ petId, onClose, pets = [], favorites, onToggleFavorite }) {
-  const [currentPet, setCurrentPet] = useState(null)
-  const [currentImageIndex, setCurrentImageIndex] = useState(0)
-  const [petImages, setPetImages] = useState([])
-  const navigate = useNavigate()
-
-  useEffect(() => {
-    const foundPet = pets.find((pet) => pet.id === petId)
-    if (foundPet) {
-      setCurrentPet(foundPet)
-      setPetImages([foundPet.imageUrl, foundPet.imageUrl, foundPet.imageUrl])
-    }
-  }, [petId, pets])
-
-  const handlePrevImage = () => {
-    setCurrentImageIndex((prev) => (prev === 0 ? petImages.length - 1 : prev - 1))
-  }
-
-  const handleNextImage = () => {
-    setCurrentImageIndex((prev) => (prev === petImages.length - 1 ? 0 : prev + 1))
-  }
-
-  const handleAdoptClick = () => {
-    if (currentPet) {
-      navigate(`/adoptme/${currentPet.id}`)
-    }
-  }
-
-  if (!currentPet) return null
-
-  return (
-    <motion.div
-      className="category-pet-detail-container"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.3 }}
-    >
-      <motion.div
-        className="category-pet-detail-content"
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
-      >
-        <motion.div
-          className="category-pet-detail-header"
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
-        >
-          <motion.button
-            className="category-back-button"
-            onClick={onClose}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-          >
-            <ChevronLeft size={24} />
-          </motion.button>
-          <motion.button
-            className={`category-favorite-button ${favorites.has(petId) ? "active" : ""}`}
-            onClick={(e) => onToggleFavorite(e)}
-            whileHover={{ scale: 1.2 }}
-            whileTap={{ scale: 0.8 }}
-            animate={
-              favorites.has(petId)
-                ? {
-                    scale: [1, 1.3, 1],
-                    rotate: [0, 10, -10, 0],
-                  }
-                : {}
-            }
-            transition={{ duration: 0.3 }}
-          >
-            <Heart size={24} fill={favorites.has(petId) ? "currentColor" : "none"} />
-          </motion.button>
-        </motion.div>
-
-        <motion.div
-          className="category-pet-detail-main"
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.3 }}
-        >
-          <motion.div
-            className="category-pet-image-gallery"
-            initial={{ x: -50, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.4 }}
-          >
-            <div className="category-image-container">
-              <motion.img
-                key={currentImageIndex}
-                src={petImages[currentImageIndex] || currentPet.imageUrl}
-                alt={currentPet.name}
-                className="category-pet-detail-image"
-                initial={{ opacity: 0, scale: 1.1 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3 }}
-              />
-              <motion.button
-                className="category-gallery-nav prev"
-                onClick={handlePrevImage}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                <ArrowLeft size={20} />
-              </motion.button>
-              <motion.button
-                className="category-gallery-nav next"
-                onClick={handleNextImage}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                <ArrowRight size={20} />
-              </motion.button>
-            </div>
-            <div className="category-image-pagination">
-              {petImages.map((_, index) => (
-                <motion.button
-                  key={index}
-                  className={`category-pagination-dot ${index === currentImageIndex ? "active" : ""}`}
-                  onClick={() => setCurrentImageIndex(index)}
-                  whileHover={{ scale: 1.2 }}
-                  whileTap={{ scale: 0.8 }}
-                  animate={index === currentImageIndex ? { scale: 1.2 } : { scale: 1 }}
-                />
-              ))}
-            </div>
-          </motion.div>
-
-          <motion.div
-            className="category-pet-info-container"
-            initial={{ x: 50, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.5 }}
-          >
-            <motion.div
-              className="category-pet-name-section"
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.6 }}
-            >
-              <h1 className="category-pet-name">
-                {currentPet.name}
-                <span className={currentPet.gender === "female" ? "category-gender-female" : "category-gender-male"}>
-                  {currentPet.gender === "female" ? "♀️" : "♂️"}
-                </span>
-              </h1>
-              <div className="category-pet-location">
-                <MapPin size={16} />
-                <span>{currentPet.location}</span>
-              </div>
-            </motion.div>
-
-            <motion.div
-              className="category-pet-attributes"
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.7 }}
-            >
-              {[
-                { label: "Breed", value: currentPet.breed },
-                { label: "Color", value: currentPet.color },
-                { label: "Weight", value: currentPet.weight },
-                { label: "Age", value: currentPet.age },
-              ].map((attr, index) => (
-                <motion.div
-                  key={attr.label}
-                  className="category-attribute-card"
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: 0.8 + index * 0.1 }}
-                  whileHover={{ scale: 1.05 }}
-                >
-                  <div className="category-attribute-value">{attr.value}</div>
-                  <div className="category-attribute-label">{attr.label}</div>
-                </motion.div>
-              ))}
-            </motion.div>
-
-            <motion.div
-              className="category-pet-details-section"
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.9 }}
-            >
-              <div className="category-detail-group">
-                <h2 className="category-detail-title">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path
-                      d="M22 12h-4l-3 9L9 3l-3 9H2"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  Health
-                </h2>
-                <ul className="category-detail-list">
-                  {currentPet.health.map((item, index) => (
-                    <motion.li
-                      key={index}
-                      className="category-detail-item"
-                      initial={{ x: -20, opacity: 0 }}
-                      animate={{ x: 0, opacity: 1 }}
-                      transition={{ delay: 1.0 + index * 0.1 }}
-                    >
-                      {item}
-                    </motion.li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="category-detail-group">
-                <h2 className="category-detail-title">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path
-                      d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  Characteristics
-                </h2>
-                <ul className="category-detail-list">
-                  {currentPet.characteristics.map((item, index) => (
-                    <motion.li
-                      key={index}
-                      className="category-detail-item"
-                      initial={{ x: -20, opacity: 0 }}
-                      animate={{ x: 0, opacity: 1 }}
-                      transition={{ delay: 1.2 + index * 0.1 }}
-                    >
-                      {item}
-                    </motion.li>
-                  ))}
-                </ul>
-              </div>
-            </motion.div>
-
-            <motion.button
-              className="category-adopt-button"
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 1.4 }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleAdoptClick}
-            >
-              Adopt Me
-            </motion.button>
-          </motion.div>
-        </motion.div>
-      </motion.div>
     </motion.div>
   )
 }
