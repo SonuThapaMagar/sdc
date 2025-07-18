@@ -19,6 +19,7 @@ public class AdminProfileResponse {
 	private Integer capacity;
 	private Integer animalsCurrently;
 	private List servicesOffered;
+	private Integer petCount;
 
 	// Getters and Setters
 	public UUID getId() {
@@ -139,5 +140,13 @@ public class AdminProfileResponse {
 
 	public void setServicesOffered(List<String> servicesOffered) {
 		this.servicesOffered = servicesOffered;
+	}
+
+	public Integer getPetCount() {
+		return petCount;
+	}
+
+	public void setPetCount(Integer petCount) {
+		this.petCount = petCount;
 	}
 }

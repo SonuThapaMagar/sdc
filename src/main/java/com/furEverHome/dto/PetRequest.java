@@ -11,6 +11,8 @@ public class PetRequest {
     private String location;
     private String status;
     private UUID centerId;
+    
+    public PetRequest() {}
 
     // Getters and Setters
     public String getName() {

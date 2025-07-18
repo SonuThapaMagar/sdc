@@ -80,7 +80,13 @@ public class PetCenterService {
 	}
 
 	public List<AdminProfileResponse> getAllPetCenters() {
-		return petCenterRepository.findAll().stream().map(this::mapToAdminProfileResponse).collect(Collectors.toList());
+		return petCenterRepository.findAll().stream().map(petCenter -> {
+			AdminProfileResponse response = mapToAdminProfileResponse(petCenter);
+			// Add pet count
+			long petCount = petRepository.countByCenterId(petCenter.getId());
+			response.setPetCount((int) petCount); // Add petCount to AdminProfileResponse
+			return response;
+		}).collect(Collectors.toList());
 	}
 
 	@Transactional

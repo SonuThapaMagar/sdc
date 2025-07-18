@@ -23,8 +23,8 @@ public class SuperAdminAuthService {
 	public Map<String, Object> authenticate(SuperAdminLoginRequest request) {
 		Map<String, Object> response = new HashMap<>();
 
-		if (STATIC_EMAIL.equals(request.getUsername()) && STATIC_PASSWORD.equals(request.getPassword())) {
-			String token = jwtUtil.generateToken("superadmin@fureverhome.com", Role.SUPERADMIN);
+		if (STATIC_EMAIL.equals(request.getEmail()) && STATIC_PASSWORD.equals(request.getPassword())) {
+			String token = jwtUtil.generateToken(request.getEmail(), Role.SUPERADMIN); // Use username
 			response.put("success", true);
 			response.put("token", token);
 			response.put("message", "Login successful");
@@ -32,7 +32,6 @@ public class SuperAdminAuthService {
 		} else {
 			response.put("success", false);
 			response.put("message", "Invalid credentials");
-
 		}
 		return response;
 	}

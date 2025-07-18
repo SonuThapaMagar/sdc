@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public interface PetRepository extends JpaRepository<Pet, UUID> {
 	List<Pet> findByCenterId(UUID centerId);
-
+	long countByCenterId(UUID centerId);
 	// For admin: Search pets by centerId, name, and location
 	@Query("SELECT p FROM Pet p WHERE p.centerId = :centerId "
 			+ "AND LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%')) "

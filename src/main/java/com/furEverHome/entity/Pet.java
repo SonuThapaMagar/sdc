@@ -1,7 +1,6 @@
 package com.furEverHome.entity;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -9,132 +8,148 @@ import java.util.UUID;
 @Table(name = "pets")
 public class Pet {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.UUID)
-	@Column(name = "id", updatable = false, nullable = false)
-	private UUID id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id", updatable = false, nullable = false)
+    private UUID id;
 
-	@Column(name = "name", nullable = false)
-	private String name;
+    @Column(name = "name", nullable = false)
+    private String name;
 
-	@Column(name = "breed", nullable = false)
-	private String breed;
+    @Column(name = "breed", nullable = false)
+    private String breed;
 
-	@Column(name = "age", nullable = false)
-	private int age;
+    @Column(name = "age", nullable = false)
+    private int age;
 
-	@Column(name = "gender", nullable = false)
-	private String gender;
+    @Column(name = "gender", nullable = false)
+    private String gender;
 
-	@Column(name = "description")
-	private String description;
+    @Column(name = "description")
+    private String description;
 
-	@Column(name = "location", nullable = false)
-	private String location;
+    @Column(name = "location", nullable = false)
+    private String location;
 
-	@Column(name = "status", nullable = false)
-	private String status; // AVAILABLE, ADOPTED
+    @Column(name = "status", nullable = false)
+    private String status;
 
-	@Column(name = "center_id", nullable = false)
-	private UUID centerId; // References the PetCenter ID
+    @Column(name = "center_id", nullable = false)
+    private UUID centerId;
 
-	@Column(name = "created_at", nullable = false)
-	private LocalDateTime createdAt;
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
+    
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+    
+    @Column(name = "image_url")
+    private String imageUrl;
 
-	public Pet() {
-	}
+    public Pet() {
+    }
 
-	public Pet(String name, String breed, int age, String gender, String description, String location, String status,
-			UUID centerId) {
-		this.name = name;
-		this.breed = breed;
-		this.age = age;
-		this.gender = gender;
-		this.description = description;
-		this.location = location;
-		this.status = status;
-		this.centerId = centerId;
-		this.createdAt = LocalDateTime.now();
-	}
+    // Parameterized constructor
+    public Pet(String name, String breed, int age, String gender, String description, String location,
+            String status, UUID centerId, String imageUrl) {
+     this.name = name;
+     this.breed = breed;
+     this.age = age;
+     this.gender = gender;
+     this.description = description;
+     this.location = location;
+     this.status = status;
+     this.centerId = centerId; // Ensure this is set
+     this.imageUrl = imageUrl;
+     this.createdAt = LocalDateTime.now();
+     this.updatedAt = LocalDateTime.now();
+ }
 
-	// Getters and Setters
-	public UUID getId() {
-		return id;
-	}
+    // Getters and Setters
+    public UUID getId() {
+        return id;
+    }
 
-	public void setId(UUID id) {
-		this.id = id;
-	}
+    public void setId(UUID id) {
+        this.id = id;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public String getBreed() {
-		return breed;
-	}
+    public String getBreed() {
+        return breed;
+    }
 
-	public void setBreed(String breed) {
-		this.breed = breed;
-	}
+    public void setBreed(String breed) {
+        this.breed = breed;
+    }
 
-	public int getAge() {
-		return age;
-	}
+    public int getAge() {
+        return age;
+    }
 
-	public void setAge(int age) {
-		this.age = age;
-	}
+    public void setAge(int age) {
+        this.age = age;
+    }
 
-	public String getGender() {
-		return gender;
-	}
+    public String getGender() {
+        return gender;
+    }
 
-	public void setGender(String gender) {
-		this.gender = gender;
-	}
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
 
-	public String getDescription() {
-		return description;
-	}
+    public String getDescription() {
+        return description;
+    }
 
-	public void setDescription(String description) {
-		this.description = description;
-	}
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-	public String getLocation() {
-		return location;
-	}
+    public String getLocation() {
+        return location;
+    }
 
-	public void setLocation(String location) {
-		this.location = location;
-	}
+    public void setLocation(String location) {
+        this.location = location;
+    }
 
-	public String getStatus() {
-		return status;
-	}
+    public String getStatus() {
+        return status;
+    }
 
-	public void setStatus(String status) {
-		this.status = status;
-	}
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
-	public UUID getCenterId() {
-		return centerId;
-	}
+    public UUID getCenterId() {
+        return centerId;
+    }
 
-	public void setCenterId(UUID centerId) {
-		this.centerId = centerId;
-	}
+    public void setCenterId(UUID centerId) {
+        this.centerId = centerId;
+    }
 
-	public LocalDateTime getCreatedAt() {
-		return createdAt;
-	}
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
 
-	public void setCreatedAt(LocalDateTime createdAt) {
-		this.createdAt = createdAt;
-	}
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
 }

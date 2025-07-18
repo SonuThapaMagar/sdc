@@ -3,6 +3,7 @@ package com.furEverHome.entity;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -41,8 +42,13 @@ public class User {
 	
 	@Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+	
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<AdoptionRequest> adoptionRequests;
 
 	public User() {
+		this.createdAt = LocalDateTime.now();
+        this.role = Role.USER;
 	}
 
 	public User(String fullName, String address, String phone, String email, String password, Role role) {
@@ -134,9 +140,17 @@ public class User {
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
+    public List<AdoptionRequest> getAdoptionRequests() {
+        return adoptionRequests;
+    }
+
+    public void setAdoptionRequests(List<AdoptionRequest> adoptionRequests) {
+        this.adoptionRequests = adoptionRequests;
+    }
 
 	@Override
 	public String toString() {
 		return "User{id=" + id + ", email=" + email + ", role=" + role + "}";
 	}
+
 }

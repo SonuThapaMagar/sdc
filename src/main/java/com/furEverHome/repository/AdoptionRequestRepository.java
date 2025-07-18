@@ -1,6 +1,8 @@
 package com.furEverHome.repository;
 
 import com.furEverHome.entity.AdoptionRequest;
+import com.furEverHome.entity.AdoptionRequestStatus;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -14,4 +16,8 @@ public interface AdoptionRequestRepository extends JpaRepository<AdoptionRequest
 
 	// Find all adoption requests by a specific user
 	List<AdoptionRequest> findByUserId(UUID userId);
+
+	long countByPetCenterId(UUID id);
+
+	long countByStatusAndPetCenterId(AdoptionRequestStatus status, UUID id);
 }

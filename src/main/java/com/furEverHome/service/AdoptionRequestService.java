@@ -22,98 +22,112 @@ import com.furEverHome.repository.UserRepository;
 
 @Service
 public class AdoptionRequestService {
-	private final AdoptionRequestRepository adoptionRequestRepository;
-	private final UserRepository userRepository;
-	private final PetRepository petRepository;
-	private final EmailService emailService;
+    private final AdoptionRequestRepository adoptionRequestRepository;
+    private final UserRepository userRepository;
+    private final PetRepository petRepository;
+    private final EmailService emailService;
 
-	@Autowired
-	public AdoptionRequestService(AdoptionRequestRepository adoptionRequestRepository, UserRepository userRepository,
-			PetRepository petRepository, EmailService emailService) {
-		this.adoptionRequestRepository = adoptionRequestRepository;
-		this.userRepository = userRepository;
-		this.petRepository = petRepository;
-		this.emailService = emailService;
-	}
+    @Autowired
+    public AdoptionRequestService(AdoptionRequestRepository adoptionRequestRepository, UserRepository userRepository,
+            PetRepository petRepository, EmailService emailService) {
+        this.adoptionRequestRepository = adoptionRequestRepository;
+        this.userRepository = userRepository;
+        this.petRepository = petRepository;
+        this.emailService = emailService;
+    }
 
-	@Transactional
-	public AdoptionRequestResponse submitAdoptionRequest(String userEmail, AdoptionRequestSubmission requestDTO) {
-		User user = userRepository.findByEmail(userEmail)
-				.orElseThrow(() -> new IllegalArgumentException("User not found with email: " + userEmail));
+    @Transactional
+    public AdoptionRequestResponse submitAdoptionRequest(String userEmail, AdoptionRequestSubmission requestDTO) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + userEmail));
 
-		Pet pet = petRepository.findById(requestDTO.getPetId())
-				.orElseThrow(() -> new IllegalArgumentException("Pet not found with ID: " + requestDTO.getPetId()));
+        Pet pet = petRepository.findById(requestDTO.getPetId())
+                .orElseThrow(() -> new IllegalArgumentException("Pet not found with ID: " + requestDTO.getPetId()));
 
-		if (!"AVAILABLE".equals(pet.getStatus())) {
-			throw new IllegalStateException("Pet is not available for adoption");
-		}
+        if (!"AVAILABLE".equals(pet.getStatus())) {
+            throw new IllegalStateException("Pet is not available for adoption");
+        }
 
-		AdoptionRequest adoptionRequest = new AdoptionRequest(user, pet, requestDTO.getMotivation(),
-				requestDTO.getLivingSituation(), requestDTO.getExperience());
-		adoptionRequest = adoptionRequestRepository.save(adoptionRequest);
+        if (!requestDTO.getAgreement()) {
+            throw new IllegalArgumentException("You must agree to the terms and conditions");
+        }
 
-		return mapToResponseDTO(adoptionRequest);
-	}
+        // Construct livingSituation using user's address and frontend fields
+        String livingSituation = String.format("%s (%s), %s yard, %s pets, %s",
+                requestDTO.getHousingType(), requestDTO.getOwnRent(),
+                requestDTO.getHasYard() ? "with" : "no",
+                requestDTO.getHasPets() ? "with" : "no",
+                user.getAddress());
 
-	public List<AdoptionRequestResponse> getAllAdoptionRequests() {
-		return adoptionRequestRepository.findAll().stream().map(this::mapToResponseDTO).collect(Collectors.toList());
-	}
+        AdoptionRequest adoptionRequest = new AdoptionRequest(
+				user, pet, requestDTO.getMotivation(), livingSituation, requestDTO
+						.getExperience(),
+            requestDTO.getHousingType(), requestDTO.getOwnRent(), requestDTO.getHasYard(),
+            requestDTO.getHasPets(), requestDTO.getAgreement()
+        );
+        adoptionRequest = adoptionRequestRepository.save(adoptionRequest);
 
-	@Transactional
-	public AdoptionRequestResponse updateAdoptionRequestStatus(UUID requestId, AdoptionRequestStatusUpdate updateDTO) {
-		AdoptionRequest adoptionRequest = adoptionRequestRepository.findById(requestId)
-				.orElseThrow(() -> new IllegalArgumentException("Adoption request not found with ID: " + requestId));
+        return mapToResponseDTO(adoptionRequest);
+    }
 
-		if (adoptionRequest.getStatus() != AdoptionRequestStatus.PENDING) {
-			throw new IllegalStateException("Only PENDING requests can be updated");
-		}
+    public List<AdoptionRequestResponse> getAllAdoptionRequests() {
+        return adoptionRequestRepository.findAll().stream().map(this::mapToResponseDTO).collect(Collectors.toList());
+    }
 
-		if (updateDTO.getStatus() == AdoptionRequestStatus.PENDING) {
-			throw new IllegalArgumentException("Cannot set status back to PENDING");
-		}
+    @Transactional
+    public AdoptionRequestResponse updateAdoptionRequestStatus(UUID requestId, AdoptionRequestStatusUpdate updateDTO) {
+        AdoptionRequest adoptionRequest = adoptionRequestRepository.findById(requestId)
+                .orElseThrow(() -> new IllegalArgumentException("Adoption request not found with ID: " + requestId));
 
-		adoptionRequest.setStatus(updateDTO.getStatus());
-		adoptionRequest.setUpdatedAt(LocalDateTime.now());
+        if (adoptionRequest.getStatus() != AdoptionRequestStatus.PENDING) {
+            throw new IllegalStateException("Only PENDING requests can be updated");
+        }
 
-		Pet pet = adoptionRequest.getPet();
-		if (updateDTO.getStatus() == AdoptionRequestStatus.ACCEPTED) {
-			pet.setStatus("ADOPTED");
-			petRepository.save(pet);
+        if (updateDTO.getStatus() == AdoptionRequestStatus.PENDING) {
+            throw new IllegalArgumentException("Cannot set status back to PENDING");
+        }
 
-			List<AdoptionRequest> otherRequests = adoptionRequestRepository.findByPetId(pet.getId());
-			for (AdoptionRequest otherRequest : otherRequests) {
-				if (otherRequest.getStatus() == AdoptionRequestStatus.PENDING
-						&& !otherRequest.getId().equals(requestId)) {
-					otherRequest.setStatus(AdoptionRequestStatus.REJECTED);
-					otherRequest.setUpdatedAt(LocalDateTime.now());
-					adoptionRequestRepository.save(otherRequest);
-					emailService.sendAdoptionRejection(otherRequest.getUser().getEmail(), pet.getName());
-				}
-			}
+        adoptionRequest.setStatus(updateDTO.getStatus());
+        adoptionRequest.setUpdatedAt(LocalDateTime.now());
 
-			emailService.sendAdoptionConfirmation(adoptionRequest.getUser().getEmail(), pet.getName());
-		} else if (updateDTO.getStatus() == AdoptionRequestStatus.REJECTED) {
-			emailService.sendAdoptionRejection(adoptionRequest.getUser().getEmail(), pet.getName());
-		}
+        Pet pet = adoptionRequest.getPet();
+        if (updateDTO.getStatus() == AdoptionRequestStatus.ACCEPTED) {
+            pet.setStatus("ADOPTED");
+            petRepository.save(pet);
 
-		adoptionRequest = adoptionRequestRepository.save(adoptionRequest);
-		return mapToResponseDTO(adoptionRequest);
-	}
+            List<AdoptionRequest> otherRequests = adoptionRequestRepository.findByPetId(pet.getId());
+            for (AdoptionRequest otherRequest : otherRequests) {
+                if (otherRequest.getStatus() == AdoptionRequestStatus.PENDING
+                        && !otherRequest.getId().equals(requestId)) {
+                    otherRequest.setStatus(AdoptionRequestStatus.REJECTED);
+                    otherRequest.setUpdatedAt(LocalDateTime.now());
+                    adoptionRequestRepository.save(otherRequest);
+                    emailService.sendAdoptionRejection(otherRequest.getUser().getEmail(), pet.getName());
+                }
+            }
 
-	private AdoptionRequestResponse mapToResponseDTO(AdoptionRequest adoptionRequest) {
-		AdoptionRequestResponse dto = new AdoptionRequestResponse();
-		dto.setId(adoptionRequest.getId());
-		dto.setUserId(adoptionRequest.getUser().getId());
-		dto.setUserEmail(adoptionRequest.getUser().getEmail());
-		dto.setPetId(adoptionRequest.getPet().getId());
-		dto.setPetName(adoptionRequest.getPet().getName());
-		dto.setMotivation(adoptionRequest.getMotivation());
-		dto.setLivingSituation(adoptionRequest.getLivingSituation());
-		dto.setExperience(adoptionRequest.getExperience());
-		dto.setStatus(adoptionRequest.getStatus());
-		dto.setSubmittedAt(adoptionRequest.getSubmittedAt());
-		dto.setUpdatedAt(adoptionRequest.getUpdatedAt());
-		return dto;
-	}
+            emailService.sendAdoptionConfirmation(adoptionRequest.getUser().getEmail(), pet.getName());
+        } else if (updateDTO.getStatus() == AdoptionRequestStatus.REJECTED) {
+            emailService.sendAdoptionRejection(adoptionRequest.getUser().getEmail(), pet.getName());
+        }
 
+        adoptionRequest = adoptionRequestRepository.save(adoptionRequest);
+        return mapToResponseDTO(adoptionRequest);
+    }
+
+    private AdoptionRequestResponse mapToResponseDTO(AdoptionRequest adoptionRequest) {
+        AdoptionRequestResponse dto = new AdoptionRequestResponse();
+        dto.setId(adoptionRequest.getId());
+        dto.setUserId(adoptionRequest.getUser().getId());
+        dto.setUserEmail(adoptionRequest.getUser().getEmail());
+        dto.setPetId(adoptionRequest.getPet().getId());
+        dto.setPetName(adoptionRequest.getPet().getName());
+        dto.setMotivation(adoptionRequest.getMotivation());
+        dto.setLivingSituation(adoptionRequest.getLivingSituation());
+        dto.setExperience(adoptionRequest.getExperience());
+        dto.setStatus(adoptionRequest.getStatus());
+        dto.setSubmittedAt(adoptionRequest.getSubmittedAt());
+        dto.setUpdatedAt(adoptionRequest.getUpdatedAt());
+        return dto;
+    }
 }

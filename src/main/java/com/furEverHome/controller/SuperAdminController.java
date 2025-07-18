@@ -2,7 +2,11 @@ package com.furEverHome.controller;
 
 import java.util.List;
 import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -45,12 +49,19 @@ public class SuperAdminController {
 	}
 
 	@GetMapping("/users")
-	public ResponseEntity<?> getAllUsers(@RequestHeader("Authorization") String token) {
+	public ResponseEntity<?> getAllUsers(@RequestHeader("Authorization") String token,
+			@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "5") int size) {
 		if (!jwtUtil.getRoleFromToken(token.substring(7)).equals(Role.SUPERADMIN)) {
 			return ResponseEntity.status(403).body(new AuthController.ErrorResponse("User must have SUPERADMIN role"));
 		}
-		List<UserResponse> users = userService.getAllUsers();
-		return ResponseEntity.ok(users);
+		try {
+			Pageable pageable = PageRequest.of(page, size); // Zero-based page
+			Page<UserResponse> userPage = userService.getAllUsers(pageable);
+			return ResponseEntity.ok(userPage); // Returns Page object
+		} catch (Exception e) {
+			return ResponseEntity.status(500)
+					.body(new AuthController.ErrorResponse("Failed to fetch users: " + e.getMessage()));
+		}
 	}
 
 	@GetMapping("/users/{id}")
@@ -268,17 +279,19 @@ public class SuperAdminController {
 	}
 
 	@GetMapping("/dashboard/recent-activities")
-	public ResponseEntity<?> getRecentActivities(@RequestHeader("Authorization") String token) {
-		if (!jwtUtil.getRoleFromToken(token.substring(7)).equals(Role.SUPERADMIN)) {
-			return ResponseEntity.status(403).body(new AuthController.ErrorResponse("User must have SUPERADMIN role"));
-		}
-		try {
-			List<RecentActivityResponse> activities = dashboardService.getRecentActivities();
-			return ResponseEntity.ok(activities);
-		} catch (Exception e) {
-			return ResponseEntity.status(500)
-					.body(new AuthController.ErrorResponse("Failed to fetch recent activities: " + e.getMessage()));
-		}
+	public ResponseEntity<?> getRecentActivities(@RequestHeader("Authorization") String token,
+	        @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "5") int size) {
+	    if (!jwtUtil.getRoleFromToken(token.substring(7)).equals(Role.SUPERADMIN)) {
+	        return ResponseEntity.status(403).body(new AuthController.ErrorResponse("User must have SUPERADMIN role"));
+	    }
+	    try {
+	        Pageable pageable = PageRequest.of(page, size); // Zero-based page
+	        Page<RecentActivityResponse> activitiesPage = dashboardService.getRecentActivities(pageable);
+	        return ResponseEntity.ok(activitiesPage); // Returns Page object with content, total pages, etc.
+	    } catch (Exception e) {
+	        return ResponseEntity.status(500)
+	                .body(new AuthController.ErrorResponse("Failed to fetch recent activities: " + e.getMessage()));
+	    }
 	}
 
 	private AdminProfileResponse mapToAdminProfileResponse(PetCenter petCenter) {

@@ -14,26 +14,21 @@ import com.furEverHome.util.JwtUtil;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Autowired
-    private JwtUtil jwtUtil;
+	@Autowired
+	private JwtUtil jwtUtil;
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-            .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth -> {
-                auth.requestMatchers(HttpMethod.OPTIONS, "/api/**").permitAll()
-                    .requestMatchers("/api/auth/**", "/api/admin/auth/**", "/api/superadmin/auth/**", "/api/test").permitAll()
-                    .requestMatchers("/api/user/**").hasRole("USER")
-                    .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                    .requestMatchers("/api/superadmin/**").hasRole("SUPERADMIN")
-                    .anyRequest().authenticated();
-            })
-            .addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class)
-            .formLogin(form -> form.disable())
-            .httpBasic(httpBasic -> httpBasic.disable());
+	@Bean
+	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+		http.csrf(csrf -> csrf.disable()).authorizeHttpRequests(auth -> {
+			auth.requestMatchers(HttpMethod.OPTIONS, "/api/**").permitAll()
+					.requestMatchers("/api/auth/**", "/api/admin/auth/**", "/api/superadmin/auth/**", "/api/test")
+					.permitAll().requestMatchers("/api/user/**").hasRole("USER").requestMatchers("/api/admin/**")
+					.hasRole("ADMIN").requestMatchers("/api/superadmin/**").hasRole("SUPERADMIN").anyRequest()
+					.authenticated();
+		}).addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class)
+				.formLogin(form -> form.disable()).httpBasic(httpBasic -> httpBasic.disable());
 
-        System.out.println("Security configuration applied.");
-        return http.build();
-    }
+		System.out.println("Security configuration applied.");
+		return http.build();
+	}
 }

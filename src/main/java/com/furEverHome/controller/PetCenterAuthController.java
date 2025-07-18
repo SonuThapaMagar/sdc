@@ -1,5 +1,6 @@
 package com.furEverHome.controller;
 
+import java.io.IOException;
 import java.time.Year;
 import java.util.regex.Pattern;
 
@@ -191,11 +192,21 @@ public class PetCenterAuthController {
 		petCenter = petCenterRepository.save(petCenter);
 
 		// Store Files Using PetCenter ID
-		String licensePath = fileStorageService.storeFile(license, petCenter.getId().toString(), "license");
-		String insurancePath = fileStorageService.storeFile(insurance, petCenter.getId().toString(), "insurance");
-		String taxExemptPath = taxExempt != null && !taxExempt.isEmpty()
-				? fileStorageService.storeFile(taxExempt, petCenter.getId().toString(), "taxExempt")
-				: null;
+		String licensePath = null;
+		String insurancePath = null;
+		String taxExemptPath = null;
+		try {
+			licensePath = fileStorageService.storeFile(license, petCenter.getId().toString(), "license");
+			insurancePath = fileStorageService.storeFile(insurance, petCenter.getId().toString(), "insurance");
+			if (taxExempt != null && !taxExempt.isEmpty()) {
+				taxExemptPath = fileStorageService.storeFile(taxExempt, petCenter.getId().toString(), "taxExempt");
+			}
+		} catch (IOException e) {
+			// Rollback: Delete the PetCenter if file storage fails
+			petCenterRepository.delete(petCenter);
+			return ResponseEntity.status(500)
+					.body(new AuthController.ErrorResponse("Failed to store uploaded files: " + e.getMessage()));
+		}
 
 		// Update PetCenter with File Paths
 		petCenter.setLicensePath(licensePath);

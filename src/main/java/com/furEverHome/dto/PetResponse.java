@@ -13,7 +13,13 @@ public class PetResponse {
 	private String location;
 	private String status;
 	private UUID centerId;
+	private String imageUrl;
 
+	public PetResponse() {
+		// Default constructor
+	}
+
+	// Existing constructor without imageUrl
 	public PetResponse(UUID id, String name, String breed, int age, String gender, String description, String location,
 			String status, UUID centerId) {
 		this.id = id;
@@ -24,14 +30,25 @@ public class PetResponse {
 		this.description = description;
 		this.location = location;
 		this.status = status;
-		this.centerId = centerId; // Include in constructor
+		this.centerId = centerId;
 	}
 
-	public PetResponse() {
-		// TODO Auto-generated constructor stub
+	// New constructor with imageUrl
+	public PetResponse(UUID id, String name, String breed, int age, String gender, String description, String location,
+			String status, UUID centerId, String imageUrl) {
+		this.id = id;
+		this.name = name;
+		this.breed = breed;
+		this.age = age;
+		this.gender = gender;
+		this.description = description;
+		this.location = location;
+		this.status = status;
+		this.centerId = centerId;
+		this.imageUrl = imageUrl;
 	}
 
-	// Getters and Setters
+	// Getters and Setters (unchanged)
 	public UUID getId() {
 		return id;
 	}
@@ -102,5 +119,13 @@ public class PetResponse {
 
 	public void setCenterId(UUID centerId) {
 		this.centerId = centerId;
+	}
+
+	public String getImageUrl() {
+		return imageUrl;
+	}
+
+	public void setImageUrl(String imageUrl) {
+		this.imageUrl = imageUrl;
 	}
 }
