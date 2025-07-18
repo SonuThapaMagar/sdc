@@ -12,11 +12,11 @@ const AdoptionRequests = () => {
   const [showDetails, setShowDetails] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('adminToken');
+    const token = localStorage.getItem('token');
     const userRole = localStorage.getItem('userRole');
     if (!token || userRole !== 'ADMIN') {
       toast.error('Please log in to access adoption requests');
-      navigate('/login');
+      navigate('/admin/login');
       return;
     }
     fetchAdoptionRequests();

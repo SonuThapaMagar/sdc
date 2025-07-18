@@ -19,11 +19,11 @@ const PetCenterProfile = () => {
   const [fetchError, setFetchError] = useState('');
 
   useEffect(() => {
-    const token = localStorage.getItem('adminToken');
+    const token = localStorage.getItem('token');
     const userRole = localStorage.getItem('userRole');
     if (!token || userRole !== 'ADMIN') {
       toast.error('Please log in to access profile');
-      navigate('/login');
+      navigate('/admin/login');
       return;
     }
     fetchProfile();
@@ -33,7 +33,9 @@ const PetCenterProfile = () => {
     try {
       setLoading(true);
       setFetchError('');
+      console.log('Fetching profile with token:', localStorage.getItem('token'));
       const response = await api.get('/api/admin/profile');
+      console.log('Profile response:', response);
       const data = response.data.data || response.data;
       setProfile({
         shelterName: data.shelterName || '',
@@ -44,15 +46,16 @@ const PetCenterProfile = () => {
       });
     } catch (error) {
       console.error('Failed to fetch profile:', error);
+      console.error('Error details:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      });
       const message = error.response?.data?.message || 'Failed to load profile. Please try again.';
       setFetchError(message);
       toast.error(message);
-      if (error.response?.status === 401 || error.response?.status === 403) {
-        localStorage.removeItem('adminToken');
-        localStorage.removeItem('adminId');
-        localStorage.removeItem('userRole');
-        navigate('/login');
-      }
+      // Don't automatically logout on profile fetch errors
+      // Let the user see the error message instead
     } finally {
       setLoading(false);
     }
@@ -98,10 +101,10 @@ const PetCenterProfile = () => {
       const message = error.response?.data?.message || 'Failed to update profile. Please try again.';
       toast.error(message);
       if (error.response?.status === 401 || error.response?.status === 403) {
-        localStorage.removeItem('adminToken');
-        localStorage.removeItem('adminId');
+        localStorage.removeItem('token');
+        localStorage.removeItem('userId');
         localStorage.removeItem('userRole');
-        navigate('/login');
+        navigate('/admin/login');
       }
     }
   };

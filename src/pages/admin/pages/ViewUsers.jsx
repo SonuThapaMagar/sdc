@@ -135,7 +135,8 @@ export default function ViewUsers() {
       
       <UserList
         users={users}
-        onEdit={handleEdit}
+        // 
+        
         onDelete={userId => setDeleteUserId(userId)}
       />
       

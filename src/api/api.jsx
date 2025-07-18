@@ -44,16 +44,22 @@ api.interceptors.response.use(
       data: error.response?.data,
     });
 
+    // Only auto-logout for specific endpoints that should trigger logout
     if (error.response?.status === 401 || error.response?.status === 403) {
-      if (
-        error.config?.url?.includes('/pets') ||
-        error.config?.url?.includes('/adoption-request') ||
-        (error.config?.url?.includes('/profile') && !localStorage.getItem('token'))
-      ) {
+      const shouldAutoLogout = [
+        '/api/admin/pets',
+        '/api/admin/users',
+        '/api/admin/adoption-requests',
+        '/api/superadmin'
+      ].some(endpoint => error.config?.url?.includes(endpoint));
+      
+      // Don't auto-logout for profile endpoints - let the component handle it
+      if (error.config?.url?.includes('/profile')) {
+        console.log('Profile endpoint error - not auto-logging out');
         return Promise.reject(error);
       }
 
-      if (localStorage.getItem('token')) {
+      if (shouldAutoLogout && localStorage.getItem('token')) {
         const userRole = localStorage.getItem('userRole');
         localStorage.removeItem('token');
         localStorage.removeItem('userId');
