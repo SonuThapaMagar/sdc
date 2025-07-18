@@ -32,4 +32,13 @@ public class EmailService {
 				+ " has been rejected as another applicant was selected.");
 		emailSender.send(message);
 	}
+
+	public void sendAdoptionPending(String toEmail, String petName) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(toEmail);
+        message.setSubject("Adoption Request Submitted");
+        message.setText("Thank you for submitting your adoption request for " + petName
+                + ". Your request is currently pending. You will be notified once a decision is made.");
+        emailSender.send(message);
+    }
 }

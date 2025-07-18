@@ -25,14 +25,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-
         String path = request.getRequestURI();
         System.out.println("Processing request for path: " + path);
 
         // Add CORS headers for all responses
         response.setHeader("Access-Control-Allow-Origin", "http://localhost:5173");
         response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
-        response.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization"); // Explicitly allow Authorization
+        response.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
         response.setHeader("Access-Control-Allow-Credentials", "true");
         response.setHeader("Access-Control-Max-Age", "3600");
 
@@ -41,7 +40,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             path.startsWith("/api/auth") ||
             path.startsWith("/api/admin/auth") ||
             path.startsWith("/api/superadmin/auth") ||
-            path.equals("/api/test")) {
+            path.equals("/api/test") ||
+            path.startsWith("/api/user/pets")) { // Add /api/user/pets and its variants
             System.out.println("Skipping authentication for: " + path + " (Method: " + request.getMethod() + ")");
             filterChain.doFilter(request, response);
             return;

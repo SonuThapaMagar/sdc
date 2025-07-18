@@ -88,22 +88,15 @@ public class UserController {
 	}
 
 	@GetMapping("/pets/{id}")
-	public ResponseEntity<?> getPetById(@RequestHeader("Authorization") String token, @PathVariable UUID id) {
-		String email = jwtUtil.getEmailFromToken(token.substring(7));
-		if (!jwtUtil.getRoleFromToken(token.substring(7)).equals(Role.USER)) {
-			return ResponseEntity.status(403)
-					.body(new AuthController.ErrorResponse("User must have USER role to view pet details"));
-		}
-
-		Optional<Pet> pet = petRepository.findById(id);
-		if (!pet.isPresent() || !pet.get().getStatus().equals("AVAILABLE")) {
-			return ResponseEntity.status(404).body(new AuthController.ErrorResponse("Pet not found or not available"));
-		}
-
-		PetResponse petResponse = new PetResponse(pet.get().getId(), pet.get().getName(), pet.get().getBreed(),
-				pet.get().getAge(), pet.get().getGender(), pet.get().getDescription(), pet.get().getLocation(),
-				pet.get().getStatus(), pet.get().getCenterId());
-		return ResponseEntity.ok(petResponse);
+	public ResponseEntity<?> getPetById(@PathVariable UUID id) {
+	    Optional<Pet> pet = petRepository.findById(id);
+	    if (!pet.isPresent() || !pet.get().getStatus().equals("AVAILABLE")) {
+	        return ResponseEntity.status(404).body(new AuthController.ErrorResponse("Pet not found or not available"));
+	    }
+	    PetResponse petResponse = new PetResponse(pet.get().getId(), pet.get().getName(), pet.get().getBreed(),
+	            pet.get().getAge(), pet.get().getGender(), pet.get().getDescription(), pet.get().getLocation(),
+	            pet.get().getStatus(), pet.get().getCenterId(), pet.get().getImageUrl());
+	    return ResponseEntity.ok(petResponse);
 	}
 	
 	@GetMapping("/pets")
