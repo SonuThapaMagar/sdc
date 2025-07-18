@@ -2,19 +2,30 @@ import api from '../api/api';
 
 export const getUserProfile = async () => {
   try {
-    const response = await api.get('/api/user/profile');
-    return response.data.data || response.data; 
+    const response = await api.get("/api/user/profile", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("jwtToken")}` },
+    });
+    const { data } = response.data; // Extract data from SuccessResponse
+    return {
+      fullName: data.fullName,
+      email: data.email,
+      phone: data.phone,
+      address: data.address,
+      createdAt: data.createdAt, // Ensure backend includes createdAt if needed
+    };
   } catch (error) {
-    throw error.response?.data || { message: 'Failed to fetch profile' };
+    throw new Error(error.response?.data?.message || "Failed to fetch profile");
   }
 };
 
 export const updateUserProfile = async (profileData) => {
   try {
-    const response = await api.put('/api/user/profile', profileData);
-    return response.data.data || response.data;
+    const response = await api.put("/api/user/profile", profileData, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("jwtToken")}` },
+    });
+    return response.data.data; // Extract data from SuccessResponse
   } catch (error) {
-    throw error.response?.data || { message: 'Failed to update profile' };
+    throw new Error(error.response?.data?.message || "Failed to update profile");
   }
 };
 
