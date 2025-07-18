@@ -49,7 +49,6 @@ export default function PetCategories() {
     memberSince: "January 2024",
     accountStatus: "Active",
   })
-  const [expandedPetId, setExpandedPetId] = useState(null)
 
   // Helper function to infer pet type from breed (optional, can be removed if not needed)
   const inferPetType = (breed) => {
@@ -65,36 +64,36 @@ export default function PetCategories() {
   // Fetch pets from API on component mount
   useEffect(() => {
     const fetchPets = async () => {
-      try {
-        let config = {};
-        const token = localStorage.getItem("token");
-        if (token) {
-          config.headers = { Authorization: `Bearer ${token}` };
+        try {
+            let config = {};
+            const token = localStorage.getItem("jwtToken"); // Changed from "token"
+            if (token) {
+                config.headers = { Authorization: `Bearer ${token}` };
+            }
+            const response = await api.get('/api/user/pets', config);
+            const data = response.data;
+            const mappedPets = data.map((pet) => ({
+                id: pet.id,
+                name: pet.name,
+                breed: pet.breed,
+                age: pet.age.toString(),
+                gender: pet.gender,
+                location: pet.location || "Unknown",
+                imageUrl: pet.imageUrl || "/placeholder.svg",
+                description: pet.description || "No description available",
+                status: pet.status || "Unknown",
+            }));
+            setPets(mappedPets);
+            setError(null);
+        } catch (err) {
+            setError("Error fetching pets: " + (err.response?.data?.message || err.message));
+            if (err.response?.status === 403) {
+                navigate("/login");
+            }
         }
-        const response = await api.get('/api/user/pets', config);
-        const data = response.data;
-        const mappedPets = data.map((pet) => ({
-          id: pet.id,
-          name: pet.name,
-          breed: pet.breed,
-          age: pet.age.toString(),
-          gender: pet.gender,
-          location: pet.location || "Unknown",
-          imageUrl: pet.imageUrl || "/placeholder.svg",
-          description: pet.description || "No description available",
-          status: pet.status || "Unknown",
-        }));
-        setPets(mappedPets);
-        setError(null);
-      } catch (err) {
-        setError("Error fetching pets: " + (err.response?.data?.message || err.message));
-        if (err.response?.status === 403) {
-          navigate("/login"); // Redirect on 403 (e.g., invalid token)
-        }
-      }
     };
     fetchPets();
-  }, [navigate]);
+}, [navigate]);
 
   // Apply filters and search to pets
   const getFilteredPets = () => {
@@ -154,8 +153,9 @@ export default function PetCategories() {
     setSearchQuery("")
   }
 
+  // Update handlePetClick to set selectedPetId
   const handlePetClick = (petId) => {
-    setExpandedPetId(expandedPetId === petId ? null : petId)
+    setSelectedPetId(petId)
   }
 
   const handleClosePetDetail = () => {
@@ -290,55 +290,25 @@ export default function PetCategories() {
             <AnimatePresence>
               {filteredPets.length > 0 ? (
                 filteredPets.map((pet, index) => (
-                  <div key={pet.id}>
-                    <motion.div
-                      onClick={() => handlePetClick(pet.id)}
-                      initial={{ opacity: 0, y: 50, scale: 0.9 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -50, scale: 0.9 }}
-                      transition={{ delay: index * 0.1, duration: 0.5, type: "spring", stiffness: 100 }}
-                      whileHover={{ y: -8, transition: { duration: 0.2 } }}
-                      layout
-                    >
-                      <PetCard
-                        name={pet.name}
-                        gender={pet.gender}
-                        info={`${pet.age} | ${pet.breed}`}
-                        imageUrl={pet.imageUrl}
-                        isFavorite={favorites.has(pet.id)}
-                        onToggleFavorite={(event) => toggleFavorite(pet.id, event)}
-                      />
-                    </motion.div>
-                    {expandedPetId === pet.id && (
-                      <motion.div
-                        className="pet-details-inline bg-white rounded-xl shadow p-6 mt-2 mb-6 border border-gray-100"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 20 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <div className="flex flex-col md:flex-row gap-6 items-center">
-                          <img src={pet.imageUrl} alt={pet.name} className="w-32 h-32 object-cover rounded-lg border" />
-                          <div className="flex-1">
-                            <h3 className="text-2xl font-bold mb-2">{pet.name}</h3>
-                            <div className="mb-1 text-gray-700"><b>Breed:</b> {pet.breed}</div>
-                            <div className="mb-1 text-gray-700"><b>Age:</b> {pet.age}</div>
-                            <div className="mb-1 text-gray-700"><b>Gender:</b> {pet.gender}</div>
-                            <div className="mb-1 text-gray-700"><b>Location:</b> {pet.location}</div>
-                            <div className="mb-1 text-gray-700"><b>Status:</b> <span className="inline-block px-2 py-1 rounded text-xs font-semibold bg-blue-100 text-blue-700">{pet.status}</span></div>
-                            <div className="mb-2 text-gray-700"><b>Description:</b></div>
-                            <div className="text-gray-600 whitespace-pre-line mb-4">{pet.description}</div>
-                            <button
-                              className="px-5 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold"
-                              onClick={(e) => { e.stopPropagation(); window.location.href = `/adoptme/${pet.id}`; }}
-                            >
-                              Adopt Me
-                            </button>
-                          </div>
-                        </div>
-                      </motion.div>
-                    )}
-                  </div>
+                  <motion.div
+                    key={pet.id}
+                    onClick={() => handlePetClick(pet.id)}
+                    initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -50, scale: 0.9 }}
+                    transition={{ delay: index * 0.1, duration: 0.5, type: "spring", stiffness: 100 }}
+                    whileHover={{ y: -8, transition: { duration: 0.2 } }}
+                    layout
+                  >
+                    <PetCard
+                      name={pet.name}
+                      gender={pet.gender}
+                      info={`${pet.age} | ${pet.breed}`}
+                      imageUrl={pet.imageUrl}
+                      isFavorite={favorites.has(pet.id)}
+                      onToggleFavorite={(event) => toggleFavorite(pet.id, event)}
+                    />
+                  </motion.div>
                 ))
               ) : (
                 <motion.div
@@ -416,7 +386,7 @@ export default function PetCategories() {
         {selectedPetId && (
           <PetDetail
             petId={selectedPetId}
-            onClose={handleClosePetDetail}
+            onClose={() => setSelectedPetId(null)}
             favorites={favorites}
             onToggleFavorite={(event) => toggleFavorite(selectedPetId, event)}
           />

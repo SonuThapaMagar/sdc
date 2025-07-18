@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import api from '../../../api/api';
-import { toast } from 'react-toastify';
-import { RiCheckLine, RiCloseLine, RiEyeLine } from 'react-icons/ri';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import api from "../../../api/api";
+import { toast } from "react-toastify";
+import { RiCheckLine, RiCloseLine, RiEyeLine } from "react-icons/ri";
 
 const AdoptionRequests = () => {
   const navigate = useNavigate();
@@ -12,11 +12,11 @@ const AdoptionRequests = () => {
   const [showDetails, setShowDetails] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const userRole = localStorage.getItem('userRole');
-    if (!token || userRole !== 'ADMIN') {
-      toast.error('Please log in to access adoption requests');
-      navigate('/admin/login');
+    const token = localStorage.getItem("jwtToken");
+    const userRole = localStorage.getItem("userRole");
+    if (!token || userRole !== "ADMIN") {
+      toast.error("Please log in as an admin to access adoption requests");
+      navigate("/admin/login");
       return;
     }
     fetchAdoptionRequests();
@@ -25,18 +25,20 @@ const AdoptionRequests = () => {
   const fetchAdoptionRequests = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/api/admin/adoption-requests');
+      const response = await api.get("/api/admin/adoption-requests", {
+        headers: { Authorization: `Bearer ${localStorage.getItem("jwtToken")}` },
+      });
       setAdoptionRequests(response.data);
     } catch (error) {
-      console.error('Failed to fetch adoption requests:', error);
+      console.error("Failed to fetch adoption requests:", error);
       if (error.response?.status === 403) {
-        toast.error('Permission denied. Ensure you have ADMIN role.');
-        navigate('/login');
+        toast.error("Permission denied. Ensure you have ADMIN role.");
+        navigate("/login");
       } else if (error.response?.status === 401) {
-        toast.error('Please log in to view adoption requests');
-        navigate('/login');
+        toast.error("Please log in to view adoption requests");
+        navigate("/login");
       } else {
-        toast.error('Failed to load adoption requests. Please try again.');
+        toast.error("Failed to load adoption requests. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -45,31 +47,33 @@ const AdoptionRequests = () => {
 
   const handleApprove = async (requestId) => {
     try {
-      await api.post(`/api/admin/adoption-requests/${requestId}/approve`);
+      await api.put(`/api/admin/adoption-request/${requestId}/status`, { status: "ACCEPTED" }, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("jwtToken")}` },
+      });
       setAdoptionRequests(prev =>
-        prev.map(req =>
-          req.id === requestId ? { ...req, status: 'APPROVED' } : req
-        )
+        prev.map(req => req.id === requestId ? { ...req, status: "ACCEPTED" } : req)
       );
-      toast.success('Adoption request approved successfully!');
+      toast.success("Adoption request approved successfully!");
+      // fetchAdoptionRequests(); // Remove this line for instant update
     } catch (error) {
-      console.error('Approve error:', error);
-      toast.error('Failed to approve adoption request. Please try again.');
+      console.error("Approve error:", error);
+      toast.error("Failed to approve adoption request. Please try again.");
     }
   };
 
   const handleReject = async (requestId) => {
     try {
-      await api.put(`/api/admin/adoption-requests/${requestId}/reject`);
-      setAdoptionRequests(prev => 
-        prev.map(req => 
-          req.id === requestId ? { ...req, status: 'REJECTED' } : req
-        )
+      await api.put(`/api/admin/adoption-request/${requestId}/status`, { status: "REJECTED" }, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("jwtToken")}` },
+      });
+      setAdoptionRequests(prev =>
+        prev.map(req => req.id === requestId ? { ...req, status: "REJECTED" } : req)
       );
-      toast.success('Adoption request rejected successfully!');
+      toast.success("Adoption request rejected successfully!");
+      // fetchAdoptionRequests(); // Remove this line for instant update
     } catch (error) {
-      console.error('Reject error:', error);
-      toast.error('Failed to reject adoption request. Please try again.');
+      console.error("Reject error:", error);
+      toast.error("Failed to reject adoption request. Please try again.");
     }
   };
 
@@ -80,14 +84,13 @@ const AdoptionRequests = () => {
 
   const getStatusBadge = (status) => {
     const statusConfig = {
-      'PENDING': 'bg-yellow-100 text-yellow-800',
-      'APPROVED': 'bg-green-100 text-green-800',
-      'REJECTED': 'bg-red-100 text-red-800',
-      'COMPLETED': 'bg-blue-100 text-blue-800'
+      PENDING: "bg-yellow-100 text-yellow-800",
+      ACCEPTED: "bg-green-100 text-green-800",
+      REJECTED: "bg-red-100 text-red-800",
+      COMPLETED: "bg-blue-100 text-blue-800",
     };
-
     return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusConfig[status] || 'bg-gray-100 text-gray-800'}`}>
+      <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusConfig[status] || "bg-gray-100 text-gray-800"}`}>
         {status}
       </span>
     );
@@ -108,74 +111,69 @@ const AdoptionRequests = () => {
         <p className="text-gray-600 mt-2">Manage and review pet adoption requests</p>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-lg shadow p-4">
           <div className="flex items-center">
             <div className="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center">
               <span className="text-yellow-600 font-semibold">
-                {adoptionRequests.filter(req => req.status === 'PENDING').length}
+                {adoptionRequests.filter(req => req.status === "PENDING").length}
               </span>
             </div>
             <div className="ml-4">
               <p className="text-sm text-gray-500">Pending</p>
               <p className="text-lg font-semibold text-gray-800">
-                {adoptionRequests.filter(req => req.status === 'PENDING').length}
+                {adoptionRequests.filter(req => req.status === "PENDING").length}
               </p>
             </div>
           </div>
         </div>
-
         <div className="bg-white rounded-lg shadow p-4">
           <div className="flex items-center">
             <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
               <span className="text-green-600 font-semibold">
-                {adoptionRequests.filter(req => req.status === 'APPROVED').length}
+                {adoptionRequests.filter(req => req.status === "ACCEPTED").length}
               </span>
             </div>
             <div className="ml-4">
               <p className="text-sm text-gray-500">Approved</p>
               <p className="text-lg font-semibold text-gray-800">
-                {adoptionRequests.filter(req => req.status === 'APPROVED').length}
+                {adoptionRequests.filter(req => req.status === "ACCEPTED").length}
               </p>
             </div>
           </div>
         </div>
-
         <div className="bg-white rounded-lg shadow p-4">
           <div className="flex items-center">
             <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
               <span className="text-red-600 font-semibold">
-                {adoptionRequests.filter(req => req.status === 'REJECTED').length}
+                {adoptionRequests.filter(req => req.status === "REJECTED").length}
               </span>
             </div>
             <div className="ml-4">
               <p className="text-sm text-gray-500">Rejected</p>
               <p className="text-lg font-semibold text-gray-800">
-                {adoptionRequests.filter(req => req.status === 'REJECTED').length}
+                {adoptionRequests.filter(req => req.status === "REJECTED").length}
               </p>
             </div>
           </div>
         </div>
-
         <div className="bg-white rounded-lg shadow p-4">
           <div className="flex items-center">
             <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
               <span className="text-blue-600 font-semibold">
-                {adoptionRequests.filter(req => req.status === 'COMPLETED').length}
+                {adoptionRequests.filter(req => req.status === "COMPLETED").length}
               </span>
             </div>
             <div className="ml-4">
               <p className="text-sm text-gray-500">Completed</p>
               <p className="text-lg font-semibold text-gray-800">
-                {adoptionRequests.filter(req => req.status === 'COMPLETED').length}
+                {adoptionRequests.filter(req => req.status === "COMPLETED").length}
               </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Requests Table */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -206,23 +204,23 @@ const AdoptionRequests = () => {
                       <div className="flex-shrink-0 h-10 w-10">
                         <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
                           <span className="text-gray-500 font-medium">
-                            {request.requesterName?.charAt(0).toUpperCase()}
+                            {request.userEmail?.charAt(0).toUpperCase()}
                           </span>
                         </div>
                       </div>
                       <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">{request.requesterName}</div>
-                        <div className="text-sm text-gray-500">{request.requesterEmail}</div>
+                        <div className="text-sm font-medium text-gray-900">{request.userEmail}</div>
+                        {/* Assuming userEmail is used as a placeholder for requester name */}
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">{request.petName}</div>
-                    <div className="text-sm text-gray-500">{request.petBreed}</div>
+                    {/* Add petBreed if available in the response */}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
-                      {new Date(request.requestDate).toLocaleDateString()}
+                      {new Date(request.submittedAt).toLocaleDateString()}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -236,7 +234,7 @@ const AdoptionRequests = () => {
                     >
                       <RiEyeLine className="text-xl" />
                     </button>
-                    {request.status === 'PENDING' && (
+                    {request.status === "PENDING" && (
                       <>
                         <button
                           onClick={() => handleApprove(request.id)}
@@ -269,7 +267,6 @@ const AdoptionRequests = () => {
         </div>
       </div>
 
-      {/* Details Modal */}
       {showDetails && selectedRequest && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white rounded-lg shadow-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
@@ -288,10 +285,8 @@ const AdoptionRequests = () => {
                 <div>
                   <h3 className="font-medium text-gray-800 mb-2">Requester Information</h3>
                   <div className="bg-gray-50 p-3 rounded">
-                    <p><strong>Name:</strong> {selectedRequest.requesterName}</p>
-                    <p><strong>Email:</strong> {selectedRequest.requesterEmail}</p>
-                    <p><strong>Phone:</strong> {selectedRequest.requesterPhone}</p>
-                    <p><strong>Address:</strong> {selectedRequest.requesterAddress}</p>
+                    <p><strong>Email:</strong> {selectedRequest.userEmail}</p>
+                    {/* Add more fields if available, e.g., address, phone */}
                   </div>
                 </div>
 
@@ -299,9 +294,7 @@ const AdoptionRequests = () => {
                   <h3 className="font-medium text-gray-800 mb-2">Pet Information</h3>
                   <div className="bg-gray-50 p-3 rounded">
                     <p><strong>Name:</strong> {selectedRequest.petName}</p>
-                    <p><strong>Breed:</strong> {selectedRequest.petBreed}</p>
-                    <p><strong>Age:</strong> {selectedRequest.petAge}</p>
-                    <p><strong>Gender:</strong> {selectedRequest.petGender}</p>
+                    {/* Add breed, age, etc., if available */}
                   </div>
                 </div>
               </div>
@@ -309,15 +302,15 @@ const AdoptionRequests = () => {
               <div>
                 <h3 className="font-medium text-gray-800 mb-2">Request Details</h3>
                 <div className="bg-gray-50 p-3 rounded">
-                  <p><strong>Request Date:</strong> {new Date(selectedRequest.requestDate).toLocaleDateString()}</p>
+                  <p><strong>Request Date:</strong> {new Date(selectedRequest.submittedAt).toLocaleDateString()}</p>
                   <p><strong>Status:</strong> {getStatusBadge(selectedRequest.status)}</p>
-                  {selectedRequest.reason && (
-                    <p><strong>Reason:</strong> {selectedRequest.reason}</p>
-                  )}
+                  <p><strong>Motivation:</strong> {selectedRequest.motivation}</p>
+                  <p><strong>Living Situation:</strong> {selectedRequest.livingSituation}</p>
+                  <p><strong>Experience:</strong> {selectedRequest.experience}</p>
                 </div>
               </div>
 
-              {selectedRequest.status === 'PENDING' && (
+              {selectedRequest.status === "PENDING" && (
                 <div className="flex justify-end gap-3 pt-4 border-t">
                   <button
                     onClick={() => handleApprove(selectedRequest.id)}
@@ -341,4 +334,4 @@ const AdoptionRequests = () => {
   );
 };
 
-export default AdoptionRequests; 
+export default AdoptionRequests;

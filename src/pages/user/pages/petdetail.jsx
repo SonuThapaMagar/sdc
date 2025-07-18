@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, Heart, MapPin } from "lucide-react";
+import api from "../../../api/api"; // Adjust path as needed
 
 function PetDetail({ petId, onClose, favorites, onToggleFavorite }) {
   const [currentPet, setCurrentPet] = useState(null);
@@ -10,57 +11,49 @@ function PetDetail({ petId, onClose, favorites, onToggleFavorite }) {
 
   useEffect(() => {
     const fetchPetDetails = async () => {
-      try {
-        const token = localStorage.getItem("jwtToken");
-        if (!token) {
-          setError("No authentication token found. Please log in.");
-          return;
+      console.log("PetDetail mounted with petId:", petId);
+      console.log("Fetching pet ID:", petId);
+      const response = await fetch(`http://localhost:8080/api/user/pets/${petId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      console.log("Response status:", response.status);
+      if (!response.ok) {
+        if (response.status === 404) {
+          setError("Pet not found or not available.");
+        } else {
+          setError(`Failed to fetch pet details: ${response.statusText}`);
         }
-
-        const response = await fetch(`http://localhost:8080/api/user/pets/${petId}`, {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!response.ok) {
-          if (response.status === 403) {
-            setError("Access denied: User role required.");
-          } else if (response.status === 404) {
-            setError("Pet not found or not available.");
-          } else {
-            setError(`Failed to fetch pet details: ${response.statusText}`);
-          }
-          return;
-        }
-
-        const pet = await response.json();
-        console.log("Pet details response:", pet); // Add this
-        setCurrentPet({
-          id: pet.id,
-          name: pet.name,
-          breed: pet.breed,
-          age: pet.age.toString(),
-          gender: pet.gender,
-          location: pet.location || "Unknown",
-          imageUrl: pet.imageUrl || "/placeholder.svg",
-          description: pet.description || "No description available",
-          status: pet.status || "Unknown",
-        });
-        setError(null);
-      } catch (err) {
-        setError("Error fetching pet details: " + err.message);
+        return;
       }
+      const pet = await response.json();
+      console.log("Pet details response:", pet);
+      setCurrentPet({
+        id: pet.id,
+        name: pet.name,
+        breed: pet.breed,
+        age: pet.age.toString(),
+        gender: pet.gender,
+        location: pet.location || "Unknown",
+        imageUrl: pet.imageUrl || "/placeholder.svg",
+        description: pet.description || "No description available",
+        status: pet.status || "Unknown",
+      });
+      setError(null);
     };
-
     fetchPetDetails();
   }, [petId]);
-  const handleAdoptClick = () => {
-    if (currentPet) {
-      navigate(`/adoptme/${currentPet.id}`);
+
+  const handleAdoptClick = async () => {
+    const token = localStorage.getItem("jwtToken");
+    if (!token) {
+      setError("Please log in to adopt a pet.");
+      navigate("/login");
+      return;
     }
+    navigate(`/adoptme/${currentPet.id}`);
   };
 
   if (error) {
@@ -132,9 +125,9 @@ function PetDetail({ petId, onClose, favorites, onToggleFavorite }) {
             animate={
               favorites.has(petId)
                 ? {
-                  scale: [1, 1.3, 1],
-                  rotate: [0, 10, -10, 0],
-                }
+                    scale: [1, 1.3, 1],
+                    rotate: [0, 10, -10, 0],
+                  }
                 : {}
             }
             transition={{ duration: 0.3 }}
@@ -199,8 +192,6 @@ function PetDetail({ petId, onClose, favorites, onToggleFavorite }) {
             >
               {[
                 { label: "Breed", value: currentPet.breed },
-                { label: "Color", value: currentPet.color },
-                { label: "Weight", value: currentPet.weight },
                 { label: "Age", value: currentPet.age },
                 { label: "Status", value: currentPet.status },
               ].map((attr, index) => (

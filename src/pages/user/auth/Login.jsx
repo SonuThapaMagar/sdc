@@ -22,60 +22,104 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // setError('');
-    // setSuccess('');
-
-    console.log('Login form submitted with data:', formData);
-
     try {
-      const response = await api.post('/api/auth/login', {
-        email: formData.email,
-        password: formData.password,
-      });
+        const response = await api.post('/api/auth/login', {
+            email: formData.email,
+            password: formData.password,
+        });
+        const { message, id, token, role } = response.data;
+        toast.success(message || 'Login successful!');
+        console.log('User ID:', id, 'Role:', role);
 
-      
-      const { message, id, token, role } = response.data;
-      // setSuccess(message || 'Login successful!');
-      toast.success(message || 'Login successful!');
-      console.log('User ID:', id, 'Role:', role);
+        // Explicitly store token
+        localStorage.setItem("jwtToken", token);
 
-      // Clear any admin/superadmin tokens/roles
-      localStorage.removeItem('adminToken');
-      localStorage.removeItem('superadminToken');
-      localStorage.removeItem('userRole');
+        const userData = {
+            id: id,
+            role: role,
+            fullName: response.data.fullName || "User",
+            email: formData.email,
+            profileImage: response.data.profileImage || "/placeholder.svg?height=40&width=40"
+        };
+        login(userData, token);
 
-      // Use AuthProvider's login function
-      const userData = {
-        id: id,
-        role: role,
-        fullName: response.data.fullName || "User",
-        email: formData.email,
-        profileImage: response.data.profileImage || "/placeholder.svg?height=40&width=40"
-      };
-      
-      login(userData, token);
-
-      // Role-based redirection
-      setTimeout(() => {
-        if (role === 'SUPERADMIN') navigate('/superadmin/dashboard');
-        else if (role === 'ADMIN') navigate('/admin/dashboard');
-        else if (role === 'USER') navigate('/user/dashboard');
-      }, 2000);
+        setTimeout(() => {
+            if (role === 'SUPERADMIN') navigate('/superadmin/dashboard');
+            else if (role === 'ADMIN') navigate('/admin/dashboard');
+            else if (role === 'USER') navigate('/user/dashboard');
+        }, 2000);
     } catch (error) {
-      let errorMessage = 'An error occurred during login';
-      if (error.response) {
-        if (error.response.status === 401) {
-          errorMessage = 'Invalid email or password. Please try again.';
-        } else if (error.response.data?.message) {
-          errorMessage = error.response.data.message;
+        let errorMessage = 'An error occurred during login';
+        if (error.response) {
+            if (error.response.status === 401) {
+                errorMessage = 'Invalid email or password. Please try again.';
+            } else if (error.response.data?.message) {
+                errorMessage = error.response.data.message;
+            }
+        } else if (error.message) {
+            errorMessage = error.message;
         }
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-      console.error('Error:', errorMessage);
-      toast.error(errorMessage);
+        console.error('Error:', errorMessage);
+        toast.error(errorMessage);
     }
-  };
+};
+  // const handleSubmit = async (e) => {
+
+  //   e.preventDefault();
+  //   // setError('');
+  //   // setSuccess('');
+
+  //   console.log('Login form submitted with data:', formData);
+
+  //   try {
+  //     const response = await api.post('/api/auth/login', {
+  //       email: formData.email,
+  //       password: formData.password,
+  //     });
+
+      
+  //     const { message, id, token, role } = response.data;
+  //     // setSuccess(message || 'Login successful!');
+  //     toast.success(message || 'Login successful!');
+  //     console.log('User ID:', id, 'Role:', role);
+
+  //     // Clear any admin/superadmin tokens/roles
+  //     localStorage.removeItem('adminToken');
+  //     localStorage.removeItem('superadminToken');
+  //     localStorage.removeItem('userRole');
+
+  //     // Use AuthProvider's login function
+  //     const userData = {
+  //       id: id,
+  //       role: role,
+  //       fullName: response.data.fullName || "User",
+  //       email: formData.email,
+  //       profileImage: response.data.profileImage || "/placeholder.svg?height=40&width=40"
+  //     };
+      
+  //     login(userData, token);
+
+  //     // Role-based redirection
+  //     setTimeout(() => {
+  //       if (role === 'SUPERADMIN') navigate('/superadmin/dashboard');
+  //       else if (role === 'ADMIN') navigate('/admin/dashboard');
+  //       else if (role === 'USER') navigate('/user/dashboard');
+  //     }, 2000);
+  //   } catch (error) {
+  //     let errorMessage = 'An error occurred during login';
+  //     if (error.response) {
+  //       if (error.response.status === 401) {
+  //         errorMessage = 'Invalid email or password. Please try again.';
+  //       } else if (error.response.data?.message) {
+  //         errorMessage = error.response.data.message;
+  //       }
+  //     } else if (error.message) {
+  //       errorMessage = error.message;
+  //     }
+  //     console.error('Error:', errorMessage);
+  //     toast.error(errorMessage);
+  //   }
+  // };
 
   return (
     <div className="page-container">
