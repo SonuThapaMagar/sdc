@@ -15,6 +15,7 @@ import {
 import Navbar from "./Navbar"
 import "../../../styles/landing.css"
 import logo from "../../../images/logo.png"
+import { toast } from "react-toastify";
 
 export default function ShelterRegistration() {
   const navigate = useNavigate()
@@ -294,12 +295,12 @@ export default function ShelterRegistration() {
       await new Promise((resolve) => setTimeout(resolve, 2000))
 
       // Success
-      alert(
-        "🎉 Registration submitted successfully!\n\nWe'll review your application and get back to you within 3-5 business days.\n\nYou'll receive a confirmation email shortly with next steps.",
+      toast.success(
+        "🎉 Registration submitted successfully! We'll review your application and get back to you within 3-5 business days. You'll receive a confirmation email shortly with next steps."
       )
       navigate("/")
     } catch (error) {
-      alert("❌ There was an error submitting your application. Please try again.")
+      toast.error("❌ There was an error submitting your application. Please try again.")
     } finally {
       setIsSubmitting(false)
     }

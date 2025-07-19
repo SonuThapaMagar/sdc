@@ -264,7 +264,7 @@ export default function AboutUs() {
       </section>
 
       {/* Team Section */}
-      <section className="features">
+      {/* <section className="features">
         <div className="features-container">
           <div className="section-header">
             <h2 className="section-title">Meet Our Team</h2>
@@ -303,7 +303,7 @@ export default function AboutUs() {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Contact Section */}
       <section className="about" style={{ background: "white" }}>

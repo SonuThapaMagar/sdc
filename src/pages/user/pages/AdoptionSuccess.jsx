@@ -37,7 +37,7 @@ export default function AdoptionSuccess({ pet, applicationId, onClose, onBrowseM
       </p>
 
       <div className="success-pet-info">
-        <div className="success-pet-card">
+        {/* <div className="success-pet-card">
           <div className="success-pet-image">
             <img src={pet?.imageUrl || "/height=80&width=80"} alt={pet?.name || "Pet"} />
           </div>
@@ -54,7 +54,7 @@ export default function AdoptionSuccess({ pet, applicationId, onClose, onBrowseM
               </div>
             )}
           </div>
-        </div>
+        </div> */}
       </div>
 
       <div className="success-next-steps">

@@ -22,7 +22,7 @@ const Footer=()=> {
           </div>
           <div className="footer-section fade-in">
             <h3>Services</h3>
-            <ul className="footer-links">{['Pet Adoption', 'Shelter Partnership', 'Pet Care Tips', 'Veterinary Network', 'Support'].map((service) => <li key={service}><a href="#">{service}</a></li>)}</ul>
+            <ul className="footer-links">{['Pet Adoption', 'Pet Care Tips', 'Veterinary Network', 'Support'].map((service) => <li key={service}><a href="#">{service}</a></li>)}</ul>
           </div>
           <div className="footer-section fade-in">
             <h3>Contact Us</h3>
@@ -35,7 +35,7 @@ const Footer=()=> {
           </div>
         </div>
         <div className="footer-bottom fade-in">
-          <p>© 2024 FurEverHome. All rights reserved. Made with ❤️ for pets and their families.</p>
+          <p>© 2024 FurEverHome. All rights reserved.</p>
         </div>
       </div>
     </footer>

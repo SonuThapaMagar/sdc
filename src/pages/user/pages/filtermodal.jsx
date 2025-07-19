@@ -74,12 +74,7 @@ const FilterModal = ({ isOpen, onClose, onApplyFilters }) => {
               >
                 Dog
               </button>
-              <button
-                className={`filter-option ${petType === "Cat" ? "active" : ""}`}
-                onClick={() => setPetType("Cat")}
-              >
-                Cat
-              </button>
+
               <button
                 className={`filter-option ${petType === "Both" ? "active" : ""}`}
                 onClick={() => setPetType("Both")}

@@ -47,7 +47,7 @@ const Contact = () => {
 
       <div className="max-w-5xl w-full mx-auto px-4 flex flex-col md:flex-row gap-10 mb-16">
         {/* Contact Form */}
-        <div className="flex-1 bg-white/90 rounded-xl p-8 md:p-10 border border-indigo-100">
+        {/* <div className="flex-1 bg-white/90 rounded-xl p-8 md:p-10 border border-indigo-100">
           <h2 className="text-2xl font-bold text-purple-700 mb-6">Send us a Message</h2>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -118,7 +118,7 @@ const Contact = () => {
               )}
             </button>
           </form>
-        </div>
+        </div> */}
 
         {/* Contact Information */}
         <div className="flex-1 flex flex-col gap-8 justify-between">

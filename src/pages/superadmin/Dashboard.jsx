@@ -25,7 +25,7 @@ export default function Dashboard() {
       return;
     }
     fetchDashboardData();
-  }, [navigate]);
+  }, [navigate, activityPage]);
 
   useEffect(() => {
     console.log('barData updated:', barData);

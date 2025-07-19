@@ -53,7 +53,7 @@ function Profile() {
 
   const handleUpdateProfile = async (updatedProfile) => {
     try {
-      const response = await updateUserProfile({
+      await updateUserProfile({
         fullName: updatedProfile.fullName,
         email: updatedProfile.email,
         phone: updatedProfile.phone,
@@ -65,6 +65,7 @@ function Profile() {
         accountStatus: userProfile.accountStatus,
       });
       toast.success("Profile updated successfully!");
+      // Do NOT close the modal here
     } catch (error) {
       console.error("Profile update error:", error);
       if (error.response && error.response.status === 403) {

@@ -163,7 +163,7 @@ function Signup() {
                       }}
                       title={showConfirmPassword ? 'Hide password' : 'Show password'}
                     >
-                      {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                      {showConfirmPassword ? <FaEye /> : <FaEyeSlash />}
                     </span>
                   </div>
                 </div>

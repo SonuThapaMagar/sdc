@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
-import { Search, Menu, X } from "lucide-react"
+import { Search, Menu, X, User } from "lucide-react"
 import ProfileModal from "./ProfileModal"
 import logo from "../../../images/logo.png"
 import "../../../styles/Navbar.css"
@@ -166,11 +166,11 @@ export default function Navbar({
 
             {/* Desktop Actions */}
             <div className="navbar-actions">
-              {showSearch && (
+              {/* {showSearch && (
                 <button className="navbar-search-btn" aria-label="Open search" onClick={() => setIsSearchOpen(!isSearchOpen)}>
                   <Search size={20} />
                 </button>
-              )}
+              )} */}
 
               {showProfile ? (
                 <div
@@ -188,10 +188,14 @@ export default function Navbar({
                     aria-label="Open profile menu"
                     tabIndex={0}
                   >
-                    <img
-                      src={user?.profileImage || "/placeholder.svg?height=40&width=40"}
-                      alt={user?.fullName || "Profile"}
-                    />
+                    {user?.profileImage ? (
+                      <img
+                        src={user.profileImage}
+                        alt={user?.fullName || "Profile"}
+                      />
+                    ) : (
+                      <User size={40} />
+                    )}
                   </div>
                   <div className="navbar-profile-info" onClick={() => setIsProfileDropdownOpen((prev) => !prev)} style={{ cursor: "pointer" }} tabIndex={0}>
                     <div className="navbar-profile-name">{user?.fullName || "User"}</div>
