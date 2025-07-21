@@ -142,8 +142,23 @@ const ProfileModal = ({ isOpen, onClose, userProfile, onUpdateProfile }) => {
                   {profileData.profileImage ? (
                     <img src={profileData.profileImage} alt="Profile" className="profile-image" />
                   ) : (
-                    <div className="profile-image-placeholder">
-                      <User size={40} />
+                    <div 
+                      className="profile-image-placeholder"
+                      style={{
+                        width: "80px",
+                        height: "80px",
+                        borderRadius: "50%",
+                        backgroundColor: "#3b82f6",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "white",
+                        fontSize: "32px",
+                        fontWeight: "bold",
+                        textTransform: "uppercase"
+                      }}
+                    >
+                      {profileData.email ? profileData.email.charAt(0).toUpperCase() : "U"}
                     </div>
                   )}
                   {isEditing && (

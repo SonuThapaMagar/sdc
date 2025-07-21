@@ -106,6 +106,35 @@ export default function Navbar({
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
   const profileDropdownRef = useRef(null)
 
+  // Generate a consistent color based on user's email/name
+  const getAvatarColor = (emailOrName) => {
+    const colors = [
+      "#3b82f6", // blue
+      "#8b5cf6", // purple
+      "#06b6d4", // cyan
+      "#10b981", // emerald
+      "#f59e0b", // amber
+      "#ef4444", // red
+      "#ec4899", // pink
+      "#84cc16", // lime
+    ];
+    if (!emailOrName) return colors[0];
+    const hash = emailOrName.split('').reduce((a, b) => {
+      a = ((a << 5) - a) + b.charCodeAt(0);
+      return a & a;
+    }, 0);
+    return colors[Math.abs(hash) % colors.length];
+  };
+
+  const getUserInitial = (user) => {
+    if (user?.fullName) return user.fullName.charAt(0).toUpperCase();
+    if (user?.email) return user.email.charAt(0).toUpperCase();
+    return "U";
+  };
+
+  const avatarColor = getAvatarColor(user?.email || user?.fullName);
+  const userInitial = getUserInitial(user);
+
   // Lock scroll when mobile menu is open
   useEffect(() => {
     if (isMobileMenuOpen) {
@@ -135,13 +164,24 @@ export default function Navbar({
 
   const showProfile = isAuthenticated && user?.role === 'USER' && !forceAuthButtons
 
-  const navigationLinks = [
+  // Navigation links for logged-in users
+  const userNavigationLinks = [
+    { name: "Dashboard", href: "/user/dashboard" },
+    { name: "Lost & Found", href: "/user/lost-found" },
+    { name: "About", href: "/user/about-us" },
+    { name: "Contact", href: "/user/contact" },
+  ];
+
+  // Navigation links for guests
+  const guestNavigationLinks = [
     { name: "Home", href: "/" },
     { name: "Learn", href: "/learn-more" },
     { name: "About", href: "/about-us" },
     { name: "Pet Listing", href: "/category" },
     { name: "Contact", href: "/contact" },
-  ]
+  ];
+
+  const navigationLinks = showProfile ? userNavigationLinks : guestNavigationLinks;
 
   return (
     <>
@@ -192,9 +232,31 @@ export default function Navbar({
                       <img
                         src={user.profileImage}
                         alt={user?.fullName || "Profile"}
+                        style={{
+                          width: "40px",
+                          height: "40px",
+                          borderRadius: "50%",
+                          objectFit: "cover"
+                        }}
                       />
                     ) : (
-                      <User size={40} />
+                      <div
+                        style={{
+                          width: "40px",
+                          height: "40px",
+                          borderRadius: "50%",
+                          backgroundColor: avatarColor,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          color: "white",
+                          fontSize: "18px",
+                          fontWeight: "bold",
+                          textTransform: "uppercase"
+                        }}
+                      >
+                        {userInitial}
+                      </div>
                     )}
                   </div>
                   <div className="navbar-profile-info" onClick={() => setIsProfileDropdownOpen((prev) => !prev)} style={{ cursor: "pointer" }} tabIndex={0}>
@@ -293,10 +355,36 @@ export default function Navbar({
                   role="button"
                 >
                   <div className="navbar-mobile-profile-image">
-                    <img
-                      src={user?.profileImage || "/placeholder.svg?height=32&width=32"}
-                      alt={user?.fullName || "Profile"}
-                    />
+                    {user?.profileImage ? (
+                      <img
+                        src={user.profileImage}
+                        alt={user?.fullName || "Profile"}
+                        style={{
+                          width: "32px",
+                          height: "32px",
+                          borderRadius: "50%",
+                          objectFit: "cover"
+                        }}
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          width: "32px",
+                          height: "32px",
+                          borderRadius: "50%",
+                          backgroundColor: avatarColor,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          color: "white",
+                          fontSize: "14px",
+                          fontWeight: "bold",
+                          textTransform: "uppercase"
+                        }}
+                      >
+                        {userInitial}
+                      </div>
+                    )}
                   </div>
                   <div>
                     <div className="navbar-mobile-profile-location">Location</div>

@@ -31,6 +31,7 @@ import UserLayout from "../pages/user/layout/UserLayout";
 import Profile from "../pages/user/pages/Profile";
 import UserDashboard from "../pages/user/pages/UserDashboard";
 import ChangePassword from "../pages/user/pages/ChangePassword";
+import LostFound from "../pages/user/pages/LostFound";
 
 // Route Guard Components
 const ProtectedRoute = ({ children, requiredRole }) => {
@@ -166,6 +167,9 @@ export default function AppRoutes() {
       }>
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<UserDashboard />} />
+        <Route path="lost-found" element={<LostFound />} />
+        <Route path="about-us" element={<AboutUs />} />
+        <Route path="contact" element={<Contact />} />
         <Route path="profile" element={<Profile />} />
         <Route path="pets" element={<Category />} />
         <Route path="change-password" element={<ChangePassword />} />
