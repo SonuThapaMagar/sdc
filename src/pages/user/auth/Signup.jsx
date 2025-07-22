@@ -42,9 +42,65 @@ function Signup() {
     setErrors({});
     setSuccess('');
 
-    if (formData.password !== formData.confirmPassword) {
-      setErrors({ confirmPassword: 'Passwords do not match' });
+    // Field validation
+    const newErrors = {};
+    // Full Name required
+    if (!formData.fullName.trim()) {
+      newErrors.fullName = 'Full Name is required';
+      toast.error('Full Name is required');
+    }
+    // Address required
+    if (!formData.address.trim()) {
+      newErrors.address = 'Address is required';
+      toast.error('Address is required');
+    }
+    // Phone validation (10-15 digits)
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'Phone number is required';
+      toast.error('Phone number is required');
+    } else if (!/^\d{10,15}$/.test(formData.phone.trim())) {
+      newErrors.phone = 'Phone number must be 10-15 digits';
+      toast.error('Phone number must be 10-15 digits');
+    }
+    // Email validation
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required';
+      toast.error('Email is required');
+    } else if (!/^\S+@\S+\.\S+$/.test(formData.email.trim())) {
+      newErrors.email = 'Invalid email format';
+      toast.error('Invalid email format');
+    }
+    // Password validation
+    if (!formData.password) {
+      newErrors.password = 'Password is required';
+      toast.error('Password is required');
+    } else if (formData.password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters';
+      toast.error('Password must be at least 8 characters');
+    } else if (!/(?=.*[a-z])/.test(formData.password)) {
+      newErrors.password = 'Password must contain a lowercase letter';
+      toast.error('Password must contain a lowercase letter');
+    } else if (!/(?=.*[A-Z])/.test(formData.password)) {
+      newErrors.password = 'Password must contain an uppercase letter';
+      toast.error('Password must contain an uppercase letter');
+    } else if (!/(?=.*\d)/.test(formData.password)) {
+      newErrors.password = 'Password must contain a number';
+      toast.error('Password must contain a number');
+    } else if (!/(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?])/.test(formData.password)) {
+      newErrors.password = 'Password must contain a special character';
+      toast.error('Password must contain a special character');
+    }
+    // Confirm Password
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = 'Confirm Password is required';
+      toast.error('Confirm Password is required');
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
       toast.error('Passwords do not match');
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
 
