@@ -11,18 +11,17 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
-    const isLoginEndpoint = [
+    const isAuthEndpoint = [
       '/api/auth/login',
       '/api/admin/auth/login',
+      '/api/admin/auth/signup', // Add signup endpoint here
     ].some((path) => config.url.endsWith(path));
     const token = localStorage.getItem('token');
-    if (token && !isLoginEndpoint) {
+    if (token && !isAuthEndpoint) {
       config.headers.Authorization = `Bearer ${token}`;
       console.log('Sending request with token:', token);
-    } else if (!token && !isLoginEndpoint) {
-      console.log('No token found in localStorage for protected route');
     } else {
-      console.log('Skipping token for login endpoint:', config.url);
+      console.log('Skipping token for auth endpoint:', config.url);
       delete config.headers.Authorization; // Explicitly remove any existing Authorization header
     }
     console.log('Request config:', config); // Log full config for debugging
@@ -50,9 +49,9 @@ api.interceptors.response.use(
         '/api/admin/pets',
         '/api/admin/users',
         '/api/admin/adoption-requests',
-        '/api/superadmin'
-      ].some(endpoint => error.config?.url?.includes(endpoint));
-      
+        '/api/superadmin',
+      ].some((endpoint) => error.config?.url?.includes(endpoint));
+
       // Don't auto-logout for profile endpoints - let the component handle it
       if (error.config?.url?.includes('/profile')) {
         console.log('Profile endpoint error - not auto-logging out');

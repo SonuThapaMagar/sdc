@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   Building,
@@ -11,191 +11,183 @@ import {
   AlertCircle,
   Check,
   Heart,
-} from "lucide-react"
-import Navbar from "./Navbar"
-import "../../../styles/landing.css"
-import logo from "../../../images/logo.png"
+} from "lucide-react";
+import Navbar from "./Navbar";
+import "../../../styles/landing.css";
 import { toast } from "react-toastify";
+import api from "../../../api/api";
 
 export default function ShelterRegistration() {
-  const navigate = useNavigate()
-  const [currentStep, setCurrentStep] = useState(1)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [errors, setErrors] = useState({})
-  const [touchedFields, setTouchedFields] = useState({})
+  const navigate = useNavigate();
+  const [currentStep, setCurrentStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [touchedFields, setTouchedFields] = useState({});
 
-  // Scroll to top when component mounts and reset form state
   useEffect(() => {
-    window.scrollTo(0, 0)
-    setCurrentStep(1)
-    setErrors({})
-    setTouchedFields({})
-    setIsSubmitting(false)
-  }, [])
+    window.scrollTo(0, 0);
+    setCurrentStep(1);
+    setErrors({});
+    setTouchedFields({});
+    setIsSubmitting(false);
+  }, []);
 
   const [formData, setFormData] = useState({
-    // Basic Information
     shelterName: "",
     contactPerson: "",
     email: "",
     phone: "",
     website: "",
-
-    // Address Information
     address: "",
     city: "",
     state: "",
     zipCode: "",
     country: "",
-
-    // Organization Details
     organizationType: "",
     yearEstablished: "",
     registrationNumber: "",
     taxId: "",
-
-    // Capacity & Services
     capacity: "",
     animalsCurrently: "",
     servicesOffered: [],
     adoptionFee: "",
-
-    // Additional Information
     description: "",
     mission: "",
     specialPrograms: "",
-
-    // Documents
+    password: "", // Added password field
     documents: {
       license: null,
       insurance: null,
       taxExempt: null,
     },
-  })
+  });
 
-  // Validation rules
   const validateField = (field, value) => {
     switch (field) {
       case "email":
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-        return emailRegex.test(value) ? "" : "Please enter a valid email address"
-
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(value) ? "" : "Please enter a valid email address";
       case "phone":
-        const phoneRegex = /^[+]?[1-9][\d]{0,15}$/
-        return phoneRegex.test(value.replace(/[\s\-$$$$]/g, "")) ? "" : "Please enter a valid phone number"
-
+        const phoneRegex = /^[+]?[1-9][\d]{0,15}$/;
+        return phoneRegex.test(value.replace(/[\s\-$$$$]/g, ""))
+          ? ""
+          : "Please enter a valid phone number";
       case "website":
-        if (!value) return "" // Optional field
-        const urlRegex = /^https?:\/\/.+\..+/
-        return urlRegex.test(value) ? "" : "Please enter a valid website URL (include http:// or https://)"
-
+        if (!value) return "";
+        const urlRegex = /^https?:\/\/.+\..+/;
+        return urlRegex.test(value)
+          ? ""
+          : "Please enter a valid website URL (include http:// or https://)";
       case "yearEstablished":
-        const year = Number.parseInt(value)
-        const currentYear = new Date().getFullYear()
+        const year = Number.parseInt(value);
+        const currentYear = new Date().getFullYear();
         if (year < 1900 || year > currentYear) {
-          return `Year must be between 1900 and ${currentYear}`
+          return `Year must be between 1900 and ${currentYear}`;
         }
-        return ""
-
+        return "";
       case "capacity":
       case "animalsCurrently":
-        const num = Number.parseInt(value)
+        const num = Number.parseInt(value);
         if (isNaN(num) || num < 0) {
-          return "Please enter a valid number"
+          return "Please enter a valid number";
         }
-        if (field === "animalsCurrently" && formData.capacity && num > Number.parseInt(formData.capacity)) {
-          return "Current animals cannot exceed total capacity"
+        if (
+          field === "animalsCurrently" &&
+          formData.capacity &&
+          num > Number.parseInt(formData.capacity)
+        ) {
+          return "Current animals cannot exceed total capacity";
         }
-        return ""
-
+        return "";
       case "zipCode":
-        return value.length >= 3 ? "" : "Please enter a valid ZIP/postal code"
-
+        return value.length >= 3 ? "" : "Please enter a valid ZIP/postal code";
+      case "password": // Added password validation
+        return value.length >= 8 ? "" : "Password must be at least 8 characters long";
       default:
-        return value.trim() ? "" : "This field is required"
+        return value.trim() ? "" : "This field is required";
     }
-  }
+  };
 
   const validateStep = (step) => {
-    const stepErrors = {}
-
+    const stepErrors = {};
     switch (step) {
       case 1:
-        const step1Fields = ["shelterName", "contactPerson", "email", "phone", "address", "city", "state", "zipCode"]
+        const step1Fields = [
+          "shelterName",
+          "contactPerson",
+          "email",
+          "phone",
+          "address",
+          "city",
+          "state",
+          "zipCode",
+          "password", // Added password to validation
+        ];
         step1Fields.forEach((field) => {
-          const error = validateField(field, formData[field])
-          if (error) stepErrors[field] = error
-        })
-        break
-
+          const error = validateField(field, formData[field]);
+          if (error) stepErrors[field] = error;
+        });
+        break;
       case 2:
-        const step2Fields = ["organizationType", "yearEstablished", "description"]
+        const step2Fields = ["organizationType", "yearEstablished", "description"];
         step2Fields.forEach((field) => {
-          const error = validateField(field, formData[field])
-          if (error) stepErrors[field] = error
-        })
-        break
-
+          const error = validateField(field, formData[field]);
+          if (error) stepErrors[field] = error;
+        });
+        break;
       case 3:
-        const step3Fields = ["capacity", "animalsCurrently"]
+        const step3Fields = ["capacity", "animalsCurrently"];
         step3Fields.forEach((field) => {
-          const error = validateField(field, formData[field])
-          if (error) stepErrors[field] = error
-        })
+          const error = validateField(field, formData[field]);
+          if (error) stepErrors[field] = error;
+        });
         if (formData.servicesOffered.length === 0) {
-          stepErrors.servicesOffered = "Please select at least one service"
+          stepErrors.servicesOffered = "Please select at least one service";
         }
-        break
-
+        break;
       case 4:
         if (!formData.documents.license) {
-          stepErrors.license = "Operating license is required"
+          stepErrors.license = "Operating license is required";
         }
         if (!formData.documents.insurance) {
-          stepErrors.insurance = "Insurance certificate is required"
+          stepErrors.insurance = "Insurance certificate is required";
         }
-        break
+        break;
     }
-
-    return stepErrors
-  }
+    return stepErrors;
+  };
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
-    }))
-
-    // Clear error when user starts typing
+    }));
     if (errors[field]) {
       setErrors((prev) => ({
         ...prev,
         [field]: "",
-      }))
+      }));
     }
-
-    // Validate field in real-time if it's been touched
     if (touchedFields[field]) {
-      const error = validateField(field, value)
+      const error = validateField(field, value);
       setErrors((prev) => ({
         ...prev,
         [field]: error,
-      }))
+      }));
     }
-  }
+  };
 
   const handleBlur = (field) => {
     setTouchedFields((prev) => ({
       ...prev,
       [field]: true,
-    }))
-
-    const error = validateField(field, formData[field])
+    }));
+    const error = validateField(field, formData[field]);
     setErrors((prev) => ({
       ...prev,
       [field]: error,
-    }))
-  }
+    }));
+  };
 
   const handleServiceToggle = (service) => {
     setFormData((prev) => ({
@@ -203,108 +195,109 @@ export default function ShelterRegistration() {
       servicesOffered: prev.servicesOffered.includes(service)
         ? prev.servicesOffered.filter((s) => s !== service)
         : [...prev.servicesOffered, service],
-    }))
-
-    // Clear services error when user selects a service
+    }));
     if (errors.servicesOffered) {
       setErrors((prev) => ({
         ...prev,
         servicesOffered: "",
-      }))
+      }));
     }
-  }
+  };
 
   const handleFileUpload = (docType, file) => {
-    // Validate file
-    const maxSize = 10 * 1024 * 1024 // 10MB
+    const maxSize = 10 * 1024 * 1024;
     const allowedTypes = [
       "application/pdf",
       "application/msword",
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       "image/jpeg",
       "image/png",
-    ]
-
+    ];
     if (file.size > maxSize) {
       setErrors((prev) => ({
         ...prev,
         [docType]: "File size must be less than 10MB",
-      }))
-      return
+      }));
+      return;
     }
-
     if (!allowedTypes.includes(file.type)) {
       setErrors((prev) => ({
         ...prev,
         [docType]: "Please upload a PDF, Word document, or image file",
-      }))
-      return
+      }));
+      return;
     }
-
     setFormData((prev) => ({
       ...prev,
       documents: {
         ...prev.documents,
         [docType]: file,
       },
-    }))
-
-    // Clear error
+    }));
     setErrors((prev) => ({
       ...prev,
       [docType]: "",
-    }))
-  }
+    }));
+  };
 
   const nextStep = () => {
-    const stepErrors = validateStep(currentStep)
-
+    const stepErrors = validateStep(currentStep);
     if (Object.keys(stepErrors).length > 0) {
-      setErrors(stepErrors)
-      // Mark all fields in current step as touched
+      setErrors(stepErrors);
       Object.keys(stepErrors).forEach((field) => {
         setTouchedFields((prev) => ({
           ...prev,
           [field]: true,
-        }))
-      })
-      return
+        }));
+      });
+      return;
     }
-
-    if (currentStep < 4) setCurrentStep(currentStep + 1)
-  }
+    if (currentStep < 4) setCurrentStep(currentStep + 1);
+  };
 
   const prevStep = () => {
-    if (currentStep > 1) setCurrentStep(currentStep - 1)
-  }
+    if (currentStep > 1) setCurrentStep(currentStep - 1);
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-
-    // Final validation
-    const allErrors = validateStep(4)
+    e.preventDefault();
+    const allErrors = validateStep(4);
     if (Object.keys(allErrors).length > 0) {
-      setErrors(allErrors)
-      return
+      setErrors(allErrors);
+      return;
     }
-
-    setIsSubmitting(true)
-
+    setIsSubmitting(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000))
-
-      // Success
-      toast.success(
-        "🎉 Registration submitted successfully! We'll review your application and get back to you within 3-5 business days. You'll receive a confirmation email shortly with next steps."
-      )
-      navigate("/")
+      const data = new FormData();
+      Object.entries(formData).forEach(([key, value]) => {
+        if (key === "documents") {
+          Object.entries(value).forEach(([docKey, file]) => {
+            if (file) data.append(docKey, file);
+          });
+        } else if (Array.isArray(value)) {
+          value.forEach((v) => data.append(key, v));
+        } else {
+          data.append(key, value);
+        }
+      });
+      // Log FormData for debugging
+      for (let pair of data.entries()) {
+        console.log(`${pair[0]}: ${pair[1]}`);
+      }
+      await api.post("/api/admin/auth/signup", data, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      toast.success("Registration submitted successfully!");
+      navigate("/");
     } catch (error) {
-      toast.error("❌ There was an error submitting your application. Please try again.")
+      console.error("Submission error:", error);
+      toast.error(
+        error.response?.data?.message || "There was an error submitting your application. Please try again."
+      );
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   const inputStyle = {
     width: "100%",
@@ -314,19 +307,23 @@ export default function ShelterRegistration() {
     fontSize: "1rem",
     outline: "none",
     transition: "border-color 0.2s",
-  }
+  };
 
   const getInputStyle = (field) => ({
     ...inputStyle,
-    borderColor: errors[field] ? "#ef4444" : touchedFields[field] && !errors[field] ? "#10b981" : "#e5e7eb",
-  })
+    borderColor: errors[field]
+      ? "#ef4444"
+      : touchedFields[field] && !errors[field]
+      ? "#10b981"
+      : "#e5e7eb",
+  });
 
   const labelStyle = {
     display: "block",
     marginBottom: "0.5rem",
     fontWeight: "600",
     color: "#374151",
-  }
+  };
 
   const errorStyle = {
     color: "#ef4444",
@@ -335,7 +332,7 @@ export default function ShelterRegistration() {
     display: "flex",
     alignItems: "center",
     gap: "0.25rem",
-  }
+  };
 
   const successStyle = {
     color: "#10b981",
@@ -344,7 +341,7 @@ export default function ShelterRegistration() {
     display: "flex",
     alignItems: "center",
     gap: "0.25rem",
-  }
+  };
 
   const services = [
     "Dog Adoption",
@@ -355,7 +352,7 @@ export default function ShelterRegistration() {
     "Training Classes",
     "Foster Programs",
     "Emergency Rescue",
-  ]
+  ];
 
   const organizationTypes = [
     "Non-profit Organization",
@@ -363,18 +360,16 @@ export default function ShelterRegistration() {
     "Private Rescue",
     "Animal Control",
     "Sanctuary",
-  ]
+  ];
 
   const isStepValid = (step) => {
-    const stepErrors = validateStep(step)
-    return Object.keys(stepErrors).length === 0
-  }
+    const stepErrors = validateStep(step);
+    return Object.keys(stepErrors).length === 0;
+  };
 
   return (
     <div className="landing-page">
       <Navbar />
-
-      {/* Header */}
       <section className="hero" style={{ padding: "3rem 0 2rem" }}>
         <div className="hero-container">
           <button
@@ -397,7 +392,6 @@ export default function ShelterRegistration() {
             <ArrowLeft size={20} />
             Back to Home
           </button>
-
           <div className="hero-content" style={{ textAlign: "center" }}>
             <h1 className="hero-title" style={{ fontSize: "3rem", marginBottom: "1rem" }}>
               Become a<span className="hero-gradient-text"> Partner Shelter</span>
@@ -408,8 +402,6 @@ export default function ShelterRegistration() {
           </div>
         </div>
       </section>
-
-      {/* Progress Indicator */}
       <section style={{ background: "white", padding: "2rem 0" }}>
         <div style={{ maxWidth: "800px", margin: "0 auto", padding: "0 1rem" }}>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "2rem" }}>
@@ -448,7 +440,6 @@ export default function ShelterRegistration() {
               </div>
             ))}
           </div>
-
           <div style={{ textAlign: "center" }}>
             <h3 style={{ fontSize: "1.25rem", fontWeight: "600", marginBottom: "0.5rem" }}>
               {currentStep === 1 && "Basic Information"}
@@ -460,8 +451,6 @@ export default function ShelterRegistration() {
           </div>
         </div>
       </section>
-
-      {/* Registration Form */}
       <section style={{ background: "#f9fafb", padding: "3rem 0" }}>
         <div style={{ maxWidth: "800px", margin: "0 auto", padding: "0 1rem" }}>
           <form onSubmit={handleSubmit}>
@@ -474,13 +463,11 @@ export default function ShelterRegistration() {
                 boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
               }}
             >
-              {/* Step 1: Basic Information */}
               {currentStep === 1 && (
                 <div>
                   <h3 style={{ fontSize: "1.5rem", fontWeight: "600", marginBottom: "2rem", color: "#111827" }}>
                     Basic Information
                   </h3>
-
                   <div style={{ display: "grid", gap: "1.5rem" }}>
                     <div>
                       <label style={labelStyle}>Shelter/Organization Name *</label>
@@ -506,7 +493,30 @@ export default function ShelterRegistration() {
                         </div>
                       )}
                     </div>
-
+                    <div>
+                      <label style={labelStyle}>Password *</label>
+                      <input
+                        type="password"
+                        value={formData.password}
+                        onChange={(e) => handleInputChange("password", e.target.value)}
+                        onBlur={() => handleBlur("password")}
+                        style={getInputStyle("password")}
+                        onFocus={(e) => !errors.password && (e.target.style.borderColor = "#8b5cf6")}
+                        required
+                      />
+                      {errors.password && (
+                        <div style={errorStyle}>
+                          <AlertCircle size={16} />
+                          {errors.password}
+                        </div>
+                      )}
+                      {touchedFields.password && !errors.password && formData.password && (
+                        <div style={successStyle}>
+                          <Check size={16} />
+                          Looks good!
+                        </div>
+                      )}
+                    </div>
                     <div
                       style={{
                         display: "grid",
@@ -532,7 +542,6 @@ export default function ShelterRegistration() {
                           </div>
                         )}
                       </div>
-
                       <div>
                         <label style={labelStyle}>Email Address *</label>
                         <input
@@ -558,7 +567,6 @@ export default function ShelterRegistration() {
                         )}
                       </div>
                     </div>
-
                     <div
                       style={{
                         display: "grid",
@@ -585,7 +593,6 @@ export default function ShelterRegistration() {
                           </div>
                         )}
                       </div>
-
                       <div>
                         <label style={labelStyle}>Website (Optional)</label>
                         <input
@@ -605,7 +612,6 @@ export default function ShelterRegistration() {
                         )}
                       </div>
                     </div>
-
                     <div>
                       <label style={labelStyle}>Full Address *</label>
                       <textarea
@@ -624,7 +630,6 @@ export default function ShelterRegistration() {
                         </div>
                       )}
                     </div>
-
                     <div
                       style={{
                         display: "grid",
@@ -650,7 +655,6 @@ export default function ShelterRegistration() {
                           </div>
                         )}
                       </div>
-
                       <div>
                         <label style={labelStyle}>State/Province *</label>
                         <input
@@ -669,7 +673,6 @@ export default function ShelterRegistration() {
                           </div>
                         )}
                       </div>
-
                       <div>
                         <label style={labelStyle}>ZIP/Postal Code *</label>
                         <input
@@ -692,14 +695,11 @@ export default function ShelterRegistration() {
                   </div>
                 </div>
               )}
-
-              {/* Step 2: Organization Details */}
               {currentStep === 2 && (
                 <div>
                   <h3 style={{ fontSize: "1.5rem", fontWeight: "600", marginBottom: "2rem", color: "#111827" }}>
                     Organization Details
                   </h3>
-
                   <div style={{ display: "grid", gap: "1.5rem" }}>
                     <div>
                       <label style={labelStyle}>Organization Type *</label>
@@ -725,7 +725,6 @@ export default function ShelterRegistration() {
                         </div>
                       )}
                     </div>
-
                     <div
                       style={{
                         display: "grid",
@@ -753,7 +752,6 @@ export default function ShelterRegistration() {
                           </div>
                         )}
                       </div>
-
                       <div>
                         <label style={labelStyle}>Registration Number</label>
                         <input
@@ -767,7 +765,6 @@ export default function ShelterRegistration() {
                         />
                       </div>
                     </div>
-
                     <div>
                       <label style={labelStyle}>Tax ID/EIN</label>
                       <input
@@ -780,7 +777,6 @@ export default function ShelterRegistration() {
                         placeholder="Optional"
                       />
                     </div>
-
                     <div>
                       <label style={labelStyle}>Organization Description *</label>
                       <textarea
@@ -802,7 +798,6 @@ export default function ShelterRegistration() {
                         {formData.description.length}/500 characters
                       </div>
                     </div>
-
                     <div>
                       <label style={labelStyle}>Mission Statement</label>
                       <textarea
@@ -817,14 +812,11 @@ export default function ShelterRegistration() {
                   </div>
                 </div>
               )}
-
-              {/* Step 3: Services & Capacity */}
               {currentStep === 3 && (
                 <div>
                   <h3 style={{ fontSize: "1.5rem", fontWeight: "600", marginBottom: "2rem", color: "#111827" }}>
                     Services & Capacity
                   </h3>
-
                   <div style={{ display: "grid", gap: "1.5rem" }}>
                     <div
                       style={{
@@ -853,7 +845,6 @@ export default function ShelterRegistration() {
                           </div>
                         )}
                       </div>
-
                       <div>
                         <label style={labelStyle}>Animals Currently Housed *</label>
                         <input
@@ -875,7 +866,6 @@ export default function ShelterRegistration() {
                         )}
                       </div>
                     </div>
-
                     <div>
                       <label style={labelStyle}>Average Adoption Fee Range</label>
                       <input
@@ -888,7 +878,6 @@ export default function ShelterRegistration() {
                         placeholder="e.g., $50-$300"
                       />
                     </div>
-
                     <div>
                       <label style={labelStyle}>Services Offered *</label>
                       <div
@@ -932,7 +921,6 @@ export default function ShelterRegistration() {
                         </div>
                       )}
                     </div>
-
                     <div>
                       <label style={labelStyle}>Special Programs</label>
                       <textarea
@@ -947,20 +935,16 @@ export default function ShelterRegistration() {
                   </div>
                 </div>
               )}
-
-              {/* Step 4: Documents & Review */}
               {currentStep === 4 && (
                 <div>
                   <h3 style={{ fontSize: "1.5rem", fontWeight: "600", marginBottom: "2rem", color: "#111827" }}>
                     Documents & Review
                   </h3>
-
                   <div style={{ display: "grid", gap: "2rem" }}>
                     <div>
                       <h4 style={{ fontSize: "1.25rem", fontWeight: "600", marginBottom: "1rem", color: "#374151" }}>
                         Required Documents
                       </h4>
-
                       <div style={{ display: "grid", gap: "1.5rem" }}>
                         {[
                           { key: "license", label: "Operating License/Permit", required: true },
@@ -974,8 +958,8 @@ export default function ShelterRegistration() {
                               border: errors[doc.key]
                                 ? "2px dashed #ef4444"
                                 : formData.documents[doc.key]
-                                  ? "2px dashed #10b981"
-                                  : "2px dashed #e5e7eb",
+                                ? "2px dashed #10b981"
+                                : "2px dashed #e5e7eb",
                               borderRadius: "0.5rem",
                               textAlign: "center",
                               cursor: "pointer",
@@ -1038,7 +1022,6 @@ export default function ShelterRegistration() {
                         ))}
                       </div>
                     </div>
-
                     <div
                       style={{
                         background: "#f9fafb",
@@ -1074,16 +1057,13 @@ export default function ShelterRegistration() {
                           {formData.servicesOffered.length > 0 ? formData.servicesOffered.join(", ") : "None selected"}
                         </p>
                         <p>
-                          <strong>Documents:</strong> {Object.values(formData.documents).filter(Boolean).length}{" "}
-                          uploaded
+                          <strong>Documents:</strong> {Object.values(formData.documents).filter(Boolean).length} uploaded
                         </p>
                       </div>
                     </div>
                   </div>
                 </div>
               )}
-
-              {/* Navigation Buttons */}
               <div
                 style={{
                   display: "flex",
@@ -1109,20 +1089,19 @@ export default function ShelterRegistration() {
                   }}
                   onMouseEnter={(e) => {
                     if (currentStep > 1) {
-                      e.currentTarget.style.borderColor = "#8b5cf6"
-                      e.currentTarget.style.color = "#8b5cf6"
+                      e.currentTarget.style.borderColor = "#8b5cf6";
+                      e.currentTarget.style.color = "#8b5cf6";
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (currentStep > 1) {
-                      e.currentTarget.style.borderColor = "#e5e7eb"
-                      e.currentTarget.style.color = "#6b7280"
+                      e.currentTarget.style.borderColor = "#e5e7eb";
+                      e.currentTarget.style.color = "#6b7280";
                     }
                   }}
                 >
                   Previous
                 </button>
-
                 {currentStep < 4 ? (
                   <button
                     type="button"
@@ -1186,15 +1165,12 @@ export default function ShelterRegistration() {
           </form>
         </div>
       </section>
-
-      {/* Information Section */}
       <section className="about" style={{ background: "white" }}>
         <div className="about-container">
           <div className="section-header">
             <h2 className="section-title">What Happens Next?</h2>
             <p className="section-subtitle">After you submit your application</p>
           </div>
-
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "2rem" }}>
             {[
               {
@@ -1256,13 +1232,10 @@ export default function ShelterRegistration() {
           </div>
         </div>
       </section>
-
-      {/* Contact Section */}
       <section className="cta">
         <div className="cta-container">
           <h2>Questions About Partnership?</h2>
           <p>Our team is here to help you through the application process.</p>
-
           <div
             style={{ display: "flex", flexDirection: "column", gap: "1rem", alignItems: "center", marginTop: "2rem" }}
           >
@@ -1277,7 +1250,6 @@ export default function ShelterRegistration() {
           </div>
         </div>
       </section>
-
       <style jsx>{`
         @keyframes spin {
           0% { transform: rotate(0deg); }
@@ -1285,5 +1257,5 @@ export default function ShelterRegistration() {
         }
       `}</style>
     </div>
-  )
+  );
 }
